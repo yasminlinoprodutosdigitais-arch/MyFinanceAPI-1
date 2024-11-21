@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyFinanceAPI.Application\MyFinanceAPI.Application.csproj" />
+    <ProjectReference Include="..\MyFinanceAPI.Data\MyFinanceAPI.Data.csproj" />
+    <ProjectReference Include="..\MyFinanceAPI.Domain\MyFinanceAPI.Domain.csproj" />
+    <ProjectReference Include="..\MyFinanceAPI.Integrations\MyFinanceAPI.Integrations.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
