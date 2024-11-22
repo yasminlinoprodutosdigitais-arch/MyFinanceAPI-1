@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VrgFh/1sCqo=",
+  "dgSpecHash": "9kJoCbyz7to=",
   "success": true,
-  "projectFilePath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
+  "projectFilePath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\yasminl\\.nuget\\packages\\automapper\\10.1.1\\automapper.10.1.1.nupkg.sha512",
     "C:\\Users\\yasminl\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",

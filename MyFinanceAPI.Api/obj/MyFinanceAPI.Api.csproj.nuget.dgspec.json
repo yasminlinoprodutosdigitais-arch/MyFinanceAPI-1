@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj": {}
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj": {}
   },
   "projects": {
-    "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj": {
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
+        "projectUniqueName": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
         "projectName": "MyFinanceAPI.Api",
-        "projectPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
+        "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\MyFinanceAPI.Api.csproj",
         "packagesPath": "C:\\Users\\yasminl\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\obj\\",
+        "outputPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\yasminl\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj": {
-                "projectPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj"
+              "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj": {
+                "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj"
               }
             }
           }
@@ -97,14 +97,14 @@
         }
       }
     },
-    "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj": {
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj",
+        "projectUniqueName": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj",
         "projectName": "MyFinanceAPI.Application",
-        "projectPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj",
+        "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj",
         "packagesPath": "C:\\Users\\yasminl\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\obj\\",
+        "outputPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\yasminl\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -418,14 +418,14 @@
         }
       }
     },
-    "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj": {
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj",
+        "projectUniqueName": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj",
         "projectName": "MyFinanceAPI.Ioc",
-        "projectPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj",
+        "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\MyFinanceAPI.Ioc.csproj",
         "packagesPath": "C:\\Users\\yasminl\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\obj\\",
+        "outputPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Ioc\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\yasminl\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -440,8 +440,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj": {
-                "projectPath": "c:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj"
+              "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj": {
+                "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Application\\MyFinanceAPI.Application.csproj"
               },
               "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Data\\MyFinanceAPI.Data.csproj": {
                 "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Data\\MyFinanceAPI.Data.csproj"
