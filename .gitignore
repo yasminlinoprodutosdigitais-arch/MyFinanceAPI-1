@@ -1,0 +1,43 @@
+# Ignore build results
+bin/
+obj/
+
+# User-specific files
+.vscode/
+.idea/
+
+# User-specific files for JetBrains Rider
+.idea/
+
+# Windows Installer files
+.vsscc
+
+# Windows Installer files
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Microsoft Azure Functions
+.azure/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Windows Installer files
+*.pdb
+*.mdb
+
+# JetBrains Rider
+.idea/
+*.suo
+*.user
