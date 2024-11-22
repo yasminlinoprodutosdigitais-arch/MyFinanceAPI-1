@@ -8,6 +8,8 @@ public class CategoryDTO
     public ObjectId Id {get; set;}
     public string Name { get; set; }
 
+    public CategoryDTO() { }
+
     public CategoryDTO(string name)
     {
         Name = name;

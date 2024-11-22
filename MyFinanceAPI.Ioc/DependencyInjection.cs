@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyFinanceAPI.Application.Interfaces;
@@ -7,23 +6,23 @@ using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Data.Repositories;
 using MyFinanceAPI.Domain.Interfaces;
 
-namespace MyFinanceAPI.Ioc;
-
-public static class DependencyInjection
+namespace MyFinanceAPI.Ioc  // Certifique-se de que este namespace esteja correto
 {
-    public static void RegisterService(IServiceCollection services, IConfiguration configuration)
+    public static class DependencyInjection
     {
-    
-        // Registra o contexto do MongoDB, que vai utilizar o banco de dados configurado
-        services.AddSingleton<IMongoContext, MongoContext>();
+        public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Registra o contexto MongoDB
+            services.AddSingleton<IMongoContext>(sp => new MongoContext(configuration));
 
-        //services
-        services.AddScoped<ICategoryService, CategoryService>();
-        services.AddScoped<ITransactionService, TransactionService>();
+            // Outros serviços, como repositórios, serviços, etc.
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ITransactionService, TransactionService>();
+            
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
 
-        //repositories
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<ITransactionRepository, TransactionRepository>();
-
+            return services;
+        }
     }
 }
