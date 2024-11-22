@@ -16,7 +16,7 @@ namespace MyFinanceAPI.Api.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet]
+        [HttpGet("{id}", Name = "GetCategory")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
             try
@@ -31,13 +31,15 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CategoryDTO categoryDTO)
+        public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CategoryDTO categoryDto)
         {
-            if(categoryDTO is null)
+            if (categoryDto is null)
                 return BadRequest("Invalid Data");
+           
+            await _categoryService.Add(categoryDto);
+            return new CreatedAtRouteResult("GetCategory", new { id = categoryDto.Id }, categoryDto);
             
-            await _categoryService.Add(categoryDTO);
-            return new CreatedAtRouteResult("GetCategory", new { id = categoryDTO.Id}, categoryDTO);
         }
+
     }
 }
