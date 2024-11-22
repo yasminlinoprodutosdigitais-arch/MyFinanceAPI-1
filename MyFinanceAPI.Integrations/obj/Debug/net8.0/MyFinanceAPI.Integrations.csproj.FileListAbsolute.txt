@@ -1,0 +1,12 @@
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\bin\Debug\net8.0\MyFinanceAPI.Integrations.deps.json
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\bin\Debug\net8.0\MyFinanceAPI.Integrations.dll
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\bin\Debug\net8.0\MyFinanceAPI.Integrations.pdb
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.AssemblyInfoInputs.cache
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.AssemblyInfo.cs
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.csproj.CoreCompileInputs.cache
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.sourcelink.json
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.dll
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\refint\MyFinanceAPI.Integrations.dll
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\MyFinanceAPI.Integrations.pdb
+C:\Users\yasminl\Desktop\LINGUAGENS\PDI\MyFinanceAPI\MyFinanceAPI.Integrations\obj\Debug\net8.0\ref\MyFinanceAPI.Integrations.dll

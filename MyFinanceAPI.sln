@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyFinanceAPI.Api", "MyFinan
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{B80E73F3-BB7B-4DBF-97D2-C3359F972300}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyFinanceAPI.Application", "MyFinanceAPI.Aplication\MyFinanceAPI.Application.csproj", "{1D29BC4E-15BE-4D80-9E0A-C1D8C3661DFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyFinanceAPI.Application", "MyFinanceAPI.Application\MyFinanceAPI.Application.csproj", "{1D29BC4E-15BE-4D80-9E0A-C1D8C3661DFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastriucture", "Infrastriucture", "{1800A18E-5CC0-4F06-92D6-000415163FAA}"
 EndProject

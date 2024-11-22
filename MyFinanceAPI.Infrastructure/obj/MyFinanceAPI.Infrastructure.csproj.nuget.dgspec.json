@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj": {}
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj": {
+    "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
         "projectName": "MyFinanceAPI.Infrastructure",
-        "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\yasminl\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\yasminl\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -42,6 +42,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

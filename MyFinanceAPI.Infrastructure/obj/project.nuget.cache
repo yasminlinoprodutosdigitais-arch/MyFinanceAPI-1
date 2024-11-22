@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "ThNIVOy5VAQ=",
+  "dgSpecHash": "WxU4N4lU+BU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\yasminl\\Desktop\\LINGUAGENS\\PDI\\MyFinanceAPI\\MyFinanceAPI.Infrastructure\\MyFinanceAPI.Infrastructure.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\yasminl\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.0\\microsoft.extensions.configuration.9.0.0.nupkg.sha512",
+    "C:\\Users\\yasminl\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.0\\microsoft.extensions.configuration.abstractions.9.0.0.nupkg.sha512",
+    "C:\\Users\\yasminl\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.0\\microsoft.extensions.primitives.9.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
