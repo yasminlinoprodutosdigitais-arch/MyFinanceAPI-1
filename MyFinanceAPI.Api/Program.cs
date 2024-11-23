@@ -1,19 +1,17 @@
-using Microsoft.Extensions.DependencyInjection;
 using MyFinanceAPI.Application.Mapping;
-using MyFinanceAPI.Ioc;  // Certifique-se de que este namespace esteja correto
+using MyFinanceAPI.Ioc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Adiciona o AutoMapper ao DI e escaneia os assemblies em busca de perfis de mapeamento
 builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Registra os serviços personalizados de DI
-builder.Services.AddControllers(); // Para as controllers
+// Registra outros serviços
+builder.Services.AddControllers();
 
-// Registra todos os serviços definidos no DependencyInjection
-builder.Services.RegisterService(builder.Configuration); // Aqui estamos chamando o método RegisterService
+// Registra os serviços personalizados definidos no DependencyInjection
+builder.Services.RegisterService(builder.Configuration); // Este método deve registrar outros serviços
 
-// Registra o Swagger para a API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -22,11 +20,11 @@ var app = builder.Build();
 // Configura o pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();  // Gera a documentação Swagger
-    app.UseSwaggerUI();  // Exibe a interface Swagger
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();  // Redireciona para HTTPS
-app.MapControllers();  // Mapeia as rotas dos controladores
+app.UseHttpsRedirection();
+app.MapControllers();
 
 app.Run();

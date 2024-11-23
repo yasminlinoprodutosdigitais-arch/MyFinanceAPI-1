@@ -10,8 +10,8 @@ namespace MyFinanceAPI.Application.Services;
 
 public class CategoryService : ICategoryService
 {
-    private ICategoryRepository _categoryRepository;
-    private IMapper _mapper;
+    private readonly ICategoryRepository _categoryRepository;
+    private readonly IMapper _mapper;
 
     public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
     {
@@ -30,7 +30,7 @@ public class CategoryService : ICategoryService
         return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
     }
 
-    public async Task<CategoryDTO> GetCategoryById(ObjectId id)
+    public async Task<CategoryDTO> GetCategoryById(int id)
     {
         var category = await _categoryRepository.GetCategoryById(id);
         return _mapper.Map<CategoryDTO>(category);

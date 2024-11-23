@@ -5,7 +5,7 @@ namespace MyFinanceAPI.Application.DTO;
 
 public class CategoryDTO
 {
-    public ObjectId Id {get; set;}
+    public int Id {get; set;}
     public string Name { get; set; }
 
     public CategoryDTO() { }
@@ -15,7 +15,7 @@ public class CategoryDTO
         Name = name;
     }
 
-    public CategoryDTO(ObjectId id, string name)
+    public CategoryDTO(int id, string name)
     {
         Id = id;
         Name = name;

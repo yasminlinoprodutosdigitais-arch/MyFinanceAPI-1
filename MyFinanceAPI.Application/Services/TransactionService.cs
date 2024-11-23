@@ -45,7 +45,7 @@ public class TransactionService : ITransactionService
         return _mapper.Map<IEnumerable<TransactionDTO>>(transactions);
     }
 
-    public async Task<TransactionDTO> GetTransactionById(ObjectId id)
+    public async Task<TransactionDTO> GetTransactionById(int id)
     {
         var transaction = await _transactionRepository.GetTransactionById(id);
         return _mapper.Map<TransactionDTO>(transaction);

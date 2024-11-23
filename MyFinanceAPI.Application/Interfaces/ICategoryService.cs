@@ -9,7 +9,7 @@ public interface ICategoryService
 {
     Task Add(CategoryDTO categoryDTO);
     Task<IEnumerable<CategoryDTO>> GetCategories();
-    Task<CategoryDTO> GetCategoryById(ObjectId id);
+    Task<CategoryDTO> GetCategoryById(int id);
     Task Update(CategoryDTO categoryDTO);
     Task Remove(CategoryDTO categoryDTO);
 }

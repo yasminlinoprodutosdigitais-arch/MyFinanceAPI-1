@@ -11,6 +11,6 @@ public interface ITransactionService
     Task Update(TransactionDTO TransactionDTO);
     Task Remove(TransactionDTO TransactionDTO);
     Task<IEnumerable<TransactionDTO>> GetTransactions();
-    Task<TransactionDTO> GetTransactionById(ObjectId id);
+    Task<TransactionDTO> GetTransactionById(int id);
     Task<IEnumerable<TransactionDTO>> GetTransactionByCategory(int categoryId);
 }

@@ -1,6 +1,6 @@
 @MyFinanceAPI.Api_HostAddress = http://localhost:5034
 
-GET {{MyFinanceAPI.Api_HostAddress}}/weatherforecast/
+GET {{MyFinanceAPI.Api_HostAddress}}/swagger/
 Accept: application/json
 
 ###

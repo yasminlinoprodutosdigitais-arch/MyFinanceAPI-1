@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using MyFinanceAPI.Domain.Entities;
 
@@ -7,7 +8,7 @@ namespace MyFinanceAPI.Application.DTO;
 
 public class TransactionDTO
 {
-    public ObjectId Id { get; set; }
+    public int Id { get; set; }
     
     [DisplayName("Name")]
     public string Name { get; set; }
@@ -18,7 +19,8 @@ public class TransactionDTO
     [DisplayName("DueDate")]
     public DateTime DueDate { get; set; }
     
-    public Category Category { get; set; }
+    [JsonIgnore]
+    public Category? Category { get; set; }
     
     [DisplayName("Categories")]
     public int Categoryid { get; set; }

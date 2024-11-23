@@ -3,9 +3,8 @@ using MongoDB.Bson;
 
 namespace MyFinanceAPI.Domain.Entities;
 
-public class Category
+public class Category : BaseEntity
 { 
-    public ObjectId Id {get; set;}
     public string Name { get; set; }
 
     public Category(string name)
@@ -13,7 +12,7 @@ public class Category
         Name = name;
     }
 
-    public Category(ObjectId id, string name)
+    public Category(int id, string name)
     {
         Id = id;
         Name = name;

@@ -1,16 +1,13 @@
 using AutoMapper;
-using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Application.DTO;
 
 namespace MyFinanceAPI.Application.Mapping;
-
 public class DomainToDTOMappingProfile : Profile
 {
     public DomainToDTOMappingProfile()
     {
-        // Mapeamento de CategoryDTO para Category
-        CreateMap<CategoryDTO, Category>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore()); // Ignora o mapeamento do Id
+        CreateMap<Category, CategoryDTO>().ReverseMap();
+        CreateMap<Transaction, TransactionDTO>().ReverseMap();
     }
 }
-
