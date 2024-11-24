@@ -19,6 +19,16 @@ namespace MyFinanceAPI.Ioc
             // Configuração do MongoDB
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
 
+            // Configurar a política CORS
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                    builder.AllowAnyOrigin() // Permite qualquer origem (não recomendado em produção)
+                           .AllowAnyMethod()  // Permite qualquer método HTTP (GET, POST, etc)
+                           .AllowAnyHeader()); // Permite qualquer cabeçalho
+            });
+
+
             // Registra o MongoClient como Singleton
             services.AddSingleton<IMongoClient>(serviceProvider =>
             {
@@ -39,8 +49,11 @@ namespace MyFinanceAPI.Ioc
 
             // Outros serviços, como repositórios, serviços, etc.
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
             services.AddScoped<ITransactionService, TransactionService>();
+            
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ITransactionHistoryRepository, TransactionHistoryRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));

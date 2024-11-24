@@ -9,5 +9,6 @@ public class DomainToDTOMappingProfile : Profile
     {
         CreateMap<Category, CategoryDTO>().ReverseMap();
         CreateMap<Transaction, TransactionDTO>().ReverseMap();
+        CreateMap<TransactionHistory, TransactionHistoryDTO>().ReverseMap();
     }
 }

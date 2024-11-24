@@ -28,6 +28,13 @@ namespace MyFinanceAPI.Api.Controllers
             return new CreatedAtRouteResult("GetTransaction", new {id = transactionDTO.Id}, transactionDTO);
         }
 
+        [HttpGet("/UpdateTransaction")]
+        public async Task<ActionResult<TransactionDTO>> UpdateTransaction(TransactionDTO transactionDTO)
+        {
+            await _transactionService.Update(transactionDTO);
+            return transactionDTO;
+        }
+
         [HttpGet("/GetTransactions")]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactions()
         {
@@ -50,6 +57,20 @@ namespace MyFinanceAPI.Api.Controllers
                 return NotFound("Transaction Bad Request");
             else 
                 return Ok(transaction); 
+        }
+
+        [HttpGet("/GetTransactionsByCategory/{id}")]
+        public async Task<ActionResult<ActionResult<TransactionDTO>>> GetTransactionByCategory(int idCategory)
+        {
+            if(idCategory == 0 || idCategory < 0)
+                return BadRequest("");
+
+            var transactions = await _transactionService.GetTransactionByCategory(idCategory);
+
+            if(transactions is null)
+                return NotFound();
+            else
+                return Ok(transactions);
         }
     }
 }
