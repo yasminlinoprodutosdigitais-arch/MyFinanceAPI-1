@@ -36,10 +36,9 @@ public class CategoryService : ICategoryService
         return _mapper.Map<CategoryDTO>(category);
     }
 
-    public async Task Remove(CategoryDTO categoryDTO)
+    public async Task Remove(int id)
     {
-        var category = _mapper.Map<Category>(categoryDTO);
-        await _categoryRepository.Remove(category);
+        await _categoryRepository.Remove(id);
     }
 
     public async Task Update(CategoryDTO categoryDTO)

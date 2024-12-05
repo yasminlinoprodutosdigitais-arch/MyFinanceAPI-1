@@ -1,11 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Mapping;
 using MyFinanceAPI.Application.Services;
-using MyFinanceAPI.Data.Configuration;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Data.Repositories;
 using MyFinanceAPI.Domain.Interfaces;
@@ -16,46 +14,31 @@ namespace MyFinanceAPI.Ioc
     {
         public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration)
         {
-            // Configuração do MongoDB
-            services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+            // Configuração do Entity Framework Core com PostgreSQL
+            services.AddDbContext<ContextDB>(options =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            });
 
-            // Configurar a política CORS
+            // Configuração da política CORS
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
-                    builder.AllowAnyOrigin() // Permite qualquer origem (não recomendado em produção)
-                           .AllowAnyMethod()  // Permite qualquer método HTTP (GET, POST, etc)
-                           .AllowAnyHeader()); // Permite qualquer cabeçalho
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader());
             });
 
-
-            // Registra o MongoClient como Singleton
-            services.AddSingleton<IMongoClient>(serviceProvider =>
-            {
-                var settings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-                return new MongoClient(settings.ConnectionString);  // Cria o MongoClient com a string de conexão
-            });
-
-            // Registra o IMongoDatabase como Scoped
-            services.AddScoped<IMongoDatabase>(serviceProvider =>
-            {
-                var settings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-                var client = serviceProvider.GetRequiredService<IMongoClient>();  // Resolve o MongoClient
-                return client.GetDatabase(settings.DatabaseName);  // Retorna o banco de dados desejado
-            });
-
-            // Registra o MongoContext
-            services.AddScoped<MongoContext>();
-
-            // Outros serviços, como repositórios, serviços, etc.
+            // Registro de repositórios e serviços
             services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
-            services.AddScoped<ITransactionService, TransactionService>();
-            
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<ITransactionHistoryRepository, TransactionHistoryRepository>();
-            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<IMonthlyUpdateService, MonthlyUpdateService>();
+            services.AddScoped<IAccountService, AccountService>();
 
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IMonthlyUpdateRepository, MonthlyUpdateRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+
+            // Configuração do AutoMapper
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 
             return services;

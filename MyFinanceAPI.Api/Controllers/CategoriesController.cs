@@ -20,7 +20,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // GET: api/categories
-        [HttpGet]
+        [HttpGet("/GetCategories")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
             var categories = await _categoryService.GetCategories();
@@ -31,7 +31,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // GET: api/categories/{id}
-        [HttpGet("{id}", Name = "GetCategory")]
+        [HttpGet("/GetCategoryById/{id}", Name = "GetCategory")]
         public async Task<ActionResult<CategoryDTO>> GetCategorybyId(int id)
         {
             var category = await _categoryService.GetCategoryById(id);
@@ -42,7 +42,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // POST: api/categories
-        [HttpPost]
+        [HttpPost("/CreateCategory")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CategoryDTO categoryDto)
         {
             if (categoryDto is null)
@@ -54,13 +54,9 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // PUT: api/categories/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO categoryDto)
+        [HttpPut("/UpdateCategory")]
+        public async Task<IActionResult> UpdateCategory([FromBody] CategoryDTO categoryDto)
         {
-            if (id != categoryDto.Id)
-            {
-                return BadRequest();
-            }
             if (categoryDto is null)
             {
                 return BadRequest();
@@ -71,14 +67,14 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // DELETE: api/categories/{id}
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<CategoryDTO>> DeleteCategory(CategoryDTO categoryDTO)
+        [HttpDelete("/DeleteCategory/{id}")]
+        public async Task<ActionResult<CategoryDTO>> DeleteCategory(int id)
         {
-            var category = await _categoryService.GetCategoryById(categoryDTO.Id);
+            var category = await _categoryService.GetCategoryById(id);
             if (category is null)
                 return NotFound("Category not found");
 
-            await _categoryService.Remove(categoryDTO);
+            await _categoryService.Remove(id);
             return Ok(category);
         }
     }
