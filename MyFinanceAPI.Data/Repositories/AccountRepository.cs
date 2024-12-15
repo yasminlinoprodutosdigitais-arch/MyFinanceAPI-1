@@ -17,21 +17,22 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<Account> Create(Account account)
     {
+        
         await _context.Accounts.AddAsync(account);
         await _context.SaveChangesAsync();
         return account;
     }
 
-    public Task<IEnumerable<Account>> GetAccountByCategory(int categoryid)
+    public async  Task<Account> GetAccountByCategory(int categoryId)
     {
-        throw new NotImplementedException();
+        return await _context.Accounts.FirstOrDefaultAsync(c => c.Category.Id == categoryId);
     }
 
     public async Task<Account> Remove(int id)
     {
         var account = await GetAccountById(id);
         if (account != null)
-        { 
+        {
             _context.Accounts.Remove(account);
             _context.SaveChanges();
         }
@@ -41,10 +42,23 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<Account> Update(Account account)
     {
-        _context.Accounts.Update(account);
-        _context.SaveChanges();
+        // Carrega a categoria correspondente, se o categoryId for fornecido
+        if (account.Category != null && account.Category.Id != 0)
+        {
+            var category = await _context.Categories.FindAsync(account.Category.Id);
+            if (category == null)
+            {
+                throw new Exception("Categoria não encontrada.");
+            }
+            account.Category = category; // Associa a categoria carregada
+        }
+
+        _context.Accounts.Update(account);  // Atualiza a conta
+        await _context.SaveChangesAsync();  // Salva as mudanças no banco
+
         return account;
     }
+
 
 
     // public async Task<IEnumerable<Account>> GetAccountByCategory(int categoryId)
@@ -60,7 +74,11 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<List<Account>>? GetAccounts()
     {
-        var accounts = await _context.Accounts.OrderBy(c => c.Name).ToListAsync();
+        var accounts = await _context.Accounts
+            .Include(a => a.Category)  // Incluindo a categoria nas contas
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
         return accounts;
     }
 

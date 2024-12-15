@@ -3,9 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace MyFinanceAPI.Domain.Entities;
 
-public class MonthlyUpdate : BaseEntity
+public class Transaction : BaseEntity
 {
-    public int Id { get; set; }
     public DateTime Date { get; set; }
     public string Name { get; set; }
     public decimal? Value { get; set; }
@@ -15,12 +14,12 @@ public class MonthlyUpdate : BaseEntity
     [JsonIgnore]
     public Account? Account { get; set; }
 
-    public MonthlyUpdate()
+    public Transaction()
     {
 
     }
 
-    public MonthlyUpdate(DateTime date, string name, decimal value, int? idAccount, string status)
+    public Transaction(DateTime date, string name, decimal value, int? idAccount, string status)
     {
         Date = date;
         Name = name;
@@ -29,7 +28,7 @@ public class MonthlyUpdate : BaseEntity
         Status = status;
     }
 
-    public MonthlyUpdate(int id, DateTime date, string name, int idAccount, decimal value, string status)
+    public Transaction(int id, DateTime date, string name, int idAccount, decimal value, string status)
     {
         Id = id;
         Date = date;

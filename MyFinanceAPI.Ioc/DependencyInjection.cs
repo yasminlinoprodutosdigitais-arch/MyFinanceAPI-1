@@ -31,11 +31,11 @@ namespace MyFinanceAPI.Ioc
 
             // Registro de repositórios e serviços
             services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IMonthlyUpdateService, MonthlyUpdateService>();
+            services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IAccountService, AccountService>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IMonthlyUpdateRepository, MonthlyUpdateRepository>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
 
             // Configuração do AutoMapper

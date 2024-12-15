@@ -19,6 +19,7 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<IEnumerable<Category>> GetCategories()
     {
+        // var categories = await _context.Categories.Where(c => c.Status == true).OrderBy(c => c.Name).ToListAsync();
         var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
         return categories;
     }
@@ -31,7 +32,7 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
     public async Task<Category?> Remove(int id)
     {
         var category = await GetCategoryById(id);
-        if (category != null)
+
         {
             _context.Categories.Remove(category);
             _context.SaveChanges();

@@ -10,7 +10,7 @@ public class AccountGrouping
     public string? SubCategory { get; set; }
     public List<Account>? Accounts { get; set; }
     public List<Category>? Categories { get; set; }
-    public List<MonthlyUpdate> MonthlyUpdate { get; set; }
+    public List<Transaction> Transaction { get; set; }
 
     public AccountGrouping(int categoryId, string categoryName, string subCategory, List<Account> accounts)
     {

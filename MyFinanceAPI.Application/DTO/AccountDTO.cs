@@ -13,24 +13,24 @@ public class AccountDTO
     public decimal Value { get; set; }
     public int Categoryid { get; set; }
 
-    public ICollection<MonthlyUpdate>? MonthlyUpdates { get; set; }
+    public ICollection<Transaction>? Transactions { get; set; }
 
     public AccountDTO() { }
 
-    public AccountDTO(string name, decimal value, int categoryId, ICollection<MonthlyUpdate>? updates)
+    public AccountDTO(string name, decimal value, int categoryId, ICollection<Transaction>? updates)
     {
         Name = name;
         Value = value;
         Categoryid = categoryId;
-        MonthlyUpdates = updates;
+        Transactions = updates;
     }
 
-    public AccountDTO(int id, string name, decimal value, int categoryId, ICollection<MonthlyUpdate>? updates)
+    public AccountDTO(int id, string name, decimal value, int categoryId, ICollection<Transaction>? updates)
     {
         Id = id;
         Name = name;
         Value = value;
         Categoryid = categoryId;
-        MonthlyUpdates = updates;
+        Transactions = updates;
     }
 }

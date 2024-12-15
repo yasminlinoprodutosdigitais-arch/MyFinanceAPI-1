@@ -7,12 +7,14 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace MyFinanceAPI.Domain.Entities;
 public class Account : BaseEntity
 {
-    public string Name { get; set; }
+     public string Name { get; set; }
     public decimal Value { get; set; }
 
+    public int CategoryId { get; set; }
+
     [JsonIgnore]
-    public Category Category { get; set; }  // Relacionamento com Category
-    public ICollection<MonthlyUpdate>? MonthlyUpdates { get; set; } // Relacionamento com MonthlyUpdate
+    public Category? Category { get; set; }  // Relacionamento com Category
+    public ICollection<Transaction>? Transactions { get; set; } // Relacionamento com MonthlyUpdate
 
     public Account() { } // Construtor padrão
 
