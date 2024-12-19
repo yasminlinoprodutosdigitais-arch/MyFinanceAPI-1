@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyFinanceAPI.Application.DTO;
@@ -16,19 +18,22 @@ namespace MyFinanceAPI.Api.Controllers
         {
             _accountService = accountService;
         }
-        
-        [HttpGet("/GetAccounts")]
+
+        [HttpGet("GetAccounts")]
         public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccounts()
         {
+
             try
             {
-                var Account = await _accountService.GetAccounts();
-                return Ok(Account);
+                var accounts = await _accountService.GetAccounts();
+                return Ok(accounts);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return NotFound(e.Message);
+                return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
             }
+
+
         }
 
 
@@ -56,15 +61,15 @@ namespace MyFinanceAPI.Api.Controllers
                 return Ok(Accounts);
         }
 
-       [HttpPost("/CreateAccount")]
+        [HttpPost("/CreateAccount")]
         public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] AccountDTO accountDTO)
         {
             if (accountDTO is null)
                 return BadRequest("Invalid Data");
-           
+
             await _accountService.Add(accountDTO);
             return new CreatedAtRouteResult("GetCategory", new { id = accountDTO.Id }, accountDTO);
-            
+
         }
 
         [HttpPut("/UpdateAccount")]

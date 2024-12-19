@@ -38,6 +38,8 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
 
+            // services.AddScoped<IAuthenticate, AuthenticateService>();
+
             // Configuração do AutoMapper
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
 

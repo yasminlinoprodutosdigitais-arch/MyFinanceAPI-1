@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Data.Context;
-public class ContextDB : DbContext
+public class ContextDB : IdentityDbContext<User>
 {
     public ContextDB(DbContextOptions<ContextDB> options) : base(options) { }
     public DbSet<Account> Accounts { get; set; }
