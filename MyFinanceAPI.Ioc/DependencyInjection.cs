@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyFinanceAPI.Application.Interfaces;
-using MyFinanceAPI.Application.Mapping;
 using MyFinanceAPI.Application.Services;
-using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Data.Repositories;
 using MyFinanceAPI.Domain.Interfaces;
+using MyFinanceAPI.Data.Context;
+using MyFinanceAPI.Application.Utils;
+using MyFinanceAPI.Application.Mapping;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyFinanceAPI.Ioc
 {
@@ -29,16 +30,21 @@ namespace MyFinanceAPI.Ioc
                            .AllowAnyHeader());
             });
 
-            // Registro de repositórios e serviços
+            // Registrar os serviços
+            services.AddScoped<IValidadorToken, ValidadorToken>();
+            services.AddScoped<IUsuarioService, UsuarioService>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IAccountService, AccountService>();
 
+            // Registro do repositório IUsuarioRepository
+            services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
+            // Repositórios adicionais
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
-
-            // services.AddScoped<IAuthenticate, AuthenticateService>();
 
             // Configuração do AutoMapper
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
@@ -46,4 +52,5 @@ namespace MyFinanceAPI.Ioc
             return services;
         }
     }
+
 }

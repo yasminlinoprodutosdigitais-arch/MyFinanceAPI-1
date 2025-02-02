@@ -20,6 +20,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         }
 
         // GET: api/categories
+        [Authorize(Policy = "Admin")]
         [HttpGet("/GetCategories")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {

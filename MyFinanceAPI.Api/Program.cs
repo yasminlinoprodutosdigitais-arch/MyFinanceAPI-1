@@ -3,30 +3,86 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Mapping;
+using MyFinanceAPI.Application.Services;
+using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Ioc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registra os serviços personalizados definidos no DependencyInjection
-builder.Services.RegisterService(builder.Configuration); // Este método deve registrar outros serviços
+// Registra os serviços no contêiner de dependências
+builder.Services.RegisterService(builder.Configuration);
+builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("AppSettings"));
 
-builder.Services.AddInfrastructureJWT(builder.Configuration); // Adiciona a configuração do JWT
+// Verifica se a SecretKey está carregada corretamente
+var secretKey = builder.Configuration.GetSection("AppSettings")["SecretKey"];
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new Exception("Erro: SecretKey não foi carregada do appsettings.json!");
+}
 
-builder.Services.AddInfrastructureSwagger(); // Adiciona a configuração do Swagger
-
-builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
-
-// Registra outros serviços
-builder.Services.AddDbContext<ContextDB>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddIdentity<User, IdentityRole>()
+// Configuração do Identity
+builder.Services.AddIdentity<Usuario, IdentityRole<int>>()
     .AddEntityFrameworkStores<ContextDB>()
     .AddDefaultTokenProviders();
 
+// Configuração do Swagger com suporte a JWT
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyFinance API", Version = "v1" });
+
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Insira o token JWT no formato: Bearer {seu_token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    };
+
+    c.AddSecurityDefinition("Bearer", securityScheme);
+
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        { securityScheme, new string[] { } }
+    };
+
+    c.AddSecurityRequirement(securityRequirement);
+});
+
+// Configuração do JWT Authentication
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddAuthorization(options => {
+        options.AddPolicy("Admin", policy =>{
+            policy.RequireRole("Admin");
+        });
+    });
+
+// Configuração do AutoMapper
+builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
+
+// Adiciona os controladores
 builder.Services.AddControllers();
 
 // Configuração de CORS
@@ -42,21 +98,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Habilita Swagger se estiver em desenvolvimento
+// Habilita o Swagger se estiver em ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyFinance API v1");
+    });
 }
 
-// Configurações de CORS
+// Configuração de Middleware na ordem correta
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-// Ordem correta dos middlewares
-app.UseRouting();         // Roteia as requisições
-app.UseAuthentication();  // Ativa o middleware de autenticação (verifica o token)
-app.UseAuthorization();   // Ativa o middleware de autorização (verifica se o usuário tem permissão)
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
