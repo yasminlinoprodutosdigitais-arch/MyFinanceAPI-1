@@ -37,6 +37,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IUserContextService, UserContextService>();
 
             // Registro do repositório IUsuarioRepository
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();

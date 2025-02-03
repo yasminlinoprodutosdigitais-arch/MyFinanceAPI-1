@@ -73,11 +73,13 @@ builder.Services.AddAuthentication(x =>
         };
     });
 
-builder.Services.AddAuthorization(options => {
-        options.AddPolicy("Admin", policy =>{
-            policy.RequireRole("Admin");
-        });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireRole("Admin");
     });
+});
 
 // Configuração do AutoMapper
 builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));

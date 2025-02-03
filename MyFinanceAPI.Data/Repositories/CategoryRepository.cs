@@ -17,33 +17,34 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
         return category;
     }
 
-    public async Task<IEnumerable<Category>> GetCategories()
+    public async Task<IEnumerable<Category>> GetCategoriesByUserId(int userId)
     {
-        // var categories = await _context.Categories.Where(c => c.Status == true).OrderBy(c => c.Name).ToListAsync();
-        var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+        var categories = await _context.Categories.Where(c => c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
         return categories;
     }
 
-    public async Task<Category?> GetCategoryById(int id)
+    public async Task<Category?> GetCategoryById(int id, int userId)
     {
-        return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        return await _context.Categories
+            .Where(c => c.UserId == userId && c.Id == id)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<Category?> Remove(int id)
+    public async Task<Category?> Remove(int id, int userId)
     {
-        var category = await GetCategoryById(id);
+        var category = await GetCategoryById(id, userId);
+        if (category == null)
+            return null;
 
-        {
-            _context.Categories.Remove(category);
-            _context.SaveChanges();
-        }
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
 
         return category;
     }
 
-    public async Task<Category> Update(Category category)
+    public async Task<Category> Update(Category category, int userId)
     {
-        var existingCategory = await GetCategoryById(category.Id) ?? throw new Exception("Category not found");
+        var existingCategory = await GetCategoryById(category.Id, userId) ?? throw new Exception("Category not found");
 
         if (existingCategory != null)
         {

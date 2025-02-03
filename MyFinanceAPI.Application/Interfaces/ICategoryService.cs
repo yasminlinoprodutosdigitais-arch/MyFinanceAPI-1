@@ -7,9 +7,9 @@ namespace MyFinanceAPI.Application.Interfaces;
 
 public interface ICategoryService
 {
-    Task Add(CategoryDTO categoryDTO);
-    Task<IEnumerable<CategoryDTO>> GetCategories();
-    Task<CategoryDTO> GetCategoryById(int id);
-    Task Update(CategoryDTO categoryDTO);
-    Task Remove(int id);
+    Task Add(CategoryDTO categoryDTO, int userId);
+    Task<IEnumerable<CategoryDTO>> GetCategories(int userId);
+    Task<CategoryDTO> GetCategoryById(int id, int userId);
+    Task Update(CategoryDTO categoryDTO, int userId);
+    Task Remove(int id, int userId);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using AutoMapper;
 using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
@@ -18,32 +19,33 @@ public class CategoryService : ICategoryService
         _categoryRepository = categoryRepository;
         _mapper = mapper;
     }
-    public async Task Add(CategoryDTO categoryDTO)
+    public async Task Add(CategoryDTO categoryDTO, int userId)
     {
         var category = _mapper.Map<Category>(categoryDTO);
+        category.UserId = userId;
         await _categoryRepository.Create(category);
     }
 
-    public async Task<IEnumerable<CategoryDTO>> GetCategories()
+    public async Task<IEnumerable<CategoryDTO>> GetCategories(int userId)
     {
-        var categories = await _categoryRepository.GetCategories();
+        var categories = await _categoryRepository.GetCategoriesByUserId(userId);
         return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
     }
 
-    public async Task<CategoryDTO> GetCategoryById(int id)
+    public async Task<CategoryDTO> GetCategoryById(int id, int userId)
     {
-        var category = await _categoryRepository.GetCategoryById(id);
+        var category = await _categoryRepository.GetCategoryById(id, userId);
         return _mapper.Map<CategoryDTO>(category);
     }
 
-    public async Task Remove(int id)
+    public async Task Remove(int id, int userId)
     {
-        await _categoryRepository.Remove(id);
+        await _categoryRepository.Remove(id, userId);
     }
 
-    public async Task Update(CategoryDTO categoryDTO)
+    public async Task Update(CategoryDTO categoryDTO, int userId)
     {
         var category = _mapper.Map<Category>(categoryDTO);
-        await _categoryRepository.Update(category);
+        await _categoryRepository.Update(category, userId);
     }
 }
