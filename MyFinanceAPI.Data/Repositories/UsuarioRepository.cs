@@ -37,11 +37,9 @@ namespace MyFinanceAPI.Data.Repositories
 
         public IEnumerable<Usuario> BuscarTodos()
         {
-            // Retorna todos os usuários
             return _context.Usuarios.ToList();
         }
 
-        // Implementação dos métodos do repositório, por exemplo:
         public async Task<Usuario> BuscarUsuario(string login, string senha)
         {
             var usuario = await _context.Usuarios
@@ -49,8 +47,6 @@ namespace MyFinanceAPI.Data.Repositories
 
             return usuario;
         }
-
-
 
         public void Cadastrar(Usuario entidade)
         {
@@ -65,11 +61,8 @@ namespace MyFinanceAPI.Data.Repositories
 
         public bool ValidaSeUsuarioExiste(string login, string usuarioNome)
         {
-            // Verifica se já existe um usuário com o login ou o nome de usuário fornecido
             return _context.Usuarios
                 .Any(u => u.UserName == login || u.NomeUsuario == usuarioNome);
         }
-
-        // Outros métodos necessários
     }
 }

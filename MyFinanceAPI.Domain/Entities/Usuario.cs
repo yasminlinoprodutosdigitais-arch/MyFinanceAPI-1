@@ -9,7 +9,7 @@ namespace MyFinanceAPI.Domain.Entities
         // Propriedades adicionais para o usuário
         public string NomeUsuario { get; set; }
         public bool StatusAtivo { get; set; }
-        public string Role {get; set;}
+        public string Role { get; set; }
         public DateTime CriadoEm { get; set; }
         public DateTime AtualizadoEm { get; set; }
         public Usuario()
@@ -25,20 +25,17 @@ namespace MyFinanceAPI.Domain.Entities
                DateTime criadoEm,
                DateTime atualizadoEm)
         {
-            this.UserName = userName;      // O login será o nome de usuário
-            this.Email = userName;         // O email será usado como login (caso seja necessário)
+            this.UserName = userName;
+            this.Email = userName;
             this.NomeUsuario = nomeUsuario;
-            this.Role = role; 
+            this.Role = role;
             this.StatusAtivo = statusAtivo;
             this.CriadoEm = criadoEm;
             this.AtualizadoEm = atualizadoEm;
 
-            // Aqui usamos o método SetSenhaHash para configurar a senha de forma segura
             SetSenhaHash(senha);
         }
 
-
-        // Método para configurar o hash da senha
         public void SetSenhaHash(string senha)
         {
             var passwordHasher = new PasswordHasher<Usuario>();

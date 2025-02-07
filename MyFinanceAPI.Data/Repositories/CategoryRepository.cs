@@ -25,9 +25,14 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<Category?> GetCategoryById(int id, int userId)
     {
-        return await _context.Categories
+        var category = await _context.Categories
             .Where(c => c.UserId == userId && c.Id == id)
             .FirstOrDefaultAsync();
+
+        if (category == null)
+            return null;
+
+        return category;
     }
 
     public async Task<Category?> Remove(int id, int userId)
@@ -44,14 +49,19 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<Category> Update(Category category, int userId)
     {
-        var existingCategory = await GetCategoryById(category.Id, userId) ?? throw new Exception("Category not found");
+        var existingCategory = await _context.Categories
+        .Where(c => c.UserId == userId && c.Id == category.Id).FirstOrDefaultAsync();
+        
+        if(existingCategory == null)
+            throw new KeyNotFoundException("Categoria não encontrada");
 
-        if (existingCategory != null)
-        {
-            _context.Categories.Update(category);
-            _context.SaveChanges();
-        }
+        existingCategory.Name = category.Name;
+        existingCategory.UserId = userId;
 
-        return category;
+        _context.Categories.Update(existingCategory);
+        await _context.SaveChangesAsync();
+
+        return existingCategory;
     }
+
 }

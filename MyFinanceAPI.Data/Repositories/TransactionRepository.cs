@@ -17,9 +17,22 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
 
     public async Task<Transaction> Create(Transaction transaction)
     {
-        DateTime localDate = transaction.Date; // Supondo que esta data seja local ou "Unspecified"
-        DateTime utcDate = localDate.ToUniversalTime(); // Converte para UTC
+        var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
+
+        if (!existingAccount)
+        {
+            throw new ArgumentException("Account not existing", nameof(transaction));
+        }
+
+        DateTime localDate = transaction.Date;
+        if (localDate.Kind == DateTimeKind.Unspecified)
+        {
+            localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);  // Ou UTC, se for o caso
+        }
+
+        DateTime utcDate = localDate.ToUniversalTime();
         transaction.Date = utcDate;
+
 
         await _context.Transactions.AddAsync(transaction);
         await _context.SaveChangesAsync();
@@ -27,16 +40,17 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-    public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime)
+    public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId)
     {
         return await _context.Transactions
-            .Where(c => c.Date.Month == dateTime.Month && c.Date.Year == dateTime.Year)
+            .Where(c => c.UserId == userId && c.Date.Month == dateTime.Month && c.Date.Year == dateTime.Year)
             .ToListAsync();
     }
 
-    public async Task<List<AccountGrouping>> GetTransactions()
+    public async Task<List<AccountGrouping>> GetTransactions(int userId)
     {
         var accounts = await _context.Accounts
+            .Where(a => a.UserId == userId)
             .Include(a => a.Category)             // Inclui a Categoria
             .Include(a => a.Transactions)       // Inclui os MonthlyUpdates associados
             .OrderBy(a => a.Category.Name)        // Ordena pelas categorias
@@ -71,9 +85,10 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-    public async Task<List<AccountGrouping>> GetTransactionGroupingByDate(DateTime dateTime)
+    public async Task<List<AccountGrouping>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
     {
         var accounts = await _context.Accounts
+        .Where(a => a.UserId == userId)
             .Include(a => a.Category)             // Inclui a Categoria
             .Include(a => a.Transactions)       // Inclui os Transactions associados
             .OrderBy(a => a.Category.Name)        // Ordena pelas categorias
@@ -93,7 +108,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                     Name = a.Name,
                     Value = a.Value,
                     Transactions = a.Transactions
-                    .Where(m => m.Date.Month == dateTime.Month && m.Date.Year == dateTime.Year)
+                    .Where(m => m.UserId == userId && m.Date.Month == dateTime.Month && m.Date.Year == dateTime.Year)
                     .Select(m => new Transaction
                     {
                         Id = m.Id,
@@ -110,19 +125,26 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-    public Task<IEnumerable<Transaction>> GetTransactionByCategory(int categoryid)
+    // public Task<IEnumerable<Transaction>> GetTransactionByCategory(int categoryid, int userId)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
+    public async Task<Transaction> GetTransactionById(int id, int userId)
     {
-        throw new NotImplementedException();
+        var transaction = await _context.Transactions
+            .Where(t => t.UserId == userId && t.Id == id)
+            .FirstOrDefaultAsync();
+
+        if(transaction == null)
+            throw new Exception("Nenhuma transação encontrada");
+
+        return transaction;
     }
 
-    public async Task<Transaction> GetTransactionById(int id)
+    public async Task<Transaction> Remove(int id, int userId)
     {
-        return await _context.Transactions.FirstOrDefaultAsync(c => c.Id == id);
-    }
-
-    public async Task<Transaction> Remove(int id)
-    {
-        var update = await GetTransactionById(id);
+        var update = await GetTransactionById(id, userId);
         if (update != null)
         {
             _context.Transactions.Remove(update);
@@ -132,70 +154,18 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         return update;
     }
 
-    public async Task<Transaction> Update(Transaction transaction)
+    public async Task<Transaction> Update(Transaction transaction, int userId)
     {
-        // Primeiro, obtenha o Transaction existente pelo ID
         var existingTransaction = await _context.Transactions
-            .FirstOrDefaultAsync(m => m.Id == transaction.Id);
+            .FirstOrDefaultAsync(t => t.UserId == userId && t.Id == transaction.Id) ?? throw new Exception("Update not found");
 
-        // Se não encontrar, lança uma exceção
-        if (existingTransaction == null)
-        {
-            throw new Exception("Update not found");
-        }
-
-        // Atualize as propriedades desejadas
         existingTransaction.Date = transaction.Date;
         existingTransaction.Name = transaction.Name;
         existingTransaction.Value = transaction.Value;
-        existingTransaction.Status = transaction.Status;  // Certifique-se de atualizar todas as propriedades necessárias
+        existingTransaction.Status = transaction.Status;
 
-        // Salve as mudanças no banco de dados
         await _context.SaveChangesAsync();
 
         return existingTransaction;
     }
-
-
-    // public async Task<IEnumerable<Transaction>> GetAccountByDate(DateTime dateTime)
-    // {
-    //     var dateMounth = dateTime.Month;
-    //     var dateYear = dateTime.Year;
-
-    //     var history = await _context
-    //                     .Find(t => t.Date.Month == dateMounth
-    //                         && t.Date.Year == dateYear)
-    //                     .ToListAsync();
-
-    //     return history;
-
-    // }
-
-    // public async Task<IEnumerable<Transaction>> GetTransaction()
-    // {
-    //     return await _context.Find(h => true).ToListAsync();
-    // }
-
-    // public async Task<IEnumerable<Transaction>> GetTransactionByCategory(int idCategory)
-    // {
-    //     return await _context.Find(c => c.IdCategory == idCategory).ToListAsync();
-
-    // }
-
-    // public async Task<Transaction> GetTransactionById(int id)
-    // {
-    //     return await _context.Find(t => t.Id == id).FirstOrDefaultAsync();
-    // }
-
-    // public async Task<Transaction> Remove(int id)
-    // {
-    //     var account = await _context.FindOneAndDeleteAsync(c => c.Id == id);
-    //     return account;
-    // }
-
-    // public async Task<Transaction> Update(Transaction Transaction)
-    // {
-    //     await _context.ReplaceOneAsync(t => t.Id == Transaction.Id, Transaction);
-    //     return Transaction;
-    // }
 }

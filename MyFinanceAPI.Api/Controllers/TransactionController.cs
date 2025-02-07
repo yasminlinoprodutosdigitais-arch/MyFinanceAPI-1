@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -7,60 +8,70 @@ using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Api.Controllers
 {
+    [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionService _transactionService;
+        private readonly IUserContextService _userContextService;
 
-        public TransactionController(ITransactionService transactionService)
+        public TransactionController(ITransactionService transactionService, IUserContextService userContextService)
         {
             _transactionService = transactionService;
+            _userContextService = userContextService;
         }
 
         [HttpGet("/GetTransactions")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
-            var update = await _transactionService.GetTransactions();
-            if(update is null)
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized("User not authorized");
+
+            var update = await _transactionService.GetTransactions(userId);
+            if (update is null)
                 return NotFound("");
             else
                 return Ok(update);
-                
+
         }
 
-        [HttpGet("/GetTransactionByIdCategory/{id}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByCategory(int idCategory)
-        {
-            if(idCategory == 0 || idCategory < 0)
-                return BadRequest("");
-
-            var transaction = await _transactionService.GetTransactionByCategory(idCategory);
-
-            if(transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
-        }
-
-        [HttpGet("/GetTransactionById/{id}", Name="GetUpdate")]
+        [HttpGet("/GetTransactionById/{id}", Name = "GetUpdate")]
         public async Task<ActionResult<Transaction>> GetTransactionById(int id)
         {
-            if(id == 0 || id < 0)
-                return BadRequest();
-            var update = await _transactionService.GetTransactionById(id);
+            try
+            {
+                var userId = _userContextService.GetUserIdFromClaims();
+                if (userId == null)
+                    return Unauthorized(new { message = "User not authorized" });
 
-            if(update is null)
-                return NotFound();
-            else
-                return Ok(update);
+                if (id <= 0)
+                    return BadRequest(new { message = "Invalid transaction ID." });
+
+                var transaction = await _transactionService.GetTransactionById(id, userId);
+
+                if (transaction == null)
+                    return NotFound(new { message = "Transaction not found." });
+
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
+
 
         [HttpGet("/GetTransactionByDate/{date}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date)
         {
-            var transaction = await _transactionService.GetTransactionByDate(date);
-            if(transaction is null)
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _transactionService.GetTransactionByDate(date, userId);
+            if (transaction is null)
                 return NotFound();
             else
                 return Ok(transaction);
@@ -69,8 +80,12 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetTransactionGroupingByDate/{date}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionGroupingByDate(DateTime date)
         {
-            var transaction = await _transactionService.GetTransactionGroupingByDate(date);
-            if(transaction is null)
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _transactionService.GetTransactionGroupingByDate(date, userId);
+            if (transaction is null)
                 return NotFound();
             else
                 return Ok(transaction);
@@ -79,22 +94,45 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPost("/CreateTransaction")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] TransactionDTO transactionDTO)
         {
-            await _transactionService.Add(transactionDTO);
-            return new CreatedAtRouteResult("Getupdate", new {id = transactionDTO.Id}, transactionDTO);
+            try
+            {
+                var userId = _userContextService.GetUserIdFromClaims();
+                if (userId == null)
+                    return Unauthorized("User not authorized");
+
+                await _transactionService.Add(transactionDTO, userId);
+                return new CreatedAtRouteResult("Getupdate", new { id = transactionDTO.Id }, transactionDTO);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred", details = ex.Message });
+            }
         }
 
         [HttpPut("/UpdateTransaction")]
         public async Task<ActionResult<TransactionDTO>> UpdateTransaction([FromBody] TransactionDTO transactionDTO)
         {
-            await _transactionService.Update(transactionDTO);
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized("User not authorized");
+
+            await _transactionService.Update(transactionDTO, userId);
             return transactionDTO;
         }
 
         [HttpDelete("/DeleteTransaction/{id}")]
         public async Task<ActionResult<TransactionDTO>> DeleteAccountHistory(int id)
         {
-            var transaction = await _transactionService.GetTransactionById(id);
-            await _transactionService.Delete(id);
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _transactionService.GetTransactionById(id, userId);
+            await _transactionService.Delete(id, userId);
             return transaction;
         }
     }

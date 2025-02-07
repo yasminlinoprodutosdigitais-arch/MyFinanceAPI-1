@@ -7,13 +7,13 @@ namespace MyFinanceAPI.Application.Interfaces;
 
 public interface ITransactionService
 {
-    Task<IEnumerable<AccountGroupingDTO>> GetTransactions();
-    Task<IEnumerable<TransactionDTO>> GetTransactionByCategory(int categoryId);
-    Task<TransactionDTO> GetTransactionById(int id);
-    Task<IEnumerable<TransactionDTO>> GetTransactionByDate(DateTime date);
-    Task<IEnumerable<AccountGroupingDTO>> GetTransactionGroupingByDate(DateTime date);
+    Task<IEnumerable<AccountGroupingDTO>> GetTransactions(int userId);
+    // Task<IEnumerable<TransactionDTO>> GetTransactionByCategory(int categoryId, int userId);
+    Task<TransactionDTO> GetTransactionById(int id, int userId);
+    Task<IEnumerable<TransactionDTO>> GetTransactionByDate(DateTime date, int userId);
+    Task<IEnumerable<AccountGroupingDTO>> GetTransactionGroupingByDate(DateTime date, int userId);
 
-    Task Add(TransactionDTO TransactionDTO);
-    Task Update(TransactionDTO TransactionDTO);
-    Task Delete(int id);
+    Task Add(TransactionDTO TransactionDTO, int userId);
+    Task Update(TransactionDTO TransactionDTO, int userId);
+    Task Delete(int id, int userId);
 }

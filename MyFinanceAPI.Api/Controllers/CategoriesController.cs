@@ -4,12 +4,10 @@ using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using System.Security.Claims;
-using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.WebUI.Controllers
 {
+    [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -23,12 +21,10 @@ namespace MyFinanceAPI.WebUI.Controllers
             _userContextService = userContextService;
         }
 
-        // GET: api/categories
-        [Authorize(Policy = "Admin")]
         [HttpGet("/GetCategories")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
-            int? userId = _userContextService.GetUserIdFromClaims();;
+            int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
                 return Unauthorized(new { message = "User not authorized" });
 
@@ -39,11 +35,10 @@ namespace MyFinanceAPI.WebUI.Controllers
                 return Ok(categories);
         }
 
-        [Authorize(Policy = "Admin")]
         [HttpGet("/GetCategoryById/{id}", Name = "GetCategory")]
         public async Task<ActionResult<CategoryDTO>> GetCategorybyId(int id)
         {
-            int? userId = _userContextService.GetUserIdFromClaims();;
+            int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
                 return Unauthorized(new { message = "User not authorized" });
 
@@ -54,11 +49,10 @@ namespace MyFinanceAPI.WebUI.Controllers
                 return Ok(category);
         }
 
-        [Authorize(Policy = "Admin")]
         [HttpPost("/CreateCategory")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CategoryDTO categoryDto)
         {
-            int? userId = _userContextService.GetUserIdFromClaims();;
+            int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
                 return Unauthorized(new { message = "User not authorized" });
 
@@ -69,28 +63,33 @@ namespace MyFinanceAPI.WebUI.Controllers
             return new CreatedAtRouteResult("GetCategory", new { id = categoryDto.Id }, categoryDto);
         }
 
-        [Authorize(Policy = "Admin")]
         [HttpPut("/UpdateCategory")]
         public async Task<IActionResult> UpdateCategory([FromBody] CategoryDTO categoryDto)
         {
-            int? userId = _userContextService.GetUserIdFromClaims();;
-            if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
-
-            if (categoryDto is null)
+            try
             {
-                return BadRequest();
-            }
+                int? userId = _userContextService.GetUserIdFromClaims();
+                if (userId == null)
+                    return Unauthorized(new { message = "User not authorized" });
 
-            await _categoryService.Update(categoryDto, userId.Value);
-            return Ok(categoryDto);
+                await _categoryService.Update(categoryDto, userId.Value);
+                return Ok(new { message = "Categoria atualizada com sucesso!" });
+
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new {message = "Ocorreu um erro inesperado.", details = ex.Message});
+            }
         }
 
-        [Authorize(Policy = "Admin")]
         [HttpDelete("/DeleteCategory/{id}")]
         public async Task<ActionResult<CategoryDTO>> DeleteCategory(int id)
         {
-            int? userId = _userContextService.GetUserIdFromClaims();;
+            int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
                 return Unauthorized(new { message = "User not authorized" });
 
@@ -100,15 +99,6 @@ namespace MyFinanceAPI.WebUI.Controllers
 
             await _categoryService.Remove(id, userId.Value);
             return Ok(category);
-        }
-
-        private int? GetUserIdFromClaims()
-        {
-            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdString == null || !int.TryParse(userIdString, out var userId))
-                return null;
-
-            return userId;
         }
     }
 }

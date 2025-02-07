@@ -90,9 +90,9 @@ builder.Services.AddControllers();
 // Configuração de CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowSpecificOrigins", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")  // Adicione o URL do seu frontend aqui
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -111,7 +111,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Configuração de Middleware na ordem correta
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigins");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

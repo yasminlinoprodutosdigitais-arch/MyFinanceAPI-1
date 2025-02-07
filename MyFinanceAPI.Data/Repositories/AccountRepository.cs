@@ -14,23 +14,36 @@ namespace MyFinanceAPI.Data.Repositories;
 public class AccountRepository(ContextDB context) : IAccountRepository
 {
     private readonly ContextDB _context = context;
-
     public async Task<Account> Create(Account account)
     {
-        
+       var existingCategory = await _context.Categories
+        .Where(c => c.UserId == account.UserId && c.Id == account.CategoryId).FirstOrDefaultAsync();
+
+        if(existingCategory == null)
+            throw new KeyNotFoundException("Categoria não encontrada");
+
         await _context.Accounts.AddAsync(account);
         await _context.SaveChangesAsync();
         return account;
     }
 
-    public async  Task<Account> GetAccountByCategory(int categoryId)
-    {
-        return await _context.Accounts.FirstOrDefaultAsync(c => c.Category.Id == categoryId);
+    public async Task<List<Account>>? GetAccountByCategory(int categoryId, int userId)
+    {   
+        var accounts = await _context.Accounts
+            .Where(c => c.UserId == userId && c.Category.Id == categoryId)
+            .Include(a => a.Category)  
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        if(accounts == null)
+            throw new KeyNotFoundException("Categoria não encontrada");
+
+        return accounts;
     }
 
-    public async Task<Account> Remove(int id)
+    public async Task<Account> Remove(int id, int userId)
     {
-        var account = await GetAccountById(id);
+        var account = await GetAccountById(id, userId);
         if (account != null)
         {
             _context.Accounts.Remove(account);
@@ -40,10 +53,10 @@ public class AccountRepository(ContextDB context) : IAccountRepository
         return account;
     }
 
-    public async Task<Account> Update(Account account)
+    public async Task<Account> Update(Account account, int userId)
     {
         // Carrega a categoria correspondente, se o categoryId for fornecido
-        if (account.Category != null && account.Category.Id != 0)
+        if (account.Category != null && account.Category.Id != 0 && account.UserId == userId)
         {
             var category = await _context.Categories.FindAsync(account.Category.Id);
             if (category == null)
@@ -67,14 +80,18 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     //     return accounts;
     // }
 
-    public async Task<Account?> GetAccountById(int id)
+    public async Task<Account?> GetAccountById(int id, int userId)
     {
-        return await _context.Accounts.FirstOrDefaultAsync(c => c.Id == id);
+        var account = await _context.Accounts
+            .Where(c => c.UserId == userId && c.Id == id)
+            .FirstOrDefaultAsync();
+        return account;
     }
 
-    public async Task<List<Account>>? GetAccounts()
+    public async Task<List<Account>>? GetAccounts(int userId)
     {
         var accounts = await _context.Accounts
+            .Where(a => a.UserId == userId)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
             .OrderBy(c => c.Name)
             .ToListAsync();

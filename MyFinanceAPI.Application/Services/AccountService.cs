@@ -20,38 +20,39 @@ public class AccountService : IAccountService
         _mapper = mapper;
     }
 
-    public async Task Add(AccountDTO accountDTO)
+    public async Task Add(AccountDTO accountDTO, int userId)
     {
         var account = _mapper.Map<Account>(accountDTO);
+        account.UserId = userId;
         await _accountRepository.Create(account);
     }
 
-    public async Task Update(AccountDTO accountDTO)
+    public async Task Update(AccountDTO accountDTO, int userId)
     {
         var account = _mapper.Map<Account>(accountDTO);
-        await _accountRepository.Update(account);
+        await _accountRepository.Update(account, userId);
     }
 
-    public async Task Remove(int id)
+    public async Task Remove(int id, int userId)
     {
-        await _accountRepository.Remove(id);
+        await _accountRepository.Remove(id, userId);
     }
 
-    public async Task<IEnumerable<AccountDTO>> GetAccounts()
+    public async Task<IEnumerable<AccountDTO>> GetAccounts(int userId)
     {
-        var accounts = await _accountRepository.GetAccounts();
+        var accounts = await _accountRepository.GetAccounts(userId);
         return _mapper.Map<IEnumerable<AccountDTO>>(accounts);
     }
 
-    public async Task<AccountDTO> GetAccountById(int id)
+    public async Task<AccountDTO> GetAccountById(int id, int userId)
     {
-        var account = await _accountRepository.GetAccountById(id);
+        var account = await _accountRepository.GetAccountById(id, userId);
         return _mapper.Map<AccountDTO>(account);
     }
 
-    public async Task<IEnumerable<AccountDTO>> GetAccountByCategory(int categoryId)
+    public async Task<IEnumerable<AccountDTO>> GetAccountByCategory(int categoryId, int userId)
     {
-        var accounts = await _accountRepository.GetAccountByCategory(categoryId);
+        var accounts = await _accountRepository.GetAccountByCategory(categoryId, userId);
         return _mapper.Map<IEnumerable<AccountDTO>>(accounts);
     }
 
