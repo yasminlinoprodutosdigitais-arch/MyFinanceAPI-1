@@ -17,7 +17,7 @@ namespace MyFinanceAPI.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -169,12 +169,17 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("Value")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Accounts");
                 });
@@ -195,7 +200,12 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Categories");
                 });
@@ -222,12 +232,17 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal?>("Value")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdAccount");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Transactions");
                 });
@@ -375,7 +390,26 @@ namespace MyFinanceAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transaction", b =>
@@ -385,7 +419,15 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasForeignKey("IdAccount")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Account");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Account", b =>

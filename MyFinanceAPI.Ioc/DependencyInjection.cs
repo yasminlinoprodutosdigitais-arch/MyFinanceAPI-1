@@ -16,10 +16,9 @@ namespace MyFinanceAPI.Ioc
         public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration)
         {
             // Configuração do Entity Framework Core com PostgreSQL
-            services.AddDbContext<ContextDB>(options =>
-            {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-            });
+            services.AddDbContext<ContextDB>(opt =>
+            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
 
             // Configuração da política CORS
             services.AddCors(options =>
