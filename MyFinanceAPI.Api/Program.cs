@@ -1,122 +1,101 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MyFinanceAPI.Application.Interfaces;
-using MyFinanceAPI.Application.Mapping;
-using MyFinanceAPI.Application.Services;
+
 using MyFinanceAPI.Application.Utils;
-using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
-using MyFinanceAPI.Ioc;
+using MyFinanceAPI.Ioc; // << importante
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registra os serviços no contêiner de dependências
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+// ----- IoC: registra DbContext (DefaultConnection), CORS "AllowAll",
+// AutoMapper, Services (ITokenService etc.), Repositories (IUsuarioRepository etc.)
 builder.Services.RegisterService(builder.Configuration);
+
+// ----- App settings / secrets
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("AppSettings"));
+var secretKey = builder.Configuration.GetSection("AppSettings")["SecretKey"]
+               ?? throw new Exception("Erro: SecretKey não foi carregada do appsettings.json/ENV!");
 
-// Verifica se a SecretKey está carregada corretamente
-var secretKey = builder.Configuration.GetSection("AppSettings")["SecretKey"];
-if (string.IsNullOrEmpty(secretKey))
-{
-    throw new Exception("Erro: SecretKey não foi carregada do appsettings.json!");
-}
-
-// Configuração do Identity
+// ----- Identity / Auth
 builder.Services.AddIdentity<Usuario, IdentityRole<int>>()
-    .AddEntityFrameworkStores<ContextDB>()
+    .AddEntityFrameworkStores<MyFinanceAPI.Data.Context.ContextDB>()
     .AddDefaultTokenProviders();
 
-// Configuração do Swagger com suporte a JWT
+builder.Services.AddAuthentication(o =>
+{
+    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.SaveToken = true;
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+builder.Services.AddAuthorization(o => o.AddPolicy("Admin", p => p.RequireRole("Admin")));
+
+builder.Services.AddHealthChecks();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyFinance API", Version = "v1" });
-
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Insira o token JWT no formato: Bearer {seu_token}",
+        Description = "Bearer {token}",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT"
     };
-
     c.AddSecurityDefinition("Bearer", securityScheme);
-
-    var securityRequirement = new OpenApiSecurityRequirement
-    {
-        { securityScheme, new string[] { } }
-    };
-
-    c.AddSecurityRequirement(securityRequirement);
-});
-
-// Configuração do JWT Authentication
-builder.Services.AddAuthentication(x =>
-    {
-        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(x =>
-    {
-        x.RequireHttpsMetadata = false;
-        x.SaveToken = true;
-        x.TokenValidationParameters = new TokenValidationParameters
-        {
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy =>
-    {
-        policy.RequireRole("Admin");
-    });
-});
-
-// Configuração do AutoMapper
-builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
-
-// Adiciona os controladores
-builder.Services.AddControllers();
-
-// Configuração de CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigins", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")  // Adicione o URL do seu frontend aqui
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement { { securityScheme, Array.Empty<string>() } });
 });
 
 var app = builder.Build();
 
-// Habilita o Swagger se estiver em ambiente de desenvolvimento
-if (app.Environment.IsDevelopment())
+// ----- Swagger em Dev OU via flag
+var enableSwagger = app.Environment.IsDevelopment()
+    || builder.Configuration.GetValue<bool>("Swagger:Enabled")
+    || builder.Configuration.GetValue<bool>("Swagger__Enabled");
+if (enableSwagger)
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyFinance API v1");
-    });
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyFinance API v1"));
 }
 
-// Configuração de Middleware na ordem correta
-app.UseCors("AllowSpecificOrigins");
-app.UseHttpsRedirection();
+// ----- CORS: use a policy registrada pelo IoC ("AllowAll") OU crie outra e use só uma.
+// Se quiser controlar por origem via env, crie a policy lá; aqui aplique uma única policy:
+app.UseCors("AllowAll");
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// (Opcional) OPTIONS catch-all se quiser redundância
+app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.NoContent())
+   .RequireCors("AllowAll");
+
+// 2) expor SEM auth
+app.UseHealthChecks("/healthz");
+
+// opcional para teste rápido:
+app.MapGet("/", () => Results.Ok("MyFinance API live v3")).AllowAnonymous();
 
 app.Run();

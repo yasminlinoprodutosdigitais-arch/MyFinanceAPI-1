@@ -10,6 +10,6 @@ public interface ICategoryService
     Task Add(CategoryDTO categoryDTO, int userId);
     Task<IEnumerable<CategoryDTO>> GetCategories(int userId);
     Task<CategoryDTO> GetCategoryById(int id, int userId);
-    Task Update(CategoryDTO categoryDTO, int userId);
+    Task<bool> UpdateAsync(CategoryDTO dto, int userId);
     Task Remove(int id, int userId);
 }

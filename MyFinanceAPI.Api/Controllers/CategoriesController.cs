@@ -26,7 +26,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         {
             int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
+                return Unauthorized(new { message = "Usuário não autorizado!" });
 
             var categories = await _categoryService.GetCategories(userId.Value);
             if (categories is null)
@@ -40,7 +40,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         {
             int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
+                return Unauthorized(new { message = "Usuário não autorizado!" });
 
             var category = await _categoryService.GetCategoryById(id, userId.Value);
             if (category is null)
@@ -54,7 +54,7 @@ namespace MyFinanceAPI.WebUI.Controllers
         {
             int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
+                return Unauthorized(new { message = "Usuário não autorizado!" });
 
             if (categoryDto is null)
                 return BadRequest("Invalid Data");
@@ -70,11 +70,13 @@ namespace MyFinanceAPI.WebUI.Controllers
             {
                 int? userId = _userContextService.GetUserIdFromClaims();
                 if (userId == null)
-                    return Unauthorized(new { message = "User not authorized" });
+                    return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                await _categoryService.Update(categoryDto, userId.Value);
+                var ok = await _categoryService.UpdateAsync(categoryDto, userId.Value);
+                if (!ok)
+                    return NotFound(new { message = "Categoria não encontrada ou sem alterações." });
+
                 return Ok(new { message = "Categoria atualizada com sucesso!" });
-
             }
             catch (KeyNotFoundException ex)
             {
@@ -82,20 +84,21 @@ namespace MyFinanceAPI.WebUI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new {message = "Ocorreu um erro inesperado.", details = ex.Message});
+                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
             }
         }
+
 
         [HttpDelete("/DeleteCategory/{id}")]
         public async Task<ActionResult<CategoryDTO>> DeleteCategory(int id)
         {
             int? userId = _userContextService.GetUserIdFromClaims(); ;
             if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
+                return Unauthorized(new { message = "Usuário não autorizado!" });
 
             var category = await _categoryService.GetCategoryById(id, userId.Value);
             if (category is null)
-                return NotFound("Category not found");
+                return NotFound("Categoria não encontrada!");
 
             await _categoryService.Remove(id, userId.Value);
             return Ok(category);

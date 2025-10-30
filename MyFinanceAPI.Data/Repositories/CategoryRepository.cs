@@ -47,21 +47,21 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
         return category;
     }
 
-    public async Task<Category> Update(Category category, int userId)
+    public async Task<Category?> FindByIdForUserAsync(int id, int userId)
     {
-        var existingCategory = await _context.Categories
-        .Where(c => c.UserId == userId && c.Id == category.Id).FirstOrDefaultAsync();
-        
-        if(existingCategory == null)
-            throw new KeyNotFoundException("Categoria não encontrada");
+        // tracking ligado (vamos editar a entidade)
+        return await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+    }
 
-        existingCategory.Name = category.Name;
-        existingCategory.UserId = userId;
+    public async Task<bool> UpdateAsync(Category entity)
+    {
+        // Se a entidade veio do contexto (tracked), nem precisa do Update().
+        // Mas não faz mal; o EF vai marcar modificado.
+        _context.Categories.Update(entity);
 
-        _context.Categories.Update(existingCategory);
-        await _context.SaveChangesAsync();
-
-        return existingCategory;
+        var changes = await _context.SaveChangesAsync();
+        return changes > 0;
     }
 
 }

@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 var userId = _userContextService.GetUserIdFromClaims();
                 if (userId == null)
-                    return Unauthorized("User not authorized");
+                    return Unauthorized("Usuário não autorizado!");
 
                 if (accountDTO is null)
-                    return BadRequest("Invalid Data");
+                    return BadRequest("Dados inválidos.");
 
                 await _accountService.Add(accountDTO, userId);
                 return new CreatedAtRouteResult("GetCategory", new { id = accountDTO.Id }, accountDTO);
@@ -120,16 +120,23 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpDelete("/DeleteAccount/{id}")]
         public async Task<ActionResult<AccountDTO>> DeleteAccount(int id)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
-                return Unauthorized(new { message = "User not authorized" });
+            try 
+            {
+                var userId = _userContextService.GetUserIdFromClaims();
+                    if (userId == null)
+                return Unauthorized("User not authorized");
 
-            var account = await _accountService.GetAccountById(id, userId);
-            if(account == null)
-                return NotFound(new {message = "Conta não encontrada"});
+                var account = await _accountService.GetAccountById(id, userId);
+                if(account == null)
+                    return NotFound(new {message = "Conta não encontrada"});
 
-            await _accountService.Remove(id, userId);
-            return Ok(account);
+                await _accountService.Remove(id, userId);
+                return Ok(account);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao deletar conta.", error = ex.Message, detail = ex.StackTrace });
+            }
         }
     }
 }
