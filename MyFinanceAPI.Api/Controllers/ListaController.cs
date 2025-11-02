@@ -31,7 +31,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == null)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                var Listas = await _ListaService.GetListas(userId.Value);
+                var Listas = await _ListaService.GetLista(userId.Value);
                 return Ok(Listas);
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var Lista = await _ListaService.GetListaById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (ListaDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<ListaDTO>> UpdateLista(ListaDTO ListaDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _ListaService.Update(ListaDTO, userId);
+            await _ListaService.UpdateAsync(ListaDTO, userId);
             return ListaDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var Lista = await _ListaService.GetListaById(id, userId);

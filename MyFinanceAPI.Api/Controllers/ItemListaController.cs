@@ -13,10 +13,10 @@ namespace MyFinanceAPI.Api.Controllers
     [ApiController]
     public class ItemListaController : ControllerBase
     {
-        private readonly IItemListaervice _ItemListaervice;
+        private readonly IItemListaService _ItemListaervice;
         private readonly IUserContextService _userContextService;
 
-        public ItemListaController(IItemListaervice ItemListaervice, IUserContextService userContextService)
+        public ItemListaController(IItemListaService ItemListaervice, IUserContextService userContextService)
         {
             _ItemListaervice = ItemListaervice;
             _userContextService = userContextService;
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var ItemLista = await _ItemListaervice.GetItemListaById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (ItemListaDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<ItemListaDTO>> UpdateItemLista(ItemListaDTO ItemListaDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _ItemListaervice.Update(ItemListaDTO, userId);
+            await _ItemListaervice.UpdateAsync(ItemListaDTO, userId);
             return ItemListaDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var ItemLista = await _ItemListaervice.GetItemListaById(id, userId);

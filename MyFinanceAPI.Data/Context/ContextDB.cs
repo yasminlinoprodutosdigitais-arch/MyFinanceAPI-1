@@ -10,6 +10,12 @@ public class ContextDB : IdentityDbContext<Usuario, IdentityRole<int>, int>
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<Banco> Banco { get; set; }
+    public DbSet<Lista> Lista { get; set; }
+    public DbSet<ItemLista> ItemLista { get; set; }
+    public DbSet<MovimentacaoDiaria> MovimentacaoDiaria { get; set; }
+    public DbSet<TipoCartao> TipoCartao { get; set; }
+    public DbSet<TipoMovimentacao> TipoMovimentacao { get; set; }
 
     public ContextDB(DbContextOptions<ContextDB> options) : base(options) { }
 

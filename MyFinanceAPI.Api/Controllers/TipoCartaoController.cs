@@ -28,7 +28,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
                 var TipoCartao = await _TipoCartaoService.GetTipoCartao(userId.Value);
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var TipoCartao = await _TipoCartaoService.GetTipoCartaoById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (TipoCartaoDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<TipoCartaoDTO>> UpdateTipoCartao(TipoCartaoDTO TipoCartaoDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _TipoCartaoService.Update(TipoCartaoDTO, userId);
+            await _TipoCartaoService.UpdateAsync(TipoCartaoDTO, userId);
             return TipoCartaoDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var TipoCartao = await _TipoCartaoService.GetTipoCartaoById(id, userId);

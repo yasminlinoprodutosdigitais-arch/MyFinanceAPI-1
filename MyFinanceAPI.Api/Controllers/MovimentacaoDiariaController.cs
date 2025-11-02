@@ -28,7 +28,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
                 var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiaria(userId.Value);
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (MovimentacaoDiariaDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<MovimentacaoDiariaDTO>> UpdateMovimentacaoDiaria(MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _MovimentacaoDiariaService.Update(MovimentacaoDiariaDTO, userId);
+            await _MovimentacaoDiariaService.UpdateAsync(MovimentacaoDiariaDTO, userId);
             return MovimentacaoDiariaDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);

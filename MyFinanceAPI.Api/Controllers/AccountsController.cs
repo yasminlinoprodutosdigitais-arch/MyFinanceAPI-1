@@ -28,7 +28,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized(new { message = "User not authorized" });
 
                 var accounts = await _accountService.GetAccounts(userId.Value);
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("User not authorized");
 
                 var account = await _accountService.GetAccountById(id, userId);
@@ -91,7 +91,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (accountDTO is null)
@@ -110,7 +110,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<AccountDTO>> UpdateAccount(AccountDTO accountDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             await _accountService.Update(accountDTO, userId);
@@ -123,7 +123,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("User not authorized");
 
                 var account = await _accountService.GetAccountById(id, userId);

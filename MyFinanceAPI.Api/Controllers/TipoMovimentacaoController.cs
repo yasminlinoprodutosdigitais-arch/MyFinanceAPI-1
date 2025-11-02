@@ -28,7 +28,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
                 var TipoMovimentacao = await _TipoMovimentacaoService.GetTipoMovimentacao(userId.Value);
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var TipoMovimentacao = await _TipoMovimentacaoService.GetTipoMovimentacaoById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (TipoMovimentacaoDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<TipoMovimentacaoDTO>> UpdateTipoMovimentacao(TipoMovimentacaoDTO TipoMovimentacaoDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _TipoMovimentacaoService.Update(TipoMovimentacaoDTO, userId);
+            await _TipoMovimentacaoService.UpdateAsync(TipoMovimentacaoDTO, userId);
             return TipoMovimentacaoDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var TipoMovimentacao = await _TipoMovimentacaoService.GetTipoMovimentacaoById(id, userId);

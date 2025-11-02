@@ -31,7 +31,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == null)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                var Bancos = await _BancoService.GetBancos(userId.Value);
+                var Bancos = await _BancoService.GetBanco(userId.Value);
                 return Ok(Bancos);
             }
             catch (Exception ex)
@@ -47,7 +47,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 var Banco = await _BancoService.GetBancoById(id, userId);
@@ -73,7 +73,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
                 if (BancoDTO is null)
@@ -92,10 +92,10 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<BancoDTO>> UpdateBanco(BancoDTO BancoDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _BancoService.Update(BancoDTO, userId);
+            await _BancoService.UpdateAsync(BancoDTO, userId);
             return BancoDTO;
         }
 
@@ -105,7 +105,7 @@ namespace MyFinanceAPI.Api.Controllers
             try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == null)
+                    if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
                 var Banco = await _BancoService.GetBancoById(id, userId);

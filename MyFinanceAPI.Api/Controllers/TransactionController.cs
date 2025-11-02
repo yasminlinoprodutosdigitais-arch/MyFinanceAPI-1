@@ -26,7 +26,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             var update = await _transactionService.GetTransactions(userId);
@@ -43,7 +43,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized(new { message = "User not authorized" });
 
                 if (id <= 0)
@@ -67,7 +67,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             var transaction = await _transactionService.GetTransactionByDate(date, userId);
@@ -81,7 +81,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionGroupingByDate(DateTime date)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             var transaction = await _transactionService.GetTransactionGroupingByDate(date, userId);
@@ -97,7 +97,7 @@ namespace MyFinanceAPI.Api.Controllers
             try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
+                if (userId == 0)
                     return Unauthorized("User not authorized");
 
                 await _transactionService.Add(transactionDTO, userId);
@@ -117,7 +117,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<TransactionDTO>> UpdateTransaction([FromBody] TransactionDTO transactionDTO)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             await _transactionService.Update(transactionDTO, userId);
@@ -128,7 +128,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<TransactionDTO>> DeleteAccountHistory(int id)
         {
             var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == null)
+            if (userId == 0)
                 return Unauthorized("User not authorized");
 
             var transaction = await _transactionService.GetTransactionById(id, userId);
