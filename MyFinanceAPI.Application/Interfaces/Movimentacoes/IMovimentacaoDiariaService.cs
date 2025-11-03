@@ -9,6 +9,7 @@ public interface IMovimentacaoDiariaService
 {
     Task Add(MovimentacaoDiariaDTO MovimentacaoDiariaDTO, int userId);
     Task<IEnumerable<MovimentacaoDiariaDTO>> GetMovimentacaoDiaria(int userId);
+    Task<IEnumerable<MovimentacaoDiariaDTO>> GetMovimentacaoByDate( DateTime date, int userId);
     Task<MovimentacaoDiariaDTO> GetMovimentacaoDiariaById(int id, int userId);
     Task<bool> UpdateAsync(MovimentacaoDiariaDTO dto, int userId);
     Task Remove(int id, int userId);

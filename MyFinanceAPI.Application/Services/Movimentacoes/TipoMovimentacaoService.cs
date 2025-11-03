@@ -12,13 +12,11 @@ namespace MyFinanceAPI.Application.Services;
 public class TipoMovimentacaoService : ITipoMovimentacaoService
 {
     private readonly ITipoMovimentacaoRepository _tipoMovimentacaoRepository;
-    private readonly IAccountRepository _accountRepository;
     private readonly IMapper _mapper;
 
-    public TipoMovimentacaoService(ITipoMovimentacaoRepository TipoMovimentacaoRepository, IAccountRepository accountRepository, IMapper mapper)
+    public TipoMovimentacaoService(ITipoMovimentacaoRepository TipoMovimentacaoRepository, IMapper mapper)
     {
         _tipoMovimentacaoRepository = TipoMovimentacaoRepository;
-        _accountRepository = accountRepository;
         _mapper = mapper;
     }
     public async Task Add(TipoMovimentacaoDTO TipoMovimentacaoDTO, int userId)
@@ -47,8 +45,8 @@ public class TipoMovimentacaoService : ITipoMovimentacaoService
 
     public async Task<bool> UpdateAsync(TipoMovimentacaoDTO dto, int userId)
     {   
-        var account = _mapper.Map<Account>(dto);
-        await _accountRepository.Update(account, userId);
+        var tipoMovimentacao = _mapper.Map<TipoMovimentacao>(dto);
+        await _tipoMovimentacaoRepository.UpdateAsync(tipoMovimentacao, userId);
         return true;
     }
 

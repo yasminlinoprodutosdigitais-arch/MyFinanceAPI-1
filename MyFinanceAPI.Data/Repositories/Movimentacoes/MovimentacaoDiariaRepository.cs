@@ -35,6 +35,17 @@ public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiar
         return MovimentacaoDiaria;
     }
 
+    
+    public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoByDate(DateTime dateTime, int userId)
+    {
+        return await _context.MovimentacaoDiaria
+            .Include(m => m.Banco)
+            .Include(m => m.TipoCartao)
+            .Include(m => m.TipoMovimentacao)
+            .Where(c => c.UserId == userId && c.DataMovimentacao.Month == dateTime.Month && c.DataMovimentacao.Year == dateTime.Year)
+            .ToListAsync();
+    }
+
     public async Task<MovimentacaoDiaria?> Remove(int id, int userId)
     {
         var MovimentacaoDiaria = await GetMovimentacaoDiariaById(id, userId);
@@ -77,10 +88,14 @@ public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiar
     public async Task<List<MovimentacaoDiaria>>? GetMovimentacaoDiaria(int userId)
     {
         var movimentacoesDiarias = await _context.MovimentacaoDiaria
+            .Include(m => m.Banco)
+            .Include(m => m.TipoCartao)
+            .Include(m => m.TipoMovimentacao)
            .Where(a => a.UserId == userId)
            .OrderBy(c => c.DataMovimentacao)
            .ToListAsync();
 
         return movimentacoesDiarias;
     }
+
 }

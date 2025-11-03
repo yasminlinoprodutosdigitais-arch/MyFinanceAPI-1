@@ -12,13 +12,11 @@ namespace MyFinanceAPI.Application.Services;
 public class BancoService : IBancoService
 {
     private readonly IBancoRepository _bancoRepository;
-    private readonly IAccountRepository _accountRepository;
     private readonly IMapper _mapper;
 
-    public BancoService(IBancoRepository BancoRepository, IAccountRepository accountRepository, IMapper mapper)
+    public BancoService(IBancoRepository BancoRepository, IMapper mapper)
     {
         _bancoRepository = BancoRepository;
-        _accountRepository = accountRepository;
         _mapper = mapper;
     }
     public async Task Add(BancoDTO BancoDTO, int userId)
@@ -47,8 +45,8 @@ public class BancoService : IBancoService
 
     public async Task<bool> UpdateAsync(BancoDTO dto, int userId)
     {   
-        var account = _mapper.Map<Account>(dto);
-        await _accountRepository.Update(account, userId);
+        var banco = _mapper.Map<Banco>(dto);
+        await _bancoRepository.UpdateAsync(banco, userId);
         return true;
     }
 

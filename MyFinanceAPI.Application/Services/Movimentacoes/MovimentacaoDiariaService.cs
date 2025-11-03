@@ -40,6 +40,13 @@ public class MovimentacaoDiariaService : IMovimentacaoDiariaService
         return _mapper.Map<MovimentacaoDiariaDTO>(MovimentacaoDiaria);
     }
 
+    
+    public async Task<IEnumerable<MovimentacaoDiariaDTO>> GetMovimentacaoByDate(DateTime date, int userId)
+    {
+        var Transaction = await _movimentacaoDiariaRepository.GetMovimentacaoByDate(date, userId);
+        return _mapper.Map<IEnumerable<MovimentacaoDiariaDTO>>(Transaction);
+    }
+
     public async Task Remove(int id, int userId)
     {
         await _movimentacaoDiariaRepository.Remove(id, userId);

@@ -12,13 +12,11 @@ namespace MyFinanceAPI.Application.Services;
 public class TipoCartaoService : ITipoCartaoService
 {
     private readonly ITipoCartaoRepository _tipoCartaoRepository;
-    private readonly IAccountRepository _accountRepository;
     private readonly IMapper _mapper;
 
-    public TipoCartaoService(ITipoCartaoRepository TipoCartaoRepository, IAccountRepository accountRepository, IMapper mapper)
+    public TipoCartaoService(ITipoCartaoRepository TipoCartaoRepository, IMapper mapper)
     {
         _tipoCartaoRepository = TipoCartaoRepository;
-        _accountRepository = accountRepository;
         _mapper = mapper;
     }
     public async Task Add(TipoCartaoDTO TipoCartaoDTO, int userId)
@@ -47,8 +45,8 @@ public class TipoCartaoService : ITipoCartaoService
 
     public async Task<bool> UpdateAsync(TipoCartaoDTO dto, int userId)
     {   
-        var account = _mapper.Map<Account>(dto);
-        await _accountRepository.Update(account, userId);
+        var tipoCartao = _mapper.Map<TipoCartao>(dto);
+        await _tipoCartaoRepository.UpdateAsync(tipoCartao, userId);
         return true;
     }
 

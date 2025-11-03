@@ -91,26 +91,36 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPut("/UpdateBanco")]
         public async Task<ActionResult<BancoDTO>> UpdateBanco(BancoDTO BancoDTO)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            try
+            {
+                var userId = _userContextService.GetUserIdFromClaims();
+                if (userId == 0)
+                    return Unauthorized("Usuário não autorizado!");
 
-            await _BancoService.UpdateAsync(BancoDTO, userId);
-            return BancoDTO;
+                if (BancoDTO is null)
+                    return BadRequest("Dados inválidos.");
+
+                await _BancoService.UpdateAsync(BancoDTO, userId);
+                return BancoDTO;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("/DeleteBanco/{id}")]
         public async Task<ActionResult<BancoDTO>> DeleteBanco(int id)
         {
-            try 
+            try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+                if (userId == 0)
+                    return Unauthorized("Usuário não autorizado!");
 
                 var Banco = await _BancoService.GetBancoById(id, userId);
-                if(Banco == null)
-                    return NotFound(new {message = "Banco não encontrado."});
+                if (Banco == null)
+                    return NotFound(new { message = "Banco não encontrado." });
 
                 await _BancoService.Remove(id, userId);
                 return Ok(Banco);

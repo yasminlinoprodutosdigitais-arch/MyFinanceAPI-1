@@ -91,26 +91,34 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPut("/UpdateTipoCartao")]
         public async Task<ActionResult<TipoCartaoDTO>> UpdateTipoCartao(TipoCartaoDTO TipoCartaoDTO)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            try
+            {
 
-            await _TipoCartaoService.UpdateAsync(TipoCartaoDTO, userId);
-            return TipoCartaoDTO;
+                var userId = _userContextService.GetUserIdFromClaims();
+                if (userId == 0)
+                    return Unauthorized("Usuário não autorizado!");
+
+                await _TipoCartaoService.UpdateAsync(TipoCartaoDTO, userId);
+                return TipoCartaoDTO;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao atualizar TipoCartao.", error = ex.Message });
+            }
         }
 
         [HttpDelete("/DeleteTipoCartao/{id}")]
         public async Task<ActionResult<TipoCartaoDTO>> DeleteTipoCartao(int id)
         {
-            try 
+            try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+                if (userId == 0)
+                    return Unauthorized("Usuário não autorizado!");
 
                 var TipoCartao = await _TipoCartaoService.GetTipoCartaoById(id, userId);
-                if(TipoCartao == null)
-                    return NotFound(new {message = "TipoCartao não encontrada."});
+                if (TipoCartao == null)
+                    return NotFound(new { message = "TipoCartao não encontrada." });
 
                 await _TipoCartaoService.Remove(id, userId);
                 return Ok(TipoCartao);

@@ -13,12 +13,12 @@ namespace MyFinanceAPI.Api.Controllers
     [ApiController]
     public class MovimentacaoDiariaController : ControllerBase
     {
-        private readonly IMovimentacaoDiariaService _MovimentacaoDiariaService;
+        private readonly IMovimentacaoDiariaService _movimentacaoDiariaService;
         private readonly IUserContextService _userContextService;
 
         public MovimentacaoDiariaController(IMovimentacaoDiariaService MovimentacaoDiariaService, IUserContextService userContextService)
         {
-            _MovimentacaoDiariaService = MovimentacaoDiariaService;
+            _movimentacaoDiariaService = MovimentacaoDiariaService;
             _userContextService = userContextService;
         }
 
@@ -31,7 +31,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiaria(userId.Value);
+                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiaria(userId.Value);
                 return Ok(MovimentacaoDiaria);
             }
             catch (Exception ex)
@@ -50,7 +50,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
-                var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
+                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
                 if (MovimentacaoDiaria is null)
                     return NotFound("MovimentacaoDiaria não encontrada!");
                 else
@@ -67,6 +67,21 @@ namespace MyFinanceAPI.Api.Controllers
             }
         }
 
+        
+        [HttpGet("/GetMovimentacaoDiariaByDate/{date}")]
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetMovimentacaoByDate(DateTime date)
+        {
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == 0)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _movimentacaoDiariaService.GetMovimentacaoByDate(date, userId);
+            if (transaction is null)
+                return NotFound();
+            else
+                return Ok(transaction);
+        }
+
         [HttpPost("/CreateMovimentacaoDiaria")]
         public async Task<ActionResult> CreateMovimentacaoDiaria([FromBody] MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
         {
@@ -79,7 +94,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (MovimentacaoDiariaDTO is null)
                     return BadRequest("Dados inválidos.");
 
-                await _MovimentacaoDiariaService.Add(MovimentacaoDiariaDTO, userId);
+                await _movimentacaoDiariaService.Add(MovimentacaoDiariaDTO, userId);
                 return Ok("MovimentacaoDiaria criada com sucesso!");
             }
             catch (KeyNotFoundException ex)
@@ -95,7 +110,7 @@ namespace MyFinanceAPI.Api.Controllers
             if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-            await _MovimentacaoDiariaService.UpdateAsync(MovimentacaoDiariaDTO, userId);
+            await _movimentacaoDiariaService.UpdateAsync(MovimentacaoDiariaDTO, userId);
             return MovimentacaoDiariaDTO;
         }
 
@@ -108,11 +123,11 @@ namespace MyFinanceAPI.Api.Controllers
                     if (userId == 0)
                 return Unauthorized("Usuário não autorizado!");
 
-                var MovimentacaoDiaria = await _MovimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
+                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
                 if(MovimentacaoDiaria == null)
                     return NotFound(new {message = "MovimentacaoDiaria não encontrada."});
 
-                await _MovimentacaoDiariaService.Remove(id, userId);
+                await _movimentacaoDiariaService.Remove(id, userId);
                 return Ok(MovimentacaoDiaria);
             }
             catch (Exception ex)

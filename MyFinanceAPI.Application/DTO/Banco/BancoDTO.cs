@@ -15,8 +15,7 @@ public class BancoDTO
     public decimal? SaldoInicial { get; set; }
     public bool Ativo { get; set; }
 
-    public TipoCartao tipoCartao { get; set; }
-
+    public TipoCartao? TipoCartao { get; set; }
 
     public BancoDTO() { } 
 
