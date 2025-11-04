@@ -35,7 +35,7 @@ public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiar
         return MovimentacaoDiaria;
     }
 
-    
+
     public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoByDate(DateTime dateTime, int userId)
     {
         return await _context.MovimentacaoDiaria
@@ -96,6 +96,17 @@ public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiar
            .ToListAsync();
 
         return movimentacoesDiarias;
+    }
+
+    public async Task<decimal> GetValorLancadoAnteriormente(int id, int userId)
+    {
+        var ultimoValor = await _context.MovimentacaoDiaria
+            .Where(c => c.Id == id && c.UserId == userId)
+            .OrderByDescending(c => c.DataMovimentacao)
+            .Select(c => c.Valor)               
+            .FirstOrDefaultAsync();             
+
+        return ultimoValor;
     }
 
 }

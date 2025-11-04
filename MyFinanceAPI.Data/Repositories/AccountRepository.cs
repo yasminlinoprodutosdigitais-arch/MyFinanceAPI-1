@@ -14,9 +14,6 @@ namespace MyFinanceAPI.Data.Repositories;
 public class AccountRepository(ContextDB context) : IAccountRepository
 {
     private readonly ContextDB _context = context;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly IAccountRepository _accountRepository;
-
     public async Task<Account> Create(Account account)
     {
         var existingCategory = await _context.Categories

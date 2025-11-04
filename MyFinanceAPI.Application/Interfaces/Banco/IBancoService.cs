@@ -11,5 +11,6 @@ public interface IBancoService
     Task<IEnumerable<BancoDTO>> GetBanco(int userId);
     Task<BancoDTO> GetBancoById(int id, int userId);
     Task<bool> UpdateAsync(BancoDTO dto, int userId);
+    Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId);
     Task Remove(int id, int userId);
 }

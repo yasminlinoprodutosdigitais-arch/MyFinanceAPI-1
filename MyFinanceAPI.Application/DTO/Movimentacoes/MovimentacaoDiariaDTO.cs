@@ -9,10 +9,12 @@ public class MovimentacaoDiariaDTO
 {
     public int Id { get; set; }
     public DateOnly DataMovimentacao { get; set; }
-    public int? BancoId { get; set; }
+    public int BancoId { get; set; }
     public int? TipoCartaoId { get; set; }
     public int TipoMovimentacaoId { get; set; }
     public decimal Valor { get; set; }
+    public string? Descricao { get; set; }
+    public string TipoLancamento { get; set; }
 
     public Banco? Banco { get; set; }  
     public TipoCartao? TipoCartao { get; set; } 
@@ -20,16 +22,18 @@ public class MovimentacaoDiariaDTO
         
     public MovimentacaoDiariaDTO() { } 
 
-    public MovimentacaoDiariaDTO(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor)
+    public MovimentacaoDiariaDTO(DateOnly dataMovimentacao, int bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string? descricao, string tipoLancamento)
     {
         DataMovimentacao = dataMovimentacao;
         BancoId = bancoId;
         TipoCartaoId = tipoCartaoId;
         TipoMovimentacaoId = tipoMovimentacaoId;
         Valor = valor;
+        Descricao = descricao;
+        TipoLancamento = tipoLancamento;
     }
 
-    public MovimentacaoDiariaDTO(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor)
+    public MovimentacaoDiariaDTO(int id, DateOnly dataMovimentacao, int bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string? descricao, string tipoLancamento)
     {
         Id = id;
         DataMovimentacao = dataMovimentacao;
@@ -37,6 +41,8 @@ public class MovimentacaoDiariaDTO
         TipoCartaoId = tipoCartaoId;
         TipoMovimentacaoId = tipoMovimentacaoId;
         Valor = valor;
+        Descricao = descricao;
+        TipoLancamento = tipoLancamento;
     }
 
 }

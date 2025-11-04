@@ -10,6 +10,7 @@ public interface IMovimentacaoDiariaRepository
     Task<List<MovimentacaoDiaria>>? GetMovimentacaoDiaria(int userId);
     Task<MovimentacaoDiaria> GetMovimentacaoDiariaById(int id, int userId);
     Task<IEnumerable<MovimentacaoDiaria>>? GetMovimentacaoByDate(DateTime date, int userId);
+    Task<decimal> GetValorLancadoAnteriormente(int id, int userId);
     Task<MovimentacaoDiaria> Create(MovimentacaoDiaria MovimentacaoDiaria);
     Task<bool> UpdateAsync(MovimentacaoDiaria MovimentacaoDiaria, int userId);
     Task<MovimentacaoDiaria?> Remove(int id, int userId);

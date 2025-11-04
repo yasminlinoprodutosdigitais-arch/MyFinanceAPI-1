@@ -74,6 +74,22 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         return true;
     }
 
+    public async Task<bool> UpdateSaldo(int bancoId, decimal SaldoAtual, int userId)
+    {
+        var existingBanco = await _context.Banco
+            .FirstOrDefaultAsync(a => a.Id == bancoId && a.UserId == userId);
+
+        if (existingBanco == null)
+        {
+            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
+        }
+
+        existingBanco.SaldoInicial = SaldoAtual;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task<List<Banco>>? GetBancos(int userId)
     {
         var movimentacoesDiarias = await _context.Banco

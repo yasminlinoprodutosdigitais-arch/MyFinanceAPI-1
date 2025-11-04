@@ -12,6 +12,8 @@ public class MovimentacaoDiaria : BaseEntity
     public int? TipoCartaoId { get; set; }
     public int TipoMovimentacaoId { get; set; }
     public decimal Valor { get; set; }
+    public string TipoLancamento { get; set; }
+    public string? Descricao { get; set; }
 
     public Banco? Banco { get; set; }  
     public TipoCartao? TipoCartao { get; set; } 
@@ -19,16 +21,18 @@ public class MovimentacaoDiaria : BaseEntity
         
     public MovimentacaoDiaria() { } 
 
-    public MovimentacaoDiaria(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor)
+    public MovimentacaoDiaria(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao)
     {
         DataMovimentacao = dataMovimentacao;
         BancoId = bancoId;
         TipoCartaoId = tipoCartaoId;
         TipoMovimentacaoId = tipoMovimentacaoId;
         Valor = valor;
+        TipoLancamento = tipoLancamento;
+        Descricao = descricao;
     }
 
-    public MovimentacaoDiaria(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor)
+    public MovimentacaoDiaria(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao)
     {
         Id = id;
         DataMovimentacao = dataMovimentacao;
@@ -36,6 +40,8 @@ public class MovimentacaoDiaria : BaseEntity
         TipoCartaoId = tipoCartaoId;
         TipoMovimentacaoId = tipoMovimentacaoId;
         Valor = valor;
+        TipoLancamento = tipoLancamento;
+        Descricao = descricao;
     }
 
 }

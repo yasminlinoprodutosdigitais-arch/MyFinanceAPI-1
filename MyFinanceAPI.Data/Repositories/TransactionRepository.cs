@@ -91,7 +91,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         .Where(a => a.UserId == userId)
             .Include(a => a.Category)             // Inclui a Categoria
             .Include(a => a.Transactions)       // Inclui os Transactions associados
-            .OrderBy(a => a.Category.Name)        // Ordena pelas categorias
+            .OrderBy(a => a.Name)        // Ordena pelas categorias
             .ToListAsync();                       // Carrega todos os dados necessários
 
         var groupedAccounts = accounts
@@ -149,7 +149,8 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         {
             _context.Transactions.Remove(update);
             _context.SaveChanges();
-        }
+        }else
+            throw new Exception("Nenhuma transação encontrada");
 
         return update;
     }

@@ -11,5 +11,6 @@ public interface IBancoRepository
     Task<Banco> GetBancoById(int id, int userId);
     Task<Banco> Create(Banco Banco);
     Task<bool> UpdateAsync(Banco Banco, int userId);
+    Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId);
     Task<Banco?> Remove(int id, int userId);
 }

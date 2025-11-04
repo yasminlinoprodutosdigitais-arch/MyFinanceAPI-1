@@ -49,5 +49,11 @@ public class BancoService : IBancoService
         await _bancoRepository.UpdateAsync(banco, userId);
         return true;
     }
+  
+    public async Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId)
+    {   
+        await _bancoRepository.UpdateSaldo(bancoId, saldoAtual , userId);
+        return true;
+    }
 
 }
