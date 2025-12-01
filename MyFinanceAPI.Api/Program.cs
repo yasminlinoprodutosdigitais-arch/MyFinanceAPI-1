@@ -11,8 +11,8 @@ using MyFinanceAPI.Ioc; // << importante
 var builder = WebApplication.CreateBuilder(args);
 
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+// var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://localhost:5034");
 
 // ----- IoC: registra DbContext (DefaultConnection), CORS "AllowAll",
 // AutoMapper, Services (ITokenService etc.), Repositories (IUsuarioRepository etc.)

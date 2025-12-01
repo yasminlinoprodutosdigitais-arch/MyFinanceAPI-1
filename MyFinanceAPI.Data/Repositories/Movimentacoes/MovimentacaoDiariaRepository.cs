@@ -13,7 +13,7 @@ public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiar
     public async Task<MovimentacaoDiaria> Create(MovimentacaoDiaria MovimentacaoDiaria)
     {
         await _context.MovimentacaoDiaria.AddAsync(MovimentacaoDiaria);
-        await _context.SaveChangesAsync();
+        var ret = await _context.SaveChangesAsync();
         return MovimentacaoDiaria;
     }
 

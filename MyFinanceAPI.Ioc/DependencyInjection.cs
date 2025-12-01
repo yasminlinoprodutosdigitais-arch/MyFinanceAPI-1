@@ -8,6 +8,8 @@ using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Application.Mapping;
 using Microsoft.EntityFrameworkCore;
+using MyFinanceAPI.Infra.Data.Repositories;
+using MyFinanceAPI.Domain.Interfaces.Repositories;
 
 namespace MyFinanceAPI.Ioc
 {
@@ -41,6 +43,8 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IBancoService, BancoService>();
             services.AddScoped<ITipoCartaoService, TipoCartaoService>();
             services.AddScoped<IMovimentacaoDiariaService, MovimentacaoDiariaService>();
+            services.AddScoped<IExtratoBancarioService, ExtratoBancarioService>();
+            services.AddScoped<IExtratoBancarioItemService, ExtratoBancarioItemService>();
             services.AddScoped<ITipoMovimentacaoService, TipoMovimentacaoService>();
             services.AddScoped<IItemListaService, ItemListaService>();
             services.AddScoped<IListaService, ListaService>();  
@@ -56,6 +60,8 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IBancoRepository, BancoRepository>();
             services.AddScoped<ITipoCartaoRepository, TipoCartaoRepository>();
             services.AddScoped<IMovimentacaoDiariaRepository, MovimentacaoDiariaRepository>();
+            services.AddScoped<IExtratoBancarioRepository, ExtratoBancarioRepository>();
+            services.AddScoped<IExtratoBancarioItemRepository, ExtratoBancarioItemRepository>();
             services.AddScoped<ITipoMovimentacaoRepository, TipoMovimentacaoRepository>();
             services.AddScoped<IItemListaRepository, ItemListaRepository>();
             services.AddScoped<IListaRepository, ListaRepository>();

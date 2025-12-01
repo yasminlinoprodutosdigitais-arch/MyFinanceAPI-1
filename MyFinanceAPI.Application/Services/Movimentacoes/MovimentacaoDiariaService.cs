@@ -1,8 +1,11 @@
 using System;
+using System.Globalization;
 using System.Security.Claims;
+using System.Text;
 using AutoMapper;
 using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
+using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
@@ -114,6 +117,111 @@ public class MovimentacaoDiariaService : IMovimentacaoDiariaService
 
         await _movimentacaoDiariaRepository.Remove(id, userId);
     }
+
+    // public async Task<ImportExtratoResultadoDTO> ImportarExtratoAsync(
+    //  Stream arquivoStream,
+    //  string fileName,
+    //  int userId,
+    //  BancoDTO banco)
+    // {
+    //     var culturePtBr = new CultureInfo("pt-BR");
+    //     var cultureDecimal = CultureInfo.InvariantCulture;
+
+    //     int criados = 0;
+    //     int ignorados = 0;
+
+    //     using var reader = new StreamReader(
+    //         arquivoStream,
+    //         Encoding.UTF8,
+    //         detectEncodingFromByteOrderMarks: true,
+    //         leaveOpen: false);
+
+    //     var header = await reader.ReadLineAsync();
+    //     if (header == null)
+    //     {
+    //         return new ImportExtratoResultadoDTO(0, 0, "Arquivo vazio ou inválido.");
+    //     }
+
+    //     string? line;
+    //     while ((line = await reader.ReadLineAsync()) != null)
+    //     {
+    //         if (string.IsNullOrWhiteSpace(line))
+    //             continue;
+
+    //         var parts = line.Split(',', 4);
+    //         if (parts.Length < 4)
+    //         {
+    //             ignorados++;
+    //             continue;
+    //         }
+
+    //         var dataStr = parts[0].Trim();
+    //         var valorStr = parts[1].Trim();
+    //         var identificadorStr = parts[2].Trim();
+    //         var descricaoStr = parts[3].Trim();
+
+    //         if (!DateOnly.TryParseExact(dataStr, "dd/MM/yyyy", culturePtBr, DateTimeStyles.None, out var data))
+    //         {
+    //             ignorados++;
+    //             continue;
+    //         }
+
+    //         if (!decimal.TryParse(valorStr, NumberStyles.Number, cultureDecimal, out var valor))
+    //         {
+    //             ignorados++;
+    //             continue;
+    //         }
+
+    //         try
+    //         {
+    //             bool isDebito = valor < 0;
+
+    //             string? nomePessoa = null;
+    //             var descricaoPartes = descricaoStr.Split('-');
+    //             if (descricaoPartes.Length > 1)
+    //             {
+    //                 nomePessoa = descricaoPartes[1].Trim();
+    //             }
+
+    //             // 👇 se não vier um TipoCartaoId válido (>0), deixa null
+    //             int? tipoCartaoId = null;
+    //             if (banco.TipoCartaoId > 0)
+    //             {
+    //                 tipoCartaoId = banco.TipoCartaoId;
+    //             }
+
+    //             var dto = new MovimentacaoDiariaDTO
+    //             {
+    //                 DataMovimentacao = data,
+    //                 Valor = valor,
+    //                 Descricao = descricaoStr,
+    //                 BancoId = banco.Id,
+    //                 TipoLancamento = isDebito ? "Débito" : "Crédito",
+    //                 TipoMovimentacaoId = null,           // 👈 agora permitido
+    //                 TipoCartaoId = tipoCartaoId,   // também int?
+    //                 NomePessoaTransacao = nomePessoa,
+    //                 Identificador = identificadorStr
+    //             };
+
+    //             var entity = _mapper.Map<MovimentacaoDiaria>(dto);
+    //             entity.UserId = userId;
+
+    //             await _movimentacaoDiariaRepository.Create(entity);
+    //             criados++;
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             ignorados++;
+    //             Console.WriteLine("Erro ao importar linha:");
+    //             Console.WriteLine(line);
+    //             Console.WriteLine(ex.Message);
+    //             Console.WriteLine(ex.InnerException?.Message);
+    //         }
+    //     }
+
+    //     var mensagem = $"Importação concluída. Criados: {criados}, ignorados: {ignorados}.";
+    //     return new ImportExtratoResultadoDTO(criados, ignorados, mensagem);
+    // }
 
     public async Task<bool> UpdateAsync(MovimentacaoDiariaDTO dto, int userId)
     {

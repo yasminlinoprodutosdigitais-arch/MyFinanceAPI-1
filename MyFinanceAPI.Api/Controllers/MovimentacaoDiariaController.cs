@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyFinanceAPI.Application.DTO;
+using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
 
@@ -67,7 +68,7 @@ namespace MyFinanceAPI.Api.Controllers
             }
         }
 
-        
+
         [HttpGet("/GetMovimentacaoDiariaByDate/{date}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetMovimentacaoByDate(DateTime date)
         {
@@ -81,6 +82,39 @@ namespace MyFinanceAPI.Api.Controllers
             else
                 return Ok(transaction);
         }
+
+        // [HttpPost("/ImportMovimentacaoDiariaExtrato")]
+        // public async Task<IActionResult> ImportMovimentacaoDiariaExtrato([FromForm] IFormFile arquivo, [FromForm] BancoDTO banco)
+        // {
+        //     try
+        //     {
+        //         var userId = _userContextService.GetUserIdFromClaims();
+        //         if (userId == 0)
+        //             return Unauthorized("Usuário não autorizado!");
+
+        //         if (arquivo == null || arquivo.Length == 0)
+        //             return BadRequest("Nenhum arquivo foi enviado.");
+
+        //         using var stream = arquivo.OpenReadStream();
+
+        //         var resultadoImportacao = await _movimentacaoDiariaService.ImportarExtratoAsync(
+        //             stream,
+        //             arquivo.FileName,
+        //             userId, banco
+        //         );
+
+        //         return Ok(resultadoImportacao);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(500, new
+        //         {
+        //             message = "Erro ao importar extrato.",
+        //             error = ex.Message
+        //         });
+        //     }
+        // }
+
 
         [HttpPost("/CreateMovimentacaoDiaria")]
         public async Task<ActionResult> CreateMovimentacaoDiaria([FromBody] MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
@@ -117,15 +151,15 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpDelete("/DeleteMovimentacaoDiaria/{id}")]
         public async Task<ActionResult<MovimentacaoDiariaDTO>> DeleteMovimentacaoDiaria(int id)
         {
-            try 
+            try
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+                if (userId == 0)
+                    return Unauthorized("Usuário não autorizado!");
 
                 var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
-                if(MovimentacaoDiaria == null)
-                    return NotFound(new {message = "MovimentacaoDiaria não encontrada."});
+                if (MovimentacaoDiaria == null)
+                    return NotFound(new { message = "MovimentacaoDiaria não encontrada." });
 
                 await _movimentacaoDiariaService.Remove(id, userId);
                 return Ok(MovimentacaoDiaria);

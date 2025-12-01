@@ -14,7 +14,7 @@ public class Banco : BaseEntity
     public decimal SaldoInicial { get; set; }
     public bool? Ativo { get; set; }
 
-    public TipoCartao? tipoCartao { get; set; }
+    public TipoCartao TipoCartao { get; set; }
 
     public Banco() { } 
 
@@ -27,7 +27,7 @@ public class Banco : BaseEntity
         Ativo = ativo;
     }
 
-    public Banco(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, bool? ativo)
+    public Banco(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, bool? ativo, TipoCartao tipoCartao)
     {
         Id = id;
         NomeBanco = nomeBanco;
@@ -35,6 +35,7 @@ public class Banco : BaseEntity
         TipoCartaoId = tipoCartaoId;
         SaldoInicial = saldoInicial;
         Ativo = ativo;
+        TipoCartao = tipoCartao;
     }
 
     public Banco(int id, decimal saldoInicial)

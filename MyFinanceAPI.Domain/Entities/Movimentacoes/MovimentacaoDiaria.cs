@@ -10,10 +10,14 @@ public class MovimentacaoDiaria : BaseEntity
     public DateOnly DataMovimentacao { get; set; }
     public int? BancoId { get; set; }
     public int? TipoCartaoId { get; set; }
-    public int TipoMovimentacaoId { get; set; }
+    public int? TipoMovimentacaoId { get; set; }
+
     public decimal Valor { get; set; }
     public string TipoLancamento { get; set; }
     public string? Descricao { get; set; }
+    public string? NomePessoaTransacao { get; set; }
+    public string? Identificador { get; set; }
+
 
     public Banco? Banco { get; set; }  
     public TipoCartao? TipoCartao { get; set; } 
@@ -21,7 +25,7 @@ public class MovimentacaoDiaria : BaseEntity
         
     public MovimentacaoDiaria() { } 
 
-    public MovimentacaoDiaria(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao)
+    public MovimentacaoDiaria(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int? tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao, string? nomePessoaTransacao, string? identificador)
     {
         DataMovimentacao = dataMovimentacao;
         BancoId = bancoId;
@@ -30,9 +34,11 @@ public class MovimentacaoDiaria : BaseEntity
         Valor = valor;
         TipoLancamento = tipoLancamento;
         Descricao = descricao;
+        NomePessoaTransacao = nomePessoaTransacao;
+        Identificador = identificador;
     }
 
-    public MovimentacaoDiaria(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao)
+    public MovimentacaoDiaria(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int? tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao, string? nomePessoaTransacao, string? identificador)
     {
         Id = id;
         DataMovimentacao = dataMovimentacao;
@@ -42,6 +48,8 @@ public class MovimentacaoDiaria : BaseEntity
         Valor = valor;
         TipoLancamento = tipoLancamento;
         Descricao = descricao;
+        NomePessoaTransacao = nomePessoaTransacao;
+        Identificador = identificador;
     }
 
 }

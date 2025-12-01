@@ -27,6 +27,7 @@ public class BancoRepository(ContextDB context) : IBancoRepository
     {
         var Banco = await _context.Banco
             .Where(c => c.UserId == userId && c.Id == id)
+            .Include(c => c.TipoCartao)
             .FirstOrDefaultAsync();
 
         if (Banco == null)
@@ -95,6 +96,7 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         var movimentacoesDiarias = await _context.Banco
            .Where(a => a.UserId == userId)
            .OrderBy(c => c.NomeBanco)
+           .Include(c => c.TipoCartao)
            .ToListAsync();
 
         return movimentacoesDiarias;

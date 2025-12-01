@@ -1,6 +1,8 @@
 using AutoMapper;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Application.DTO;
+using MyFinanceAPI.Application.DTO.Movimentacoes;
+using MyFinanceAPI.Application.DTO.Extrato;
 
 namespace MyFinanceAPI.Application.Mapping;
 public class DomainToDTOMappingProfile : Profile
@@ -18,6 +20,8 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<Lista, ListaDTO>().ReverseMap();
         CreateMap<ItemLista, ItemListaDTO>().ReverseMap();
         CreateMap<MovimentacaoDiaria, MovimentacaoDiariaDTO>().ReverseMap();
+        CreateMap<ExtratoBancario, ExtratoBancarioDTO>().ReverseMap();
+        CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>().ReverseMap();
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
     }
