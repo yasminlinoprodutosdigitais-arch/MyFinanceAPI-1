@@ -27,7 +27,7 @@ namespace MyFinanceAPI.Api.Controllers
 
         // GET /GetExtratoBancario
         [HttpGet("/GetExtratoBancario")]
-        public async Task<ActionResult<IEnumerable<ExtratoBancarioDTO>>> GetExtratoBancario()
+        public async Task<ActionResult<IEnumerable<ExtratoBancarioDTO>>> GetExtratoBancario([FromQuery] string month)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                var extratos = await _extratoBancarioService.GetExtratoBancario(userId.Value);
+                var extratos = await _extratoBancarioService.GetExtratoBancario(userId.Value, month);
                 return Ok(extratos);
             }
             catch (Exception ex)

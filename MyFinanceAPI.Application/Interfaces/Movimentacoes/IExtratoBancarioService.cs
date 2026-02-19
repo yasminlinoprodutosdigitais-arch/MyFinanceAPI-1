@@ -10,7 +10,7 @@ namespace MyFinanceAPI.Application.Interfaces
 {
     public interface IExtratoBancarioService
     {
-        Task<IEnumerable<ExtratoBancarioDTO>> GetExtratoBancario(int userId);
+        Task<IEnumerable<ExtratoBancarioDTO>> GetExtratoBancario(int userId, string month);
 
         Task<ExtratoBancarioDTO?> GetExtratoBancarioById(int id, int? userId);
 

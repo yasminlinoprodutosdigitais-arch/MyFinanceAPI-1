@@ -25,9 +25,16 @@ namespace MyFinanceAPI.Infra.Data.Repositories
         }
 
         public async Task CreateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
-        {
-            await _context.ExtratoBancarioItens.AddRangeAsync(itens);
-            await _context.SaveChangesAsync();
+        {try
+            {
+                await _context.ExtratoBancarioItens.AddRangeAsync(itens);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex.Message, ex.StackTrace, etc.)
+                throw; // Rethrow or handle as needed
+            }
         }
 
         // =========================
@@ -102,6 +109,7 @@ namespace MyFinanceAPI.Infra.Data.Repositories
             return await _context.ExtratoBancarioItens
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
+                .Include(i => i.Categoria)
                 .Include(i => i.TipoMovimentacao)
                 .Where(i =>
                     i.UserId == userId &&
@@ -110,6 +118,20 @@ namespace MyFinanceAPI.Infra.Data.Repositories
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)
                 .ToListAsync();
+        }
+
+        public async Task<List<ExtratoBancarioItem>> GetByChaveDescricaoAsync (string ChaveDescricao, int userId)
+        {
+            var vinculo = await _context.ExtratoBancarioItens
+                .Include(i => i.Banco)
+                .Include(i => i.TipoCartao)
+                .Where(v => v.ChaveDescricao == ChaveDescricao && v.UserId == userId)
+                .ToListAsync();
+
+            if (vinculo == null)
+                return new List<ExtratoBancarioItem>();
+
+            return vinculo;
         }
     }
 }

@@ -48,6 +48,8 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ITipoMovimentacaoService, TipoMovimentacaoService>();
             services.AddScoped<IItemListaService, ItemListaService>();
             services.AddScoped<IListaService, ListaService>();  
+            services.AddScoped<IPessoaMovimentacaoService, PessoaMovimentacaoService>();
+
 
             // Registro do repositório IUsuarioRepository
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -65,6 +67,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ITipoMovimentacaoRepository, TipoMovimentacaoRepository>();
             services.AddScoped<IItemListaRepository, ItemListaRepository>();
             services.AddScoped<IListaRepository, ListaRepository>();
+            services.AddScoped<IPessoaMovimentacaoRepository, PessoaMovimentacaoRepository>();
 
             // Configuração do AutoMapper
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));

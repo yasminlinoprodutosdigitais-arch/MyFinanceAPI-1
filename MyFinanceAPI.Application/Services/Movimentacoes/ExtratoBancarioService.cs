@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using MyFinanceAPI.Application.DTO;
@@ -10,6 +11,7 @@ using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Domain.Interfaces;
 using MyFinanceAPI.Domain.Interfaces.Repositories;
 
 namespace MyFinanceAPI.Application.Services
@@ -20,25 +22,28 @@ namespace MyFinanceAPI.Application.Services
         private readonly IExtratoBancarioItemRepository _extratoBancarioItemRepository;
         private readonly IMapper _mapper;
         private readonly IBancoService _bancoService;
+        private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
 
         public ExtratoBancarioService(
             IExtratoBancarioRepository extratoBancarioRepository,
             IExtratoBancarioItemRepository extratoBancarioItemRepository,
+            IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
             IMapper mapper, IBancoService bancoService)
         {
             _extratoBancarioRepository = extratoBancarioRepository;
             _extratoBancarioItemRepository = extratoBancarioItemRepository;
             _mapper = mapper;
+            _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
             _bancoService = bancoService;
         }
 
         /// <summary>
         /// Lista todos os extratos do usuário.
         /// </summary>
-        public async Task<IEnumerable<ExtratoBancarioDTO>> GetExtratoBancario(int userId)
+        public async Task<IEnumerable<ExtratoBancarioDTO>> GetExtratoBancario(int userId, string month)
         {
             // Aqui você pode ter um campo UserId no ExtratoBancario (em BaseEntity)
-            var extratos = await _extratoBancarioRepository.GetByUserIdAsync(userId);
+            var extratos = await _extratoBancarioRepository.GetByUserIdAsync(userId, month);
             return _mapper.Map<IEnumerable<ExtratoBancarioDTO>>(extratos);
         }
 
@@ -137,7 +142,8 @@ namespace MyFinanceAPI.Application.Services
                 try
                 {
                     var tipoLancamento = valor < 0 ? "Saída" : "Entrada";
-
+                    var valorInteiro = Math.Abs((int)valor);
+                    
                     string? nomePessoa = null;
                     if (!string.IsNullOrWhiteSpace(descricaoStr))
                     {
@@ -146,18 +152,36 @@ namespace MyFinanceAPI.Application.Services
                             nomePessoa = partesDesc[1].Trim();
                     }
 
+                    var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
+                    var pessoaId = 0;
+                    if(pessoaCadastrada.Any())
+                    {
+                        pessoaId = pessoaCadastrada.First().Id;
+                    }
+                    else
+                    {
+                       var novaPessoa = new PessoaMovimentacao
+                       {
+                            NomePessoa = nomePessoa,
+                            UserId = userId
+                       };
+                       await _pessoaMovimentacaoRepository.Create(novaPessoa, userId);
+                       pessoaId = novaPessoa.Id;
+                    }
+
                     var item = new ExtratoBancarioItemDTO
                     {
                         DataMovimentacao = dataMov,
                         BancoId = banco.Id,
                         TipoCartaoId = banco.TipoCartaoId,
                         TipoMovimentacaoId = null,
-                        Valor = valor,
+                        Valor = valorInteiro,
                         TipoLancamento = tipoLancamento,
                         Descricao = descricaoStr,
+                        PessoaMovimentacaoId = pessoaId,
                         NomePessoaTransacao = nomePessoa,
                         Identificador = identificadorStr,
-                        // UserId se tiver em BaseEntity
+                        UserId = userId
                     };
 
                     listaItens.Add(item);
@@ -208,6 +232,7 @@ namespace MyFinanceAPI.Application.Services
             {
                 item.ExtratoBancarioId = extrato.Id;
                 item.UserId = userId;
+                item.ChaveDescricao = GerarChaveDescricao(item.Descricao);
             }
 
             var itens = _mapper.Map<IEnumerable<ExtratoBancarioItem>>(listaItens);
@@ -222,6 +247,24 @@ namespace MyFinanceAPI.Application.Services
                 mensagem
             );
         }
+
+        public static string GerarChaveDescricao(string descricao)
+        {
+            if (string.IsNullOrWhiteSpace(descricao))
+                return string.Empty;
+
+            var upper = descricao.ToUpperInvariant();
+
+            // remove números (se quiser)
+            upper = Regex.Replace(upper, "[0-9]", "");
+
+            // remove espaços duplicados
+            upper = Regex.Replace(upper, @"\s+", " ").Trim();
+
+            // limitar tamanho pra índice ficar leve
+            return upper.Length > 100 ? upper.Substring(0, 100) : upper;
+        }
+
 
         /// <summary>
         /// Remove um extrato + itens (se aplicável).

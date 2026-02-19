@@ -88,18 +88,33 @@ namespace MyFinanceAPI.Infra.Data.Repositories
         }
 
         // Service chama GetByUserIdAsync
-        public async Task<IEnumerable<ExtratoBancario>> GetByUserIdAsync(int userId)
+        public async Task<IEnumerable<ExtratoBancario>> GetByUserIdAsync(int userId, string month)
         {
-            return await _context.ExtratoBancario
-                .Where(e => e.UserId == userId)
+            // month = "2026-02"
+            var parts = month.Split('-');
+            var year = int.Parse(parts[0]);
+            var mon = int.Parse(parts[1]);
+
+            var start = new DateOnly(year, mon, 1);
+            var end = start.AddMonths(1);
+
+            var extratos = await _context.ExtratoBancario
+                .Where(e => e.UserId == userId
+                    && e.DataInicioPeriodo.HasValue
+                    && e.DataInicioPeriodo.Value >= start
+                    && e.DataInicioPeriodo.Value < end)
+                .Include(e => e.Itens)
                 .OrderByDescending(e => e.DataImportacao)
                 .ToListAsync();
+
+            return extratos;
         }
+
 
         // Alias / reaproveitamento
         public async Task<IEnumerable<ExtratoBancario>> GetByUserAsync(int userId)
         {
-            return await GetByUserIdAsync(userId);
+            return await GetByUserIdAsync(userId, null);
         }
 
         public async Task<IEnumerable<ExtratoBancario>> GetByPeriodoAsync(

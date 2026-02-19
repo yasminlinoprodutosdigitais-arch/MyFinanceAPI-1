@@ -11,7 +11,6 @@ public class TipoMovimentacaoDTO
     public string NomeTipoMovimentacao { get; set; }
     public string Descricao { get; set; }
     public decimal ValorMeta { get; set; }
-        
     public TipoMovimentacaoDTO() { } 
 
     public TipoMovimentacaoDTO(string nomeTipoMovimentacao, string descricao, decimal valorMeta)

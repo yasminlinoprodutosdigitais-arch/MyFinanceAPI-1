@@ -42,7 +42,7 @@ namespace MyFinanceAPI.Api.Controllers
 
 
         [HttpGet("/GetItemListaById/{id}", Name = "GetItemLista")]
-        public async Task<ActionResult<ItemListaDTO>> GetItemListaById(int id)
+        public async Task<ActionResult<List<ItemListaDTO>>> GetItemListaById(int id)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
-                var ItemLista = await _ItemListaervice.GetItemListaById(id, userId);
+                var ItemLista = await _ItemListaervice.GetItemListaByListaId(id, userId);
                 if (ItemLista is null)
                     return NotFound("ItemLista não encontrada!");
                 else

@@ -80,7 +80,7 @@ namespace MyFinanceAPI.Api.Controllers
                     return BadRequest("Dados inválidos.");
 
                 await _TipoMovimentacaoService.Add(TipoMovimentacaoDTO, userId);
-                return Ok("Tipo Movimentacao criada com sucesso!");
+                return Ok(new { success = true, message = "Tipo Movimentacao criada com sucesso!" });
             }
             catch (KeyNotFoundException ex)
             {

@@ -7,22 +7,25 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace MyFinanceAPI.Domain.Entities;
 public class Lista : BaseEntity
 {
-    public string NomeLista { get; set; }
-    public string TipoMovimentacao { get; set; }
+    public string Nome { get; set; }
+    public int TipoMovimentacao { get; set; }
+    public bool Status { get; set; }
         
     public Lista() { } 
 
-    public Lista(string nomeLista, string tipoMovimentacao)
+    public Lista(string nomeLista, int tipoMovimentacao, bool status)
     {
-        NomeLista = nomeLista;
+        Nome = nomeLista;
         TipoMovimentacao = tipoMovimentacao;
+        Status = status;
     }
 
-    public Lista(int id, string nomeLista, string tipoMovimentacao)
+    public Lista(int id, string nomeLista, int tipoMovimentacao, bool status)
     {
         Id = id;
-        NomeLista = nomeLista;
+        Nome = nomeLista;
         TipoMovimentacao = tipoMovimentacao;
+        Status = status;
     }
 
 }

@@ -11,28 +11,34 @@ public class TransactionDTO
     public string Name { get; set; }
     public double Value { get; set; }
     public int? IdAccount {get; set; }
+    public int? CategoryId {get; set; }
     public string Status { get; set; }
+
+    public Account? Account { get; set; }
+
 
     public TransactionDTO()
     {
         
     }
 
-    public TransactionDTO(DateTime date, string name, double value,int? idAccount, string status)
+    public TransactionDTO(DateTime date, string name, double value,int? idAccount, int? categoryId, string status)
     {
         Date = date;
         Name = name;
         Value = value;
         IdAccount = idAccount;
+        CategoryId = categoryId;
         Status = status;
     }
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, double value, string status)
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, double value, string status)
     {
         Id = id;
         Date = date;
         Name = name;
         IdAccount = idAccount;
+        CategoryId = categoryId;
         Value = value;
         Status = status;
     } 

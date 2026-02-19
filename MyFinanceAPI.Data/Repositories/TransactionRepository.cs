@@ -17,12 +17,25 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
 
     public async Task<Transaction> Create(Transaction transaction)
     {
-        var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
-
-        if (!existingAccount)
+        if (transaction.IdAccount != 0)
         {
-            throw new ArgumentException("Account not existing", nameof(transaction));
+            var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
+
+            if (!existingAccount)
+            {
+                throw new ArgumentException("Account not existing", nameof(transaction));
+            }
         }
+        else if (transaction.CategoryId != 0)
+        {
+            var existingCategory = _context.Categories.Any(c => c.Id == transaction.CategoryId && c.UserId == transaction.UserId);
+            transaction.IdAccount = null;
+            if (!existingCategory)
+            {
+                throw new ArgumentException("Category not existing", nameof(transaction));
+            }
+        }
+
 
         DateTime localDate = transaction.Date;
         if (localDate.Kind == DateTimeKind.Unspecified)
@@ -85,45 +98,45 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-    public async Task<List<AccountGrouping>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
+        public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
     {
-        var accounts = await _context.Accounts
-        .Where(a => a.UserId == userId)
-            .Include(a => a.Category)             // Inclui a Categoria
-            .Include(a => a.Transactions)       // Inclui os Transactions associados
-            .OrderBy(a => a.Name)        // Ordena pelas categorias
-            .ToListAsync();                       // Carrega todos os dados necessários
+        var month = dateTime.Month;
+        var year = dateTime.Year;
 
-        var groupedAccounts = accounts
-            .GroupBy(a => a.Category)  // Agrupar as contas por categoria
-            .Select(group => new AccountGrouping
-            (
-                group.Key.Id,          // ID da categoria
-                group.Key.Name,        // Nome da categorias
-                group.Key.SubCategory, // Subcategoria da categoria
-                group
-                .Select(a => new Account
+        // 1) Carrega transações do mês (com ou sem conta)
+        var transactions = await _context.Transactions
+            .Where(t => t.UserId == userId && t.Date.Month == month && t.Date.Year == year)
+            .Select(t => new Transaction
+            {
+                Id = t.Id,
+                Date = t.Date,
+                Name = t.Name,
+                Value = t.Value,
+                Status = t.Status,
+                CategoryId = t.CategoryId,
+                IdAccount = t.IdAccount,
+
+                Account = t.IdAccount == null ? null : new Account
                 {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Value = a.Value,
-                    Transactions = a.Transactions
-                    .Where(m => m.UserId == userId && m.Date.Month == dateTime.Month && m.Date.Year == dateTime.Year)
-                    .Select(m => new Transaction
+                    Id = t.Account.Id,
+                    Name = t.Account.Name,
+                    Value = t.Account.Value,
+                    CategoryId = t.Account.CategoryId,
+                    Transactions = t.Account.Transactions.Select(m => new Transaction
                     {
                         Id = m.Id,
                         Date = m.Date,
                         Name = m.Name,
                         Value = m.Value,
                         Status = m.Status
-                    }).ToList() // Para cada conta, adicionar os detalhes de todos os Transactions
-                }).ToList() // Lista de contas agrupadas por categoria
-            ))
-            .ToList();  // Realiza a execução e retorna a lista agrupada
+                    }).ToList()
 
-        return groupedAccounts;
+                }
+            })
+            .ToListAsync();
+
+        return transactions;
     }
-
 
     // public Task<IEnumerable<Transaction>> GetTransactionByCategory(int categoryid, int userId)
     // {
@@ -136,7 +149,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
             .Where(t => t.UserId == userId && t.Id == id)
             .FirstOrDefaultAsync();
 
-        if(transaction == null)
+        if (transaction == null)
             throw new Exception("Nenhuma transação encontrada");
 
         return transaction;
@@ -149,7 +162,8 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         {
             _context.Transactions.Remove(update);
             _context.SaveChanges();
-        }else
+        }
+        else
             throw new Exception("Nenhuma transação encontrada");
 
         return update;

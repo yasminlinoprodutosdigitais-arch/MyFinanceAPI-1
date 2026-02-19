@@ -23,6 +23,19 @@ public class ItemListaRepository(ContextDB context) : IItemListaRepository
         return ItemListas;
     }
 
+    public async Task<List<ItemLista>> GetItemListaByListaId(int id, int userId)
+    {
+        var ItemListas = await _context.ItemLista
+            .Where(c => c.UserId == userId && c.ListaId == id)
+            .OrderBy(c => c.Descricao)
+            .ToListAsync();
+
+        if (ItemListas == null)
+            return null;
+
+        return ItemListas;
+    }
+
     public async Task<ItemLista?> GetItemListaById(int id, int userId)
     {
         var ItemLista = await _context.ItemLista
@@ -67,6 +80,7 @@ public class ItemListaRepository(ContextDB context) : IItemListaRepository
         existingItemLista.Descricao = incomingItemLista.Descricao;
         existingItemLista.Quantidade = incomingItemLista.Quantidade;
         existingItemLista.Status = incomingItemLista.Status;
+        existingItemLista.Valor = incomingItemLista.Valor;
 
         await _context.SaveChangesAsync();
 

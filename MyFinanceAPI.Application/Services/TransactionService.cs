@@ -57,10 +57,10 @@ public class TransactionService : ITransactionService
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
-    public async Task<IEnumerable<AccountGroupingDTO>> GetTransactionGroupingByDate(DateTime date, int userId)
+    public async Task<IEnumerable<TransactionDTO>> GetTransactionGroupingByDate(DateTime date, int userId)
     {
         var Transaction = await _transactionRepository.GetTransactionGroupingByDate(date, userId);
-        return _mapper.Map<IEnumerable<AccountGroupingDTO>>(Transaction);
+        return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
     public async Task Update(TransactionDTO TransactionDTO, int userId)

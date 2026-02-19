@@ -8,6 +8,7 @@ namespace MyFinanceAPI.Domain.Interfaces;
 public interface IItemListaRepository
 {
     Task<List<ItemLista>>? GetItemListas(int userId);
+    Task<List<ItemLista>> GetItemListaByListaId(int id, int userId);
     Task<ItemLista> GetItemListaById(int id, int userId);
     Task<ItemLista> Create(ItemLista ItemLista);
     Task<bool> UpdateAsync(ItemLista ItemLista, int userId);

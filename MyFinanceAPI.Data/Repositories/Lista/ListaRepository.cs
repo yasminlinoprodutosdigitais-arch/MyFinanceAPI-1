@@ -19,7 +19,7 @@ public class ListaRepository(ContextDB context) : IListaRepository
 
     public async Task<IEnumerable<Lista>> GetListaByUserId(int userId)
     {
-        var Lista = await _context.Lista.Where(c => c.UserId == userId).OrderBy(c => c.NomeLista).ToListAsync();
+        var Lista = await _context.Lista.Where(c => c.UserId == userId).OrderBy(c => c.Nome).ToListAsync();
         return Lista;
     }
 
@@ -63,8 +63,9 @@ public class ListaRepository(ContextDB context) : IListaRepository
             throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
         }
 
-        existingLista.NomeLista = incomingLista.NomeLista;
+        existingLista.Nome = incomingLista.Nome;
         existingLista.TipoMovimentacao = incomingLista.TipoMovimentacao;
+        existingLista.Status = incomingLista.Status;
 
         await _context.SaveChangesAsync();
 
@@ -73,11 +74,11 @@ public class ListaRepository(ContextDB context) : IListaRepository
 
     public async Task<List<Lista>>? GetListas(int userId)
     {
-        var movimentacoesDiarias = await _context.Lista
+        var listas = await _context.Lista
            .Where(a => a.UserId == userId)
-           .OrderBy(c => c.NomeLista)
+           .OrderBy(c => c.Nome)
            .ToListAsync();
 
-        return movimentacoesDiarias;
+        return listas;
     }
 }

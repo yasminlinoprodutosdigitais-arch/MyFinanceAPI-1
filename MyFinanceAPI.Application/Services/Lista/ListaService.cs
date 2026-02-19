@@ -30,8 +30,8 @@ public class ListaService : IListaService
 
     public async Task<IEnumerable<ListaDTO>> GetLista(int userId)
     {
-        var movimentacoDiaria = await _listaRepository.GetListas(userId);
-        return _mapper.Map<IEnumerable<ListaDTO>>(movimentacoDiaria);
+        var lista = await _listaRepository.GetListas(userId);
+        return _mapper.Map<IEnumerable<ListaDTO>>(lista);
     }
 
     public async Task<ListaDTO> GetListaById(int id, int userId)
@@ -47,8 +47,8 @@ public class ListaService : IListaService
 
     public async Task<bool> UpdateAsync(ListaDTO dto, int userId)
     {   
-        var account = _mapper.Map<Account>(dto);
-        await _accountRepository.Update(account, userId);
+        var lista = _mapper.Map<Lista>(dto);
+        await _listaRepository.UpdateAsync(lista, userId);
         return true;
     }
 

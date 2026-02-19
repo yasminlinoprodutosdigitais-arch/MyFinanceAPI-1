@@ -7,6 +7,7 @@ using AutoMapper;
 using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Domain.Interfaces;
 using MyFinanceAPI.Domain.Interfaces.Repositories;
 
 namespace MyFinanceAPI.Application.Services
@@ -14,13 +15,16 @@ namespace MyFinanceAPI.Application.Services
     public class ExtratoBancarioItemService : IExtratoBancarioItemService
     {
         private readonly IExtratoBancarioItemRepository _itemRepository;
+        private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
         private readonly IMapper _mapper;
 
         public ExtratoBancarioItemService(
             IExtratoBancarioItemRepository itemRepository,
+            IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
             IMapper mapper)
         {
             _itemRepository = itemRepository;
+            _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
             _mapper = mapper;
         }
 
@@ -78,13 +82,38 @@ namespace MyFinanceAPI.Application.Services
             existing.Valor = dto.Valor;
             existing.TipoLancamento = dto.TipoLancamento;
             existing.Descricao = dto.Descricao;
+            existing.Observacao = dto.Observacao;
             existing.NomePessoaTransacao = dto.NomePessoaTransacao;
             existing.Identificador = dto.Identificador;
             existing.BancoId = dto.BancoId;
             existing.TipoCartaoId = dto.TipoCartaoId;
             existing.TipoMovimentacaoId = dto.TipoMovimentacaoId;
+            existing.CategoriaId = dto.CategoriaId;
 
             await _itemRepository.UpdateAsync(existing);
+            if (dto.AlteraVinculoPessoa)
+            {
+                var pessoaId = dto.PessoaMovimentacaoId ?? 0;
+                var pessoaMovimentacao = await _pessoaMovimentacaoRepository.GetPessoaMovimentacaoById(pessoaId, userId);
+                if (pessoaMovimentacao == null)
+                {                  
+                    pessoaMovimentacao = new PessoaMovimentacao
+                    {
+                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome"
+                    };
+                    _pessoaMovimentacaoRepository.Create(pessoaMovimentacao, userId);
+                }
+                else
+                {
+                    await _pessoaMovimentacaoRepository.UpdateAsync(new PessoaMovimentacao
+                    {
+                        Id = pessoaId,
+                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome",
+                        CategoriaId = dto.CategoriaId,
+                        TipoMovimentacaoId = dto.TipoMovimentacaoId
+                    }, userId);
+                }
+            }
         }
 
         public async Task RemoveAsync(int id, int userId)

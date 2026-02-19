@@ -23,7 +23,7 @@ namespace MyFinanceAPI.Domain.Interfaces.Repositories
         Task<ExtratoBancario?> GetByIdAsync(int id, int userId);
 
         // o service está chamando GetByUserIdAsync
-        Task<IEnumerable<ExtratoBancario>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<ExtratoBancario>> GetByUserIdAsync(int userId, string month);
 
         // equivalente (mantido para reutilização futura)
         Task<IEnumerable<ExtratoBancario>> GetByUserAsync(int userId);

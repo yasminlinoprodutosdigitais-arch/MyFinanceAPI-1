@@ -1,5 +1,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,14 +42,21 @@ public class TokenService : ITokenService
             var key = Encoding.ASCII.GetBytes(str);
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
 
+            var brasilTz = TimeZoneInfo.FindSystemTimeZoneById(
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "E. South America Standard Time"
+                : "America/Sao_Paulo"
+            );
+
+            var expiresUtc = DateTime.UtcNow.AddHours(1);
+            var expiresBrasil = TimeZoneInfo.ConvertTimeFromUtc(expiresUtc, brasilTz);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = GenerateClaims(usuario),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = expiresUtc,
                 SigningCredentials = credentials
-
             };
-
 
             // Gerar o token JWT
             var objectToken = tokenHandler.CreateToken(tokenDescriptor);
@@ -61,7 +69,7 @@ public class TokenService : ITokenService
             SaveRefreshToken(usuario.Id.ToString(), refreshToken);
 
             // Retornar o DTO com o JWT e refresh token
-            TokenDto tokenDto = new TokenDto(token, refreshToken, DateTime.Now, DateTime.UtcNow);
+            TokenDto tokenDto = new TokenDto(token, refreshToken, DateTime.Now, expiresBrasil);
 
             return tokenDto;
         }

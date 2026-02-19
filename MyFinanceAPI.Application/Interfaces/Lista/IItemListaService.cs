@@ -9,6 +9,7 @@ public interface IItemListaService
 {
     Task Add(ItemListaDTO ItemListaDTO, int userId);
     Task<IEnumerable<ItemListaDTO>> GetItemLista(int userId);
+    Task<List<ItemListaDTO>> GetItemListaByListaId(int id, int userId);
     Task<ItemListaDTO> GetItemListaById(int id, int userId);
     Task<bool> UpdateAsync(ItemListaDTO dto, int userId);
     Task Remove(int id, int userId);

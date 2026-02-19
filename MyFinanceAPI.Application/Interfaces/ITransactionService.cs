@@ -11,7 +11,7 @@ public interface ITransactionService
     // Task<IEnumerable<TransactionDTO>> GetTransactionByCategory(int categoryId, int userId);
     Task<TransactionDTO> GetTransactionById(int id, int userId);
     Task<IEnumerable<TransactionDTO>> GetTransactionByDate(DateTime date, int userId);
-    Task<IEnumerable<AccountGroupingDTO>> GetTransactionGroupingByDate(DateTime date, int userId);
+    Task<IEnumerable<TransactionDTO>> GetTransactionGroupingByDate(DateTime date, int userId);
 
     Task Add(TransactionDTO TransactionDTO, int userId);
     Task Update(TransactionDTO TransactionDTO, int userId);

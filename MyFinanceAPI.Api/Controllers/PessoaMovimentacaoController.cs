@@ -11,19 +11,19 @@ namespace MyFinanceAPI.Api.Controllers
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TipoCartaoController : ControllerBase
+    public class PessoaMovimentacaoController : ControllerBase
     {
-        private readonly ITipoCartaoService _TipoCartaoService;
+        private readonly IPessoaMovimentacaoService _PessoaMovimentacaoService;
         private readonly IUserContextService _userContextService;
 
-        public TipoCartaoController(ITipoCartaoService TipoCartaoService, IUserContextService userContextService)
+        public PessoaMovimentacaoController(IPessoaMovimentacaoService PessoaMovimentacaoService, IUserContextService userContextService)
         {
-            _TipoCartaoService = TipoCartaoService;
+            _PessoaMovimentacaoService = PessoaMovimentacaoService;
             _userContextService = userContextService;
         }
 
-        [HttpGet("/GetTipoCartao")]
-        public async Task<ActionResult<IEnumerable<TipoCartaoDTO>>> GetTipoCartao()
+        [HttpGet("/GetPessoaMovimentacao")]
+        public async Task<ActionResult<IEnumerable<PessoaMovimentacaoDTO>>> GetPessoaMovimentacao()
         {
             try
             {
@@ -31,8 +31,8 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized(new { message = "Usuário não autorizado!" });
 
-                var TipoCartao = await _TipoCartaoService.GetTipoCartao(userId.Value);
-                return Ok(TipoCartao);
+                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacao(userId.Value);
+                return Ok(PessoaMovimentacao);
             }
             catch (Exception ex)
             {
@@ -41,8 +41,8 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
 
-        [HttpGet("/GetTipoCartaoById/{id}", Name = "GetTipoCartao")]
-        public async Task<ActionResult<TipoCartaoDTO>> GetTipoCartaoById(int id)
+        [HttpGet("/GetPessoaMovimentacaoById/{id}", Name = "GetPessoaMovimentacao")]
+        public async Task<ActionResult<PessoaMovimentacaoDTO>> GetPessoaMovimentacaoById(int id)
         {
             try
             {
@@ -50,11 +50,11 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
-                var TipoCartao = await _TipoCartaoService.GetTipoCartaoById(id, userId);
-                if (TipoCartao is null)
-                    return NotFound("TipoCartao não encontrada!");
+                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacaoById(id, userId);
+                if (PessoaMovimentacao is null)
+                    return NotFound("PessoaMovimentacao não encontrada!");
                 else
-                    return Ok(TipoCartao);
+                    return Ok(PessoaMovimentacao);
 
             }
             catch (KeyNotFoundException ex)
@@ -67,8 +67,8 @@ namespace MyFinanceAPI.Api.Controllers
             }
         }
 
-        [HttpPost("/CreateTipoCartao")]
-        public async Task<ActionResult> CreateTipoCartao([FromBody] TipoCartaoDTO dto)
+        [HttpPost("/CreatePessoaMovimentacao")]
+        public async Task<ActionResult> CreatePessoaMovimentacao([FromBody] PessoaMovimentacaoDTO dto)
         {
             try
             {
@@ -79,9 +79,9 @@ namespace MyFinanceAPI.Api.Controllers
                 if (dto is null)
                     return BadRequest(new { message = "Dados inválidos." });
 
-                await _TipoCartaoService.Add(dto, userId);
+                await _PessoaMovimentacaoService.Add(dto, userId);
 
-                return Ok(new { success = true, message = "TipoCartao criada com sucesso!" });
+                return Ok(new { success = true, message = "PessoaMovimentacao criada com sucesso!" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -89,8 +89,8 @@ namespace MyFinanceAPI.Api.Controllers
             }
         }
 
-        [HttpPut("/UpdateTipoCartao")]
-        public async Task<ActionResult<TipoCartaoDTO>> UpdateTipoCartao(TipoCartaoDTO TipoCartaoDTO)
+        [HttpPut("/UpdatePessoaMovimentacao")]
+        public async Task<ActionResult<PessoaMovimentacaoDTO>> UpdatePessoaMovimentacao(PessoaMovimentacaoDTO PessoaMovimentacaoDTO)
         {
             try
             {
@@ -99,17 +99,17 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
-                await _TipoCartaoService.UpdateAsync(TipoCartaoDTO, userId);
-                return TipoCartaoDTO;
+                await _PessoaMovimentacaoService.UpdateAsync(PessoaMovimentacaoDTO, userId);
+                return PessoaMovimentacaoDTO;
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao atualizar TipoCartao.", error = ex.Message });
+                return StatusCode(500, new { message = "Erro ao atualizar PessoaMovimentacao.", error = ex.Message });
             }
         }
 
-        [HttpDelete("/DeleteTipoCartao/{id}")]
-        public async Task<ActionResult<TipoCartaoDTO>> DeleteTipoCartao(int id)
+        [HttpDelete("/DeletePessoaMovimentacao/{id}")]
+        public async Task<ActionResult<PessoaMovimentacaoDTO>> DeletePessoaMovimentacao(int id)
         {
             try
             {
@@ -117,16 +117,16 @@ namespace MyFinanceAPI.Api.Controllers
                 if (userId == 0)
                     return Unauthorized("Usuário não autorizado!");
 
-                var TipoCartao = await _TipoCartaoService.GetTipoCartaoById(id, userId);
-                if (TipoCartao == null)
-                    return NotFound(new { message = "TipoCartao não encontrada." });
+                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacaoById(id, userId);
+                if (PessoaMovimentacao == null)
+                    return NotFound(new { message = "PessoaMovimentacao não encontrada." });
 
-                await _TipoCartaoService.Remove(id, userId);
-                return Ok(TipoCartao);
+                await _PessoaMovimentacaoService.Remove(id, userId);
+                return Ok(PessoaMovimentacao);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao deletar TipoCartao.", error = ex.Message, detail = ex.StackTrace });
+                return StatusCode(500, new { message = "Erro ao deletar PessoaMovimentacao.", error = ex.Message, detail = ex.StackTrace });
             }
         }
     }

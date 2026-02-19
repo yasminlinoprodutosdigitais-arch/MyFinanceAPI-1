@@ -34,21 +34,26 @@ public class ItemListaService : IItemListaService
         return _mapper.Map<IEnumerable<ItemListaDTO>>(movimentacoDiaria);
     }
 
-    public async Task<ItemListaDTO> GetItemListaById(int id, int userId)
+    public async Task<List<ItemListaDTO>> GetItemListaByListaId(int id, int userId)
     {
-        var ItemLista = await _itemListaRepository.GetItemListaById(id, userId);
-        return _mapper.Map<ItemListaDTO>(ItemLista);
+        var ItemListas = await _itemListaRepository.GetItemListaByListaId(id, userId);
+        return _mapper.Map<List<ItemListaDTO>>(ItemListas);
     }
 
     public async Task Remove(int id, int userId)
     {
         await _itemListaRepository.Remove(id, userId);
     }
+    public async Task<ItemListaDTO> GetItemListaById(int id, int userId)
+    {
+        var ItemLista = await _itemListaRepository.GetItemListaById(id, userId);
+        return _mapper.Map<ItemListaDTO>(ItemLista);
+    }
 
     public async Task<bool> UpdateAsync(ItemListaDTO dto, int userId)
     {   
-        var account = _mapper.Map<Account>(dto);
-        await _accountRepository.Update(account, userId);
+        var ItemLista = _mapper.Map<ItemLista>(dto);
+        await _itemListaRepository.UpdateAsync(ItemLista, userId);
         return true;
     }
 

@@ -8,22 +8,25 @@ namespace MyFinanceAPI.Domain.Entities;
 public class ListaDTO
 {
     public int Id { get; set; }
-    public string NomeLista { get; set; }
-    public string TipoMovimentacao { get; set; }
+    public string Nome { get; set; }
+    public int TipoMovimentacao { get; set; }
+    public bool Status { get; set; }
         
     public ListaDTO() { } 
 
-    public ListaDTO(string nomeLista, string tipoMovimentacao)
+    public ListaDTO(string nomeLista, int tipoMovimentacao, bool status)
     {
-        NomeLista = nomeLista;
+        Nome = nomeLista;
         TipoMovimentacao = tipoMovimentacao;
+        Status = status;
     }
 
-    public ListaDTO(int id, string nomeLista, string tipoMovimentacao)
+    public ListaDTO(int id, string nomeLista, int tipoMovimentacao, bool status)
     {
         Id = id;
-        NomeLista = nomeLista;
+        Nome = nomeLista;
         TipoMovimentacao = tipoMovimentacao;
+        Status = status;
     }
 
 }

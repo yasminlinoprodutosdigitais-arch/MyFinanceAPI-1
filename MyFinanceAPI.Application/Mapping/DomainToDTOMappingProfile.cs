@@ -24,5 +24,7 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>().ReverseMap();
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
+        CreateMap<VinculoTipoMovimentacao, VinculoTipoMovimentacaoDTO>().ReverseMap();
+        CreateMap<PessoaMovimentacao, PessoaMovimentacaoDTO>().ReverseMap();
     }
 }
