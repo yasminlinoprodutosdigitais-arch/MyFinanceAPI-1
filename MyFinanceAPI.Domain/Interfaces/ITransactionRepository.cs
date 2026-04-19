@@ -10,7 +10,7 @@ public interface ITransactionRepository
     Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId);
     Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId);
     Task<Transaction> GetTransactionById(int id, int userId);
-    Task<Transaction> Create(Transaction transaction);
+    Task Create(List<Transaction> transaction);
     Task<Transaction> Update(Transaction transaction, int userId);
     Task<Transaction> Remove(int id, int userId);
 }

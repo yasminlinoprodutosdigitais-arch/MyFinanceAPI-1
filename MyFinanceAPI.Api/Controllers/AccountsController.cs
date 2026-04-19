@@ -36,6 +36,24 @@ namespace MyFinanceAPI.Api.Controllers
             }
             catch (Exception ex)
             {
+                return Unauthorized(new { message = "Erro ao buscar Contas.", error = ex.Message });
+            }
+        }
+
+        [HttpGet("/GetContasAtivas")]
+        public async Task<ActionResult<IEnumerable<AccountDTO>>> GetContasAtivas()
+        {
+            try
+            {
+                int? userId = _userContextService.GetUserIdFromClaims();
+                if (userId == 0)
+                    return Unauthorized(new { message = "User not authorized" });
+
+                var accounts = await _accountService.GetContasAtivas(userId.Value);
+                return Ok(accounts);
+            }
+            catch (Exception ex)
+            {
                 return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
             }
         }
@@ -107,14 +125,22 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpPut("/UpdateAccount")]
-        public async Task<ActionResult<AccountDTO>> UpdateAccount(AccountDTO accountDTO)
+        public async Task<ActionResult<AccountDTO>> UpdateAccount([FromBody] AccountDTO accountDTO)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("User not authorized");
+            try
+            {
+                var userId = _userContextService.GetUserIdFromClaims();
+                if (userId == 0)
+                    return Unauthorized("User not authorized");
 
-            await _accountService.Update(accountDTO, userId);
-            return accountDTO;
+                await _accountService.Update(accountDTO, userId);
+                return accountDTO;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao atualizar conta.", error = ex.Message });
+            }
+
         }
 
         [HttpDelete("/DeleteAccount/{id}")]

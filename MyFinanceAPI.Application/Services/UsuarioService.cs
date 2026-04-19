@@ -21,7 +21,7 @@ namespace MyFinanceAPI.Application.Services
             _passwordHasher = new PasswordHasher<Usuario>();
         }
 
-        public async Task<UsuarioDto> BuscarUsuario(string login, string senha)
+        public async Task<Usuario> BuscarUsuario(string login, string senha)
         {
             // Busca o usuário de forma assíncrona
             Usuario usuario = await _usuarioRepository.BuscarUsuario(login, senha);
@@ -38,7 +38,7 @@ namespace MyFinanceAPI.Application.Services
                 return null;
 
             // Caso o usuário exista e a senha seja válida, retorna um DTO com o UserName (login) e a senha
-            return new UsuarioDto(usuario.UserName, senha);
+            return usuario;
         }
 
 

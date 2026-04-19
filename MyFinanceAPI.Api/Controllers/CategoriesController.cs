@@ -35,6 +35,20 @@ namespace MyFinanceAPI.WebUI.Controllers
                 return Ok(categories);
         }
 
+        [HttpGet("/GetCategoriasAtivas")]
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategoriasAtivas()
+        {
+            int? userId = _userContextService.GetUserIdFromClaims(); ;
+            if (userId == null)
+                return Unauthorized(new { message = "Usuário não autorizado!" });
+
+            var categories = await _categoryService.GetCategoriasAtivas(userId.Value);
+            if (categories is null)
+                return NotFound("");
+            else
+                return Ok(categories);
+        }
+
         [HttpGet("/GetCategoryById/{id}", Name = "GetCategory")]
         public async Task<ActionResult<CategoryDTO>> GetCategorybyId(int id)
         {

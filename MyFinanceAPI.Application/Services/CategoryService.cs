@@ -34,6 +34,12 @@ public class CategoryService : ICategoryService
         return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
     }
 
+    public async Task<IEnumerable<CategoryDTO>> GetCategoriasAtivas(int userId)
+    {
+        var categories = await _categoryRepository.GetCategoriesByUserIdAtiva(userId);
+        return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+    }
+
     public async Task<CategoryDTO> GetCategoryById(int id, int userId)
     {
         var category = await _categoryRepository.GetCategoryById(id, userId);
@@ -56,13 +62,20 @@ public class CategoryService : ICategoryService
 
         var newName = dto.Name?.Trim() ?? string.Empty;
         var newSub  = dto.SubCategory?.Trim() ?? string.Empty;
+        var newNatureza  = dto.NaturezaOperacao;
+        var newStatus  = dto.Status;
 
         var hasChanges =
             !string.Equals(cat.Name, newName, StringComparison.Ordinal) ||
-            !string.Equals(cat.SubCategory, newSub, StringComparison.Ordinal);
+            !string.Equals(cat.SubCategory, newSub, StringComparison.Ordinal) ||
+            !int.Equals(cat.NaturezaOperacao, newNatureza) ||
+            !int.Equals(cat.Status, newStatus);
 
         cat.Name        = newName;
         cat.SubCategory = newSub;
+        cat.NaturezaOperacao = newNatureza;
+        cat.Status = newStatus;
+        
         var saved = await _categoryRepository.UpdateAsync(cat);
 
         return saved;

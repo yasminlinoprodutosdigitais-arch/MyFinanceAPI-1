@@ -23,6 +23,7 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public string? BancoNome { get; set; }
 
         public int? CategoriaId { get; set; }
+        public string? NumeroFatura { get; set; }
         public string? CategoriaNome { get; set; }
 
         public bool? EhParcelado { get; set; } 

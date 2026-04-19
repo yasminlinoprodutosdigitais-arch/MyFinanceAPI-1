@@ -26,6 +26,19 @@ public class AccountRepository(ContextDB context) : IAccountRepository
         await _context.SaveChangesAsync();
         return account;
     }
+    public async Task CreateContaVencimento(List<ContaVencimento> vencimentos)
+    {
+        await _context.ContaVencimento.AddRangeAsync(vencimentos);
+        try
+        {
+            await _context.SaveChangesAsync();
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
 
     public async Task<List<Account>>? GetAccountByCategory(int categoryId, int userId)
     {
@@ -42,14 +55,30 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     }
 
     // Local: MyFinanceAPI/MyFinanceAPI.Data/Repositories/AccountRepository.cs
-
-    public async Task Remove(int id, int userId) // O método recebe id e userId
+    public async Task Remove(int id, int userId)
     {
-        var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+        var account = await _context.Accounts
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
         if (account != null)
         {
+            var vencimentos = await _context.ContaVencimento
+                .Where(v => v.ContaId == id)
+                .ToListAsync();
+
+            _context.ContaVencimento.RemoveRange(vencimentos);
+
             _context.Accounts.Remove(account);
 
+            await _context.SaveChangesAsync();
+        }
+    }
+    public async Task RemoveContaVencimento(int id, int userId) // O método recebe id e userId
+    {
+        var contas = await _context.ContaVencimento.FirstOrDefaultAsync(a => a.ContaId == id && a.UserId == userId);
+        if (contas != null)
+        {
+            _context.ContaVencimento.Remove(contas);
             await _context.SaveChangesAsync();
         }
     }
@@ -58,7 +87,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     public async Task<Account> Update(Account incomingAccount, int userId)
     {
         var existingAccount = await _context.Accounts
-            .Include(a => a.Category) 
+            .Include(a => a.Category)
             .FirstOrDefaultAsync(a => a.Id == incomingAccount.Id && a.UserId == userId);
 
         if (existingAccount == null)
@@ -68,8 +97,11 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
         existingAccount.Name = incomingAccount.Name;
         existingAccount.Value = incomingAccount.Value;
-        existingAccount.DataOperacao = incomingAccount.DataOperacao; 
         existingAccount.CategoryId = incomingAccount.CategoryId;
+        existingAccount.Status = incomingAccount.Status;
+        existingAccount.EhParcelado = incomingAccount.EhParcelado;
+        existingAccount.QuantidadeParcelas = incomingAccount.QuantidadeParcelas;
+        existingAccount.ParcelaAtual = incomingAccount.ParcelaAtual;
 
         await _context.SaveChangesAsync();
 
@@ -86,6 +118,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     {
         var account = await _context.Accounts
             .Where(c => c.UserId == userId && c.Id == id)
+            .Include(c => c.ContaVencimentos)
             .FirstOrDefaultAsync();
         return account;
     }
@@ -95,6 +128,19 @@ public class AccountRepository(ContextDB context) : IAccountRepository
         var accounts = await _context.Accounts
             .Where(a => a.UserId == userId)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
+            .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        return accounts;
+    }
+
+    public async Task<List<Account>>? GetContasAtivas(int userId)
+    {
+        var accounts = await _context.Accounts
+            .Where(a => a.UserId == userId && a.Status == 1)
+            .Include(a => a.Category)  // Incluindo a categoria nas contas
+            .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas
             .OrderBy(c => c.Name)
             .ToListAsync();
 

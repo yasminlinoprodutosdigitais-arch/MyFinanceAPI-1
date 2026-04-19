@@ -11,6 +11,7 @@ public class PessoaMovimentacaoDTO
     public int? CategoriaId { get; set; }
     public int? TipoMovimentacaoId { get; set; }
     public string NomePessoa { get; set; }
+    public string? MesAtualizacao{ get; set; }
 
     public Category? Categoria{ get; set; }
     public TipoMovimentacao? TipoMovimentacao { get; set; }
@@ -30,6 +31,14 @@ public class PessoaMovimentacaoDTO
         NomePessoa = nomePessoa;
         CategoriaId = categoriaId;
         TipoMovimentacaoId = tipoMovimentacaoId;
+    }
+    public PessoaMovimentacaoDTO(int id, string nomePessoa, int? categoriaId, int? tipoMovimentacaoId, string mes)
+    {
+        Id = id;
+        NomePessoa = nomePessoa;
+        CategoriaId = categoriaId;
+        TipoMovimentacaoId = tipoMovimentacaoId;
+        MesAtualizacao = mes;
     }
 
 }

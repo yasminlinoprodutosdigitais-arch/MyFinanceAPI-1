@@ -116,14 +116,18 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpDelete("/DeleteExtratoBancarioItem/{id:int}")]
         public async Task<ActionResult> DeleteExtratoItem(int id)
         {
-            try
+            try 
             {
                 var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+                    if (userId == 0)
+                return Unauthorized("Usuário não autorizado!");
+
+                var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
+                if(item == null)
+                    return NotFound(new {message = "Item de extrato não encontrado."});
 
                 await _extratoBancarioItemService.RemoveAsync(id, userId);
-                return Ok("Item de extrato removido com sucesso.");
+                return Ok(item);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -141,7 +145,7 @@ namespace MyFinanceAPI.Api.Controllers
         // GET /GetExtratoBancarioItensByMonth?month=2025-11
         [HttpGet("/GetExtratoBancarioItensByMonth")]
         public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetByMonth(
-            [FromQuery] string month)
+            [FromQuery] string month, [FromQuery] int? bancoId = null, [FromQuery] bool ehCredito = false)
         {
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
@@ -160,7 +164,7 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 return BadRequest("Formato de mês inválido. Use yyyy-MM (ex.: 2025-11).");
             }
-            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month);
+            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId, ehCredito);
             return Ok(itens);
         }
 

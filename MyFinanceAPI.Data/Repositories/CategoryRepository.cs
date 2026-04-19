@@ -23,6 +23,12 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
         return categories;
     }
 
+    public async Task<IEnumerable<Category>> GetCategoriesByUserIdAtiva(int userId)
+    {
+        var categories = await _context.Categories.Where(c => c.UserId == userId && c.Status == 1).OrderBy(c => c.Name).ToListAsync();
+        return categories;
+    }
+
     public async Task<Category?> GetCategoryById(int id, int userId)
     {
         var category = await _context.Categories

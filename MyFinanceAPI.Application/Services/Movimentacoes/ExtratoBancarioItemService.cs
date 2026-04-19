@@ -59,8 +59,36 @@ namespace MyFinanceAPI.Application.Services
                 throw new ArgumentNullException(nameof(dto));
 
             var entity = _mapper.Map<ExtratoBancarioItem>(dto);
-            entity.UserId = userId;
+            entity.PessoaMovimentacao = null;
 
+            entity.UserId = userId;
+            
+            var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(entity.NomePessoaTransacao, userId);
+            if(dto.PessoaMovimentacao != null)
+            {   
+                entity.PessoaMovimentacaoId = dto.PessoaMovimentacao.Id;
+                entity.NomePessoaTransacao = dto.PessoaMovimentacao.NomePessoa;
+                entity.TipoMovimentacaoId = dto.PessoaMovimentacao.TipoMovimentacaoId;
+                entity.CategoriaId = dto.PessoaMovimentacao.CategoriaId;
+            } else if (pessoaCadastrada != null && pessoaCadastrada.Count() > 0)            {
+                var pessoaId = pessoaCadastrada.First().Id;
+                var tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
+                var categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
+                
+                entity.PessoaMovimentacaoId = pessoaId;
+                entity.TipoMovimentacaoId = tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null;
+                entity.CategoriaId = categoriaId != 0 ? categoriaId : null;
+            }else
+            {
+                var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
+                {
+                    NomePessoa = entity.NomePessoaTransacao ?? "Pessoa sem nome",
+                    CategoriaId = entity.CategoriaId
+                }, userId);
+                entity.PessoaMovimentacaoId = pessoaCriada.Id;
+                entity.TipoMovimentacaoId = null;
+                entity.CategoriaId = null;
+            }
             var created = await _itemRepository.CreateAsync(entity);
             return _mapper.Map<ExtratoBancarioItemDTO>(created);
         }
@@ -89,14 +117,23 @@ namespace MyFinanceAPI.Application.Services
             existing.TipoCartaoId = dto.TipoCartaoId;
             existing.TipoMovimentacaoId = dto.TipoMovimentacaoId;
             existing.CategoriaId = dto.CategoriaId;
+            existing.NumeroFatura = dto.NumeroFatura;
 
-            await _itemRepository.UpdateAsync(existing);
             if (dto.AlteraVinculoPessoa)
             {
+                if (dto.PessoaMovimentacaoId == null || dto.PessoaMovimentacaoId == 0)
+                {
+                    var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
+                    {
+                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome"
+                    }, userId);
+                    dto.PessoaMovimentacaoId = pessoaCriada.Id;
+                    existing.PessoaMovimentacaoId = pessoaCriada.Id;
+                }
                 var pessoaId = dto.PessoaMovimentacaoId ?? 0;
                 var pessoaMovimentacao = await _pessoaMovimentacaoRepository.GetPessoaMovimentacaoById(pessoaId, userId);
                 if (pessoaMovimentacao == null)
-                {                  
+                {
                     pessoaMovimentacao = new PessoaMovimentacao
                     {
                         NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome"
@@ -114,6 +151,8 @@ namespace MyFinanceAPI.Application.Services
                     }, userId);
                 }
             }
+
+            await _itemRepository.UpdateAsync(existing);
         }
 
         public async Task RemoveAsync(int id, int userId)
@@ -128,22 +167,23 @@ namespace MyFinanceAPI.Application.Services
             await _itemRepository.RemoveAsync(id);
         }
 
-                public async Task<IEnumerable<ExtratoBancarioItemDTO>> GetByMonthAsync(
+        public async Task<IEnumerable<ExtratoBancarioItemDTO>> GetByMonthAsync(
             int userId,
             int year,
-            int month)
+            int month, int? bancoId = null, bool ehCredito = false)
         {
             var inicio = new DateOnly(year, month, 1);
             var fimExclusive = inicio.AddMonths(1);
+            var numeroFatura = year + "-" + month.ToString().PadLeft(2, '0');
 
-            var entities = await _itemRepository.GetByUserAndMonthAsync(
-                userId,
-                inicio,
-                fimExclusive);
+            var entities =  await _itemRepository.GetByUserAndMonthAsync(
+                    userId,
+                    inicio,
+                    fimExclusive, numeroFatura,bancoId);
 
             return _mapper.Map<IEnumerable<ExtratoBancarioItemDTO>>(entities);
         }
 
-        
+
     }
 }

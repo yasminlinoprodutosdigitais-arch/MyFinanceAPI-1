@@ -11,21 +11,61 @@ namespace MyFinanceAPI.Application.Services;
 public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository _transactionRepository;
-    private readonly IAccountRepository _accountRepository;
+    private readonly IAccountService _accountService;
     private readonly IMapper _mapper;
 
-    public TransactionService(ITransactionRepository transactionRepository, IMapper mapper, IAccountRepository accountRepository)
+    public TransactionService(ITransactionRepository transactionRepository, IMapper mapper, IAccountService accountService)
     {
         _transactionRepository = transactionRepository;
         _mapper = mapper;
-        _accountRepository = _accountRepository;
+        _accountService = accountService;
     }
 
-    public async Task Add(TransactionDTO TransactionDTO, int userId)
+    public async Task Add(TransactionDTO transactionDTO, int userId)
     {
-        var update = _mapper.Map<Domain.Entities.Transaction>(TransactionDTO);
-        update.UserId = userId;
-        await _transactionRepository.Create(update);
+        var conta = await _accountService.GetAccountById(transactionDTO.IdAccount ?? 0, userId);
+        var mesAno = transactionDTO.Date;
+        var transacoes = new List<Domain.Entities.Transaction>();
+
+        if (conta == null)
+        {
+            var novaConta = new AccountDTO
+            {
+                Name = transactionDTO.Name,
+                Value = (decimal)transactionDTO.Value,
+                Categoryid = (int)transactionDTO.CategoryId,
+                Status = 1,
+                DataOperacao = [mesAno.Day],
+            };
+            conta = await _accountService.Add(novaConta, userId);
+        }
+        var ultimoDiaMes = DateTime.DaysInMonth(mesAno.Year, mesAno.Month);
+        var valorParcelaMensal = conta.Value / conta.ContaVencimentos.Count();
+        foreach (var vencimento in conta.ContaVencimentos)
+        {
+            var dia = Math.Min(vencimento.Dia, ultimoDiaMes);
+            var novaTransacao = new Domain.Entities.Transaction
+            {
+                IdAccount = conta.Id,
+                Name = transactionDTO.Name,
+                UserId = userId,
+                Value = (decimal)valorParcelaMensal,
+                Status = transactionDTO.Status,
+                EhParcelado = transactionDTO.EhParcelado,
+                ParcelaAtual = transactionDTO.ParcelaAtual,
+                QuantidadeParcelas = transactionDTO.QuantidadeParcelas,
+                CategoryId = conta.Categoryid,
+                Date = new DateTime(
+                    mesAno.Year,
+                    mesAno.Month,
+                    dia
+                )
+            };
+
+            transacoes.Add(novaTransacao);
+        }
+
+        await _transactionRepository.Create(transacoes);
     }
 
     public async Task Delete(int id, int userId)
@@ -65,7 +105,52 @@ public class TransactionService : ITransactionService
 
     public async Task Update(TransactionDTO TransactionDTO, int userId)
     {
+        if (TransactionDTO.EhParcelado)
+        {
+            await UpdateParcelaAtual(TransactionDTO, userId);
+        }
+
         var update = _mapper.Map<Domain.Entities.Transaction>(TransactionDTO);
         await _transactionRepository.Update(update, userId);
+    }
+
+    private async Task UpdateParcelaAtual(TransactionDTO TransactionDTO, int userId)
+    {
+        var account = await _accountService.GetAccountById(TransactionDTO.IdAccount.Value, userId);
+        var transaction = await _transactionRepository.GetTransactionById(TransactionDTO.Id, userId);
+        var statusAnterior = transaction.Status;
+
+        var mudouStatus = statusAnterior != TransactionDTO.Status;
+
+        if (mudouStatus)
+        {
+            if ((statusAnterior == "PENDENTE" || statusAnterior == "AGUARDANDO") && (TransactionDTO.Status == "PAGO NO PRAZO" || TransactionDTO.Status == "PAGO ATRASADO"))
+            {
+                var proximaParcela = account.ParcelaAtual.GetValueOrDefault() + 1;
+                if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
+                {
+                    account.Status = 2; // Inativa
+                }
+                else
+                {
+                    account.ParcelaAtual = proximaParcela;
+                }
+                await _accountService.Update(account, userId);
+            }
+            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO"))
+            {
+                var proximaParcela = account.ParcelaAtual.GetValueOrDefault() - 1;
+                if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
+                {
+                    account.Status = 1; // Ativa
+                }
+                else
+                {
+                    account.ParcelaAtual = proximaParcela;
+                }
+
+                await _accountService.Update(account, userId);
+            }
+        }
     }
 }

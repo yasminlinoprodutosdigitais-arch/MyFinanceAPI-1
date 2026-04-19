@@ -19,9 +19,17 @@ namespace MyFinanceAPI.Infra.Data.Repositories
 
         public async Task<ExtratoBancarioItem> CreateAsync(ExtratoBancarioItem item)
         {
-            await _context.ExtratoBancarioItens.AddAsync(item);
-            await _context.SaveChangesAsync();
-            return item;
+            try
+            {
+                await _context.ExtratoBancarioItens.AddAsync(item);
+                await _context.SaveChangesAsync();
+                return item;
+                
+            } catch (Exception ex)
+            {
+                var msg = ex.InnerException.Message;
+                return null;
+            }
         }
 
         public async Task CreateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
@@ -104,7 +112,31 @@ namespace MyFinanceAPI.Infra.Data.Repositories
         public async Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndMonthAsync(
             int userId,
             DateOnly inicioInclusive,
-            DateOnly fimExclusive)
+            DateOnly fimExclusive, string numeroFatura = null, int? bancoId = null)
+        {
+            return await _context.ExtratoBancarioItens
+                .Include(i => i.Banco)
+                .Include(i => i.TipoCartao)
+                .Include(i => i.Categoria)
+                .Include(i => i.TipoMovimentacao)
+                .Where(i => i.TipoCartaoId == 1 && (
+                    i.UserId == userId &&
+                    i.NumeroFatura == numeroFatura &&
+                    (bancoId == null || i.BancoId == bancoId)
+                ) || i.TipoCartaoId != 1 && (
+                    i.UserId == userId &&
+                    i.DataMovimentacao >= inicioInclusive &&
+                    i.DataMovimentacao < fimExclusive &&
+                    (bancoId == null || i.BancoId == bancoId)
+                ))
+                .OrderBy(i => i.DataMovimentacao)
+                .ThenBy(i => i.Id)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndFaturaAsync(
+            int userId,
+            string numeroFatura, int? bancoId = null)
         {
             return await _context.ExtratoBancarioItens
                 .Include(i => i.Banco)
@@ -113,8 +145,8 @@ namespace MyFinanceAPI.Infra.Data.Repositories
                 .Include(i => i.TipoMovimentacao)
                 .Where(i =>
                     i.UserId == userId &&
-                    i.DataMovimentacao >= inicioInclusive &&
-                    i.DataMovimentacao < fimExclusive)
+                    i.NumeroFatura == numeroFatura &&
+                    (bancoId == null || i.BancoId == bancoId))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)
                 .ToListAsync();

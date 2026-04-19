@@ -149,14 +149,19 @@ namespace MyFinanceAPI.Application.Services
                     {
                         var partesDesc = descricaoStr.Split('-', StringSplitOptions.RemoveEmptyEntries);
                         if (partesDesc.Length >= 2)
-                            nomePessoa = partesDesc[1].Trim();
+                            nomePessoa = partesDesc[1].Trim() == null ? descricaoStr.ToUpper() : partesDesc[1].Trim().ToUpper();
                     }
 
                     var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
                     var pessoaId = 0;
+                    var tipoMovimentacaoId = 0;
+                    var categoriaId = 0;
+
                     if(pessoaCadastrada.Any())
                     {
                         pessoaId = pessoaCadastrada.First().Id;
+                        tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
+                        categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
                     }
                     else
                     {
@@ -174,7 +179,8 @@ namespace MyFinanceAPI.Application.Services
                         DataMovimentacao = dataMov,
                         BancoId = banco.Id,
                         TipoCartaoId = banco.TipoCartaoId,
-                        TipoMovimentacaoId = null,
+                        CategoriaId = categoriaId != 0 ? categoriaId : null,
+                        TipoMovimentacaoId =  tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null,
                         Valor = valorInteiro,
                         TipoLancamento = tipoLancamento,
                         Descricao = descricaoStr,

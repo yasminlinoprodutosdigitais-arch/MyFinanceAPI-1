@@ -8,10 +8,13 @@ namespace MyFinanceAPI.Domain.Interfaces;
 public interface IAccountRepository
 {
     Task<List<Account>>? GetAccounts(int userId);
+    Task<List<Account>>? GetContasAtivas(int userId);
     Task<Account> GetAccountById(int id, int userId);
     Task<List<Account>>? GetAccountByCategory(int categoryid, int userId);
     Task<Account> Create(Account account);
+    Task CreateContaVencimento (List<ContaVencimento> contaVencimento);
     Task<Account> Update(Account account, int userId);
     Task Remove(int id, int userId);
+    Task RemoveContaVencimento(int id, int userId);
     Task<IEnumerable<Account>> GetAccountsByCategory(int categoryId, int userId);
 }

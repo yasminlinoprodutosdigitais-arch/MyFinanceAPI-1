@@ -11,6 +11,10 @@ public class Transaction : BaseEntity
     public int? IdAccount { get; set; }  // Nome correto da coluna no banco de dados
     public int? CategoryId { get; set; }  // Nome correto da coluna no banco de dados
     public string Status { get; set; }
+    public bool EhParcelado { get; set; }
+    public int? ParcelaAtual { get; set; }
+    public int? QuantidadeParcelas { get; set; }
+    public string? Observacao { get; set; }
 
     public Account? Account { get; set; }
 
@@ -19,7 +23,7 @@ public class Transaction : BaseEntity
 
     }
 
-    public Transaction(DateTime date, string name, decimal value, int? idAccount, int? categoryId, string status)
+    public Transaction(DateTime date, string name, decimal value, int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Date = date;
         Name = name;
@@ -27,9 +31,13 @@ public class Transaction : BaseEntity
         IdAccount = idAccount;
         CategoryId = categoryId;
         Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
     }
 
-    public Transaction(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status)
+    public Transaction(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Id = id;
         Date = date;
@@ -38,5 +46,9 @@ public class Transaction : BaseEntity
         CategoryId = categoryId;
         Value = value;
         Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;    
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
     }
 }

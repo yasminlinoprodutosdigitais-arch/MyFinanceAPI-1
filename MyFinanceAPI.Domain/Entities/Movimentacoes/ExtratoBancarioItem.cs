@@ -28,6 +28,7 @@ namespace MyFinanceAPI.Domain.Entities
         public TipoCartao? TipoCartao { get; set; }
 
         public int? CategoriaId { get; set; }
+        public string? NumeroFatura { get; set; }
         public Category? Categoria { get; set; }
 
         public int? TipoMovimentacaoId { get; set; }

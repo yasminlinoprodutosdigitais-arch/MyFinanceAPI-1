@@ -14,7 +14,7 @@ namespace MyFinanceAPI.Application.Interfaces
         Task<ExtratoBancarioItemDTO> AddAsync(ExtratoBancarioItemDTO dto, int userId);
         Task UpdateAsync(ExtratoBancarioItemDTO dto, int userId);
         Task RemoveAsync(int id, int userId);
-        Task<IEnumerable<ExtratoBancarioItemDTO>> GetByMonthAsync(int userId, int year, int month);
+        Task<IEnumerable<ExtratoBancarioItemDTO>> GetByMonthAsync(int userId, int year, int month,int? bancoId = null, bool eCredito = false);
 
     }
 }

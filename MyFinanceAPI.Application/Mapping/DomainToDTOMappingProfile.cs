@@ -21,7 +21,9 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<ItemLista, ItemListaDTO>().ReverseMap();
         CreateMap<MovimentacaoDiaria, MovimentacaoDiariaDTO>().ReverseMap();
         CreateMap<ExtratoBancario, ExtratoBancarioDTO>().ReverseMap();
-        CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>().ReverseMap();
+        CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>()
+            .ReverseMap()
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
         CreateMap<VinculoTipoMovimentacao, VinculoTipoMovimentacaoDTO>().ReverseMap();

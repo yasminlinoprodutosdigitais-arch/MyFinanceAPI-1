@@ -9,6 +9,7 @@ namespace MyFinanceAPI.Data.Context
         {
                 public DbSet<Usuario> Usuarios { get; set; }
                 public DbSet<Account> Accounts { get; set; }
+                public DbSet<ContaVencimento> ContaVencimento { get; set; }
                 public DbSet<Category> Categories { get; set; }
                 public DbSet<Transaction> Transactions { get; set; }
                 public DbSet<Banco> Banco { get; set; }
@@ -77,6 +78,9 @@ namespace MyFinanceAPI.Data.Context
                                 entity.ToTable("ExtratoBancarioItem");
 
                                 entity.HasKey(e => e.Id);
+                                
+                                entity.Property(e => e.Id)
+                                        .ValueGeneratedOnAdd();
 
                                 // 🔹 AQUI: é TipoLancamento (string), não TipoMovimentacao
                                 entity.Property(e => e.TipoLancamento)
@@ -112,6 +116,10 @@ namespace MyFinanceAPI.Data.Context
                                         .WithMany(t => t.ExtratoBancarioItem) // <- sua coleção no TipoMovimentacao
                                         .HasForeignKey(e => e.TipoMovimentacaoId)
                                         .OnDelete(DeleteBehavior.SetNull);
+
+                                entity.HasOne(e => e.Categoria)
+                                        .WithMany()                 
+                                        .HasForeignKey(e => e.CategoriaId);
                                         
                         });
 
@@ -120,6 +128,12 @@ namespace MyFinanceAPI.Data.Context
                                 .WithMany() // ou crie outra coleção em TipoMovimentacao se quiser
                                 .HasForeignKey(v => v.TipoMovimentacaoId)
                                 .OnDelete(DeleteBehavior.SetNull);
+
+                        builder.Entity<ContaVencimento>()
+                                .HasOne(v => v.Account)
+                                .WithMany(a => a.ContaVencimentos)
+                                .HasForeignKey(v => v.ContaId)
+                                .OnDelete(DeleteBehavior.Cascade);
 
                 }
 

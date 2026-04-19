@@ -1,7 +1,9 @@
 using System;
+using System.Globalization;
 using System.Security.Claims;
 using AutoMapper;
 using MongoDB.Bson;
+using MongoDB.Driver.Linq;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
@@ -12,11 +14,13 @@ namespace MyFinanceAPI.Application.Services;
 public class PessoaMovimentacaoService : IPessoaMovimentacaoService
 {
     private readonly IPessoaMovimentacaoRepository _PessoaMovimentacaoRepository;
+    private readonly IExtratoBancarioItemService _extratoBancarioItemService;
     private readonly IMapper _mapper;
 
-    public PessoaMovimentacaoService(IPessoaMovimentacaoRepository PessoaMovimentacaoRepository, IMapper mapper)
+    public PessoaMovimentacaoService(IPessoaMovimentacaoRepository PessoaMovimentacaoRepository, IExtratoBancarioItemService extratoBancarioItemService, IMapper mapper)
     {
         _PessoaMovimentacaoRepository = PessoaMovimentacaoRepository;
+        _extratoBancarioItemService = extratoBancarioItemService;
         _mapper = mapper;
     }
     public async Task Add(PessoaMovimentacaoDTO PessoaMovimentacaoDTO, int userId)
@@ -44,8 +48,24 @@ public class PessoaMovimentacaoService : IPessoaMovimentacaoService
     }
 
     public async Task<bool> UpdateAsync(PessoaMovimentacaoDTO dto, int userId)
-    {   
+    {
         var PessoaMovimentacao = _mapper.Map<PessoaMovimentacao>(dto);
+        if (dto.MesAtualizacao != null)
+        {
+            var dataSeparada = dto.MesAtualizacao.ToString().Split('-');
+            var year = int.Parse(dataSeparada[0]);
+            var month = int.Parse(dataSeparada[1]);
+
+            var extratos = await _extratoBancarioItemService.GetByMonthAsync(userId, year, month);
+            extratos = extratos.Where((x) => x.UserId == userId && x.PessoaMovimentacaoId == dto.Id).ToArray();
+            foreach (var extrato in extratos)
+            {
+                extrato.NomePessoaTransacao = dto.NomePessoa;
+                extrato.CategoriaId = dto.CategoriaId;
+                extrato.TipoMovimentacaoId = dto.TipoMovimentacaoId;
+                await _extratoBancarioItemService.UpdateAsync(extrato, userId);
+            }
+        }
         await _PessoaMovimentacaoRepository.UpdateAsync(PessoaMovimentacao, userId);
         return true;
     }

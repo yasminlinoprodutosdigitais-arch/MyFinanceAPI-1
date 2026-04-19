@@ -15,43 +15,65 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<Transaction> Create(Transaction transaction)
+    // public async Task<Transaction> Create(Transaction transaction)
+    // {
+    //     if (transaction.IdAccount != 0)
+    //     {
+    //         var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
+
+    //         if (!existingAccount)
+    //         {
+    //             throw new ArgumentException("Account not existing", nameof(transaction));
+    //         }
+    //     }
+    //     else if (transaction.CategoryId != 0)
+    //     {
+    //         var existingCategory = _context.Categories.Any(c => c.Id == transaction.CategoryId && c.UserId == transaction.UserId);
+    //         transaction.IdAccount = null;
+    //         if (!existingCategory)
+    //         {
+    //             throw new ArgumentException("Category not existing", nameof(transaction));
+    //         }
+    //     }
+
+
+    //     DateTime localDate = transaction.Date;
+    //     if (localDate.Kind == DateTimeKind.Unspecified)
+    //     {
+    //         localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);  // Ou UTC, se for o caso
+    //     }
+
+    //     DateTime utcDate = localDate.ToUniversalTime();
+    //     transaction.Date = utcDate;
+
+
+    //     await _context.Transactions.AddAsync(transaction);
+    //     await _context.SaveChangesAsync();
+    //     return transaction;
+    // }
+
+    public async Task Create(List<Transaction> transactions)
     {
-        if (transaction.IdAccount != 0)
+        foreach (var transaction in transactions)
         {
-            var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
+            DateTime localDate = transaction.Date;
+            if (localDate.Kind == DateTimeKind.Unspecified)
+                localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);
 
-            if (!existingAccount)
-            {
-                throw new ArgumentException("Account not existing", nameof(transaction));
-            }
-        }
-        else if (transaction.CategoryId != 0)
-        {
-            var existingCategory = _context.Categories.Any(c => c.Id == transaction.CategoryId && c.UserId == transaction.UserId);
-            transaction.IdAccount = null;
-            if (!existingCategory)
-            {
-                throw new ArgumentException("Category not existing", nameof(transaction));
-            }
+            transaction.Date = localDate.ToUniversalTime();
         }
 
-
-        DateTime localDate = transaction.Date;
-        if (localDate.Kind == DateTimeKind.Unspecified)
+        try
         {
-            localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);  // Ou UTC, se for o caso
+            await _context.Transactions.AddRangeAsync(transactions);
+            await _context.SaveChangesAsync();
+            
         }
-
-        DateTime utcDate = localDate.ToUniversalTime();
-        transaction.Date = utcDate;
-
-
-        await _context.Transactions.AddAsync(transaction);
-        await _context.SaveChangesAsync();
-        return transaction;
+        catch (Exception e)
+        {
+            
+        }
     }
-
 
     public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId)
     {
@@ -76,6 +98,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                 group.Key.Id,          // ID da categoria
                 group.Key.Name,        // Nome da categoria
                 group.Key.SubCategory, // Subcategoria da categoria
+                group.Key.NaturezaOperacao, // Subcategoria da categoria
                 group.Select(a => new Account
                 {
                     Id = a.Id,
@@ -98,7 +121,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-        public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
+    public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
     {
         var month = dateTime.Month;
         var year = dateTime.Year;
@@ -115,6 +138,11 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                 Status = t.Status,
                 CategoryId = t.CategoryId,
                 IdAccount = t.IdAccount,
+                EhParcelado = t.EhParcelado,
+                ParcelaAtual = t.ParcelaAtual,
+                QuantidadeParcelas = t.QuantidadeParcelas,
+                Observacao = t.Observacao,
+
 
                 Account = t.IdAccount == null ? null : new Account
                 {
@@ -178,9 +206,15 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         existingTransaction.Name = transaction.Name;
         existingTransaction.Value = transaction.Value;
         existingTransaction.Status = transaction.Status;
+        existingTransaction.EhParcelado = transaction.EhParcelado;
+        existingTransaction.ParcelaAtual = transaction.ParcelaAtual;
+        existingTransaction.QuantidadeParcelas = transaction.QuantidadeParcelas;
+        existingTransaction.Observacao = transaction.Observacao;
+
 
         await _context.SaveChangesAsync();
 
         return existingTransaction;
     }
+
 }
