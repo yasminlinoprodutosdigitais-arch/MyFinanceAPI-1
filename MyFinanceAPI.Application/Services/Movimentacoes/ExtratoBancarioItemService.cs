@@ -82,7 +82,7 @@ namespace MyFinanceAPI.Application.Services
             {
                 var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
                 {
-                    NomePessoa = entity.NomePessoaTransacao ?? "Pessoa sem nome",
+                    NomePessoa = entity.NomePessoaTransacao.ToUpper() ?? "Pessoa sem nome",
                     CategoriaId = entity.CategoriaId
                 }, userId);
                 entity.PessoaMovimentacaoId = pessoaCriada.Id;

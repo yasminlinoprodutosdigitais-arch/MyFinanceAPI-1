@@ -63,28 +63,44 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
 
-        [HttpGet("/GetTransactionByDate/{date}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date)
+        [HttpGet("/GetTransactionByDate/{date}/{pesquisaDataCompleta}")]
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta)
         {
+            date = pesquisaDataCompleta ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : date;
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
                 return Unauthorized("User not authorized");
 
-            var transaction = await _transactionService.GetTransactionByDate(date, userId);
+            var transaction = await _transactionService.GetTransactionByDate(date, userId, pesquisaDataCompleta);
             if (transaction is null)
                 return NotFound();
             else
                 return Ok(transaction);
         }
 
-        [HttpGet("/GetTransactionGroupingByDate/{date}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionGroupingByDate(DateTime date)
+        [HttpGet("/GetContaVencida/{date}")]
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetContaVencida(DateTime date)
+        {
+            date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == 0)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _transactionService.GetContaVencida(date, userId);
+            if (transaction is null)
+                return NotFound();
+            else
+                return Ok(transaction);
+        }
+
+        [HttpGet("/GetTransactionGroupingByDate/{date}/{pesquisaDataCompleta}")]
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionGroupingByDate(DateTime date, bool pesquisaDataCompleta)
         {
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
                 return Unauthorized("User not authorized");
 
-            var transaction = await _transactionService.GetTransactionGroupingByDate(date, userId);
+            var transaction = await _transactionService.GetTransactionGroupingByDate(date, userId, pesquisaDataCompleta);
             if (transaction is null)
                 return NotFound();
             else

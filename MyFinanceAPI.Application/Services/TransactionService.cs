@@ -91,26 +91,31 @@ public class TransactionService : ITransactionService
         return _mapper.Map<TransactionDTO>(update);
     }
 
-    public async Task<IEnumerable<TransactionDTO>> GetTransactionByDate(DateTime date, int userId)
+    public async Task<IEnumerable<TransactionDTO>> GetTransactionByDate(DateTime date, int userId,  bool pesquisaDataCompleta = false)
     {
-        var Transaction = await _transactionRepository.GetTransactionByDate(date, userId);
+        var Transaction = await _transactionRepository.GetTransactionByDate(date, userId, pesquisaDataCompleta);
+        return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
+    }
+    public async Task<IEnumerable<TransactionDTO>> GetContaVencida(DateTime hoje, int userId)
+    {
+        var Transaction = await _transactionRepository.GetContaVencida(hoje, userId);
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
-    public async Task<IEnumerable<TransactionDTO>> GetTransactionGroupingByDate(DateTime date, int userId)
+    public async Task<IEnumerable<TransactionDTO>> GetTransactionGroupingByDate(DateTime date, int userId, bool pesquisaDataCompleta = false)
     {
-        var Transaction = await _transactionRepository.GetTransactionGroupingByDate(date, userId);
+        var Transaction = await _transactionRepository.GetTransactionGroupingByDate(date, userId, pesquisaDataCompleta);
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
-    public async Task Update(TransactionDTO TransactionDTO, int userId)
+    public async Task Update(TransactionDTO transactionDTO, int userId)
     {
-        if (TransactionDTO.EhParcelado)
+        if (transactionDTO.EhParcelado)
         {
-            await UpdateParcelaAtual(TransactionDTO, userId);
+            await UpdateParcelaAtual(transactionDTO, userId);
         }
 
-        var update = _mapper.Map<Domain.Entities.Transaction>(TransactionDTO);
+        var update = _mapper.Map<Domain.Entities.Transaction>(transactionDTO);
         await _transactionRepository.Update(update, userId);
     }
 

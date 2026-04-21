@@ -50,7 +50,7 @@ public class PessoaMovimentacaoService : IPessoaMovimentacaoService
     public async Task<bool> UpdateAsync(PessoaMovimentacaoDTO dto, int userId)
     {
         var PessoaMovimentacao = _mapper.Map<PessoaMovimentacao>(dto);
-        if (dto.MesAtualizacao != null)
+        if (dto.MesAtualizacao != null && dto.MesAtualizacao != "")
         {
             var dataSeparada = dto.MesAtualizacao.ToString().Split('-');
             var year = int.Parse(dataSeparada[0]);

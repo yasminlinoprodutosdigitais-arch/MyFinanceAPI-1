@@ -119,11 +119,11 @@ namespace MyFinanceAPI.Infra.Data.Repositories
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)
                 .Include(i => i.TipoMovimentacao)
-                .Where(i => i.TipoCartaoId == 1 && (
+                .Where(i => (i.TipoCartaoId == 1 || i.TipoCartaoId == 13) && (
                     i.UserId == userId &&
                     i.NumeroFatura == numeroFatura &&
                     (bancoId == null || i.BancoId == bancoId)
-                ) || i.TipoCartaoId != 1 && (
+                ) || i.TipoCartaoId != 1 && i.TipoCartaoId != 13 && (
                     i.UserId == userId &&
                     i.DataMovimentacao >= inicioInclusive &&
                     i.DataMovimentacao < fimExclusive &&

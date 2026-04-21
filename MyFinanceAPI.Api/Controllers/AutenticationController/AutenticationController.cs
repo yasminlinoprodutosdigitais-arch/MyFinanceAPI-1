@@ -36,7 +36,13 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
             return Ok(new
             {
                 Token = tokenDto,
-                Usuario = usuario
+                Usuario = new Usuario
+                {
+                    NomeUsuario = usuario.NomeUsuario,
+                    Email = usuario.Email,
+                    Role = usuario.Role,
+
+                }
             });
         }
 

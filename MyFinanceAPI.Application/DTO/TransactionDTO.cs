@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using AutoMapper.Configuration.Annotations;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Application.DTO;
@@ -13,6 +14,8 @@ public class TransactionDTO
     public int? IdAccount {get; set; }
     public int? CategoryId {get; set; }
     public string Status { get; set; }
+    [Ignore]
+    public int? TipoContaId { get; set; }
     
     public bool EhParcelado { get; set; }
     public int? ParcelaAtual { get; set; }
@@ -26,6 +29,38 @@ public class TransactionDTO
     {
         
     }
+
+    public TransactionDTO(DateTime date, string name, double value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    {
+        Date = date;
+        Name = name;
+        Value = value;
+        IdAccount = idAccount;
+        CategoryId = categoryId;
+        Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
+        TipoContaId = tipoContaId;
+    }
+
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, double value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    {
+        Id = id;
+        Date = date;
+        Name = name;
+        IdAccount = idAccount;
+        CategoryId = categoryId;
+        Value = value;
+        Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
+        TipoContaId = tipoContaId;
+    } 
+    
 
     public TransactionDTO(DateTime date, string name, double value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {

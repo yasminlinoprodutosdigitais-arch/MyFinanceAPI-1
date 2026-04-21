@@ -67,19 +67,32 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         {
             await _context.Transactions.AddRangeAsync(transactions);
             await _context.SaveChangesAsync();
-            
+
         }
         catch (Exception e)
         {
-            
+
         }
     }
 
-    public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId)
+    public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
-        return await _context.Transactions
-            .Where(c => c.UserId == userId && c.Date.Month == dateTime.Month && c.Date.Year == dateTime.Year)
+        var a = await _context.Transactions
+            .Where(c => c.UserId == userId && (pesquisaDataCompleta ? c.Date.Date == dateTime.Date : c.Date.Month == dateTime.Month && c.Date.Year == dateTime.Year))
             .ToListAsync();
+        return a;
+    }
+
+    public async Task<IEnumerable<Transaction>> GetContaVencida(DateTime hoje, int userId)
+    {
+        var a = await _context.Transactions
+            .Where(c => c.UserId == userId
+                && c.Date.Date < hoje.Date
+                && c.Status != "PAGO NO PRAZO"
+                && c.Status != "PAGO ATRASADO")
+            .ToListAsync();
+
+        return a;
     }
 
     public async Task<List<AccountGrouping>> GetTransactions(int userId)
@@ -121,14 +134,14 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     }
 
 
-    public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId)
+    public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
         var month = dateTime.Month;
         var year = dateTime.Year;
 
         // 1) Carrega transações do mês (com ou sem conta)
         var transactions = await _context.Transactions
-            .Where(t => t.UserId == userId && t.Date.Month == month && t.Date.Year == year)
+            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dateTime : t.Date.Month == month && t.Date.Year == year))
             .Select(t => new Transaction
             {
                 Id = t.Id,
@@ -158,8 +171,15 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                         Value = m.Value,
                         Status = m.Status
                     }).ToList()
-
+                },
+                Category = t.CategoryId == null ? null : new Category
+                {
+                    Id = t.Account.CategoryId,
+                    SubCategory = t.Account.Category.SubCategory,
+                    NaturezaOperacao = t.Account.Category.NaturezaOperacao,
+                    Status = t.Account.Category.Status
                 }
+
             })
             .ToListAsync();
 

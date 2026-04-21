@@ -16,6 +16,8 @@ public class Transaction : BaseEntity
     public int? QuantidadeParcelas { get; set; }
     public string? Observacao { get; set; }
 
+    [JsonIgnore]
+    public Category? Category { get; set; }  // Relacionamento com Category
     public Account? Account { get; set; }
 
     public Transaction()

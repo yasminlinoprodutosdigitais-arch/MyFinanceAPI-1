@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(o =>
     };
 });
 
-builder.Services.AddAuthorization(o => o.AddPolicy("Admin", p => p.RequireRole("Admin")));
+builder.Services.AddAuthorization(o => o.AddPolicy("Admin", p => p.RequireRole("Admin", "Empresa")));
 
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
