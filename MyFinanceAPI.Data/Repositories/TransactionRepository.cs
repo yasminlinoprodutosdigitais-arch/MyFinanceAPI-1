@@ -228,6 +228,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         existingTransaction.Status = transaction.Status;
         existingTransaction.EhParcelado = transaction.EhParcelado;
         existingTransaction.ParcelaAtual = transaction.ParcelaAtual;
+        existingTransaction.CategoryId = transaction.CategoryId;
         existingTransaction.QuantidadeParcelas = transaction.QuantidadeParcelas;
         existingTransaction.Observacao = transaction.Observacao;
 
