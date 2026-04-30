@@ -140,7 +140,7 @@ public class TransactionService : ITransactionService
                 {
                     account.ParcelaAtual = proximaParcela;
                 }
-                await _accountService.Update(account, userId);
+                await _accountService.UpdateParcela(account, userId);
             }
             else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO"))
             {

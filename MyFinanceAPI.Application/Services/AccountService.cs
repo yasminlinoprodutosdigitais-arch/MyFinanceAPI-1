@@ -56,6 +56,12 @@ public class AccountService : IAccountService
 
         await _accountRepository.CreateContaVencimento(vencimentos);
     }
+
+    public async Task UpdateParcela(AccountDTO accountDTO, int userId)
+    {
+        var account = _mapper.Map<Account>(accountDTO);
+        await _accountRepository.Update(account, userId);
+    }
     public async Task Remove(int id, int userId)
     {
         await _accountRepository.Remove(id, userId);
