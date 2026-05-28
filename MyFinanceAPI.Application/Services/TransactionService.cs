@@ -70,6 +70,12 @@ public class TransactionService : ITransactionService
 
     public async Task Delete(int id, int userId)
     {
+        var transaction = _mapper.Map<Domain.Entities.Transaction, TransactionDTO>(await _transactionRepository.GetTransactionById(id, userId));
+        if (transaction == null)        {
+            throw new Exception("Transação não encontrada ou não pertence ao usuário.");
+        }
+
+        await UpdateParcelaAtual(transaction, userId, deleted: true);
         await _transactionRepository.Remove(id, userId);
     }
 
@@ -119,7 +125,7 @@ public class TransactionService : ITransactionService
         await _transactionRepository.Update(update, userId);
     }
 
-    private async Task UpdateParcelaAtual(TransactionDTO TransactionDTO, int userId)
+    private async Task UpdateParcelaAtual(TransactionDTO TransactionDTO, int userId, bool deleted = false)
     {
         var account = await _accountService.GetAccountById(TransactionDTO.IdAccount.Value, userId);
         var transaction = await _transactionRepository.GetTransactionById(TransactionDTO.Id, userId);
@@ -127,7 +133,7 @@ public class TransactionService : ITransactionService
 
         var mudouStatus = statusAnterior != TransactionDTO.Status;
 
-        if (mudouStatus)
+        if (mudouStatus || deleted)
         {
             if ((statusAnterior == "PENDENTE" || statusAnterior == "AGUARDANDO") && (TransactionDTO.Status == "PAGO NO PRAZO" || TransactionDTO.Status == "PAGO ATRASADO"))
             {
@@ -142,16 +148,15 @@ public class TransactionService : ITransactionService
                 }
                 await _accountService.UpdateParcela(account, userId);
             }
-            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO"))
+            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO") || deleted)
             {
-                var proximaParcela = account.ParcelaAtual.GetValueOrDefault() - 1;
                 if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
                 {
                     account.Status = 1; // Ativa
                 }
                 else
                 {
-                    account.ParcelaAtual = proximaParcela;
+                    account.ParcelaAtual = transaction.ParcelaAtual;
                 }
 
                 await _accountService.Update(account, userId);
