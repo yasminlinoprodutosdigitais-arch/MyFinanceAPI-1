@@ -75,7 +75,8 @@ public class TransactionService : ITransactionService
             throw new Exception("Transação não encontrada ou não pertence ao usuário.");
         }
 
-        await UpdateParcelaAtual(transaction, userId, deleted: true);
+        if(transaction.EhParcelado)
+            await UpdateParcelaAtual(transaction, userId, deleted: true);
         await _transactionRepository.Remove(id, userId);
     }
 
@@ -159,7 +160,7 @@ public class TransactionService : ITransactionService
                     account.ParcelaAtual = transaction.ParcelaAtual;
                 }
 
-                await _accountService.Update(account, userId);
+                await _accountService.UpdateParcela(account, userId);
             }
         }
     }

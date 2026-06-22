@@ -31,7 +31,7 @@ public class AccountService : IAccountService
         {
             ContaId = conta.Id,
             Dia = d,
-            UserId = userId 
+            UserId = userId
         }).ToList();
 
         await _accountRepository.CreateContaVencimento(vencimentos);
@@ -46,15 +46,19 @@ public class AccountService : IAccountService
 
         await _accountRepository.RemoveContaVencimento(account.Id, userId);
 
-        // 🔥 adicionar novos
-        var vencimentos = accountDTO.DataOperacao.Select(d => new ContaVencimento
+        if (accountDTO.DataOperacao != null)
         {
-            ContaId = account.Id,
-            Dia = d,
-            UserId = userId
-        }).ToList();
+            // 🔥 adicionar novos
+            var vencimentos = accountDTO.DataOperacao.Select(d => new ContaVencimento
+            {
+                ContaId = account.Id,
+                Dia = d,
+                UserId = userId
+            }).ToList();
 
-        await _accountRepository.CreateContaVencimento(vencimentos);
+            await _accountRepository.CreateContaVencimento(vencimentos);
+        }
+
     }
 
     public async Task UpdateParcela(AccountDTO accountDTO, int userId)
