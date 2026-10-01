@@ -12,6 +12,7 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<Category> Create(Category category)
     {
+        category.DataAlteracao = DateTime.UtcNow;
         await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
         return category;

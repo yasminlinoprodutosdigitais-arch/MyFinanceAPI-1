@@ -96,19 +96,16 @@ namespace MyFinanceAPI.Api.Controllers
                     return BadRequest("Dados inválidos.");
 
                 await _extratoBancarioItemService.UpdateAsync(dto, userId);
-                return Ok("Item de extrato atualizado com sucesso.");
+                
+                return Ok(new { message = "Item de extrato atualizado com sucesso." });
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao atualizar item de extrato.", error = ex.Message });
+                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
             }
         }
 
@@ -145,7 +142,7 @@ namespace MyFinanceAPI.Api.Controllers
         // GET /GetExtratoBancarioItensByMonth?month=2025-11
         [HttpGet("/GetExtratoBancarioItensByMonth")]
         public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetByMonth(
-            [FromQuery] string month, [FromQuery] int? bancoId = null, [FromQuery] bool ehCredito = false)
+            [FromQuery] string month, [FromQuery] int? bancoId, [FromQuery] bool ehCredito = false)
         {
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
@@ -164,7 +161,7 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 return BadRequest("Formato de mês inválido. Use yyyy-MM (ex.: 2025-11).");
             }
-            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId, ehCredito);
+            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId ?? null, ehCredito);
             return Ok(itens);
         }
 

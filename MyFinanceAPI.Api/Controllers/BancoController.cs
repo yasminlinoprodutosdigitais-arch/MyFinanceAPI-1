@@ -80,7 +80,8 @@ namespace MyFinanceAPI.Api.Controllers
                     return BadRequest("Dados inválidos.");
 
                 await _BancoService.Add(BancoDTO, userId);
-                return Ok("Banco criado com sucesso!");
+                
+                return StatusCode(StatusCodes.Status201Created, new { message = "Banco criado com sucesso!" });
             }
             catch (KeyNotFoundException ex)
             {

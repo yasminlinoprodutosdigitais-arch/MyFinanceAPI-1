@@ -186,6 +186,40 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         return transactions;
     }
 
+    public async Task<List<Transaction>> BuscarContasMensais(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
+    {
+        var month = dateTime.Month;
+        var year = dateTime.Year;
+
+        // 1) Carrega transações do mês (com ou sem conta)
+        var transactions = await _context.Transactions
+            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dateTime : t.Date.Month == month && t.Date.Year == year))
+            .Select(t => new Transaction
+            {
+                Id = t.Id,
+                Date = t.Date,
+                Name = t.Name,
+                Value = t.Value,
+                Status = t.Status,
+
+                CategoryId = t.CategoryId,
+                CategoryName = t.Category.Name,
+                SubCategoryName = t.Category.SubCategory,
+                
+                IdAccount = t.IdAccount,
+                AccountName = t.Account.Name,
+
+                EhParcelado = t.EhParcelado,
+                ParcelaAtual = t.ParcelaAtual,
+                QuantidadeParcelas = t.QuantidadeParcelas,
+                Observacao = t.Observacao,
+
+            })
+            .ToListAsync();
+
+        return transactions;
+    }
+
     // public Task<IEnumerable<Transaction>> GetTransactionByCategory(int categoryid, int userId)
     // {
     //     throw new NotImplementedException();

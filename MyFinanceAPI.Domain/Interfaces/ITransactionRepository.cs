@@ -8,6 +8,7 @@ public interface ITransactionRepository
 {
     Task<List<AccountGrouping>> GetTransactions(int userId);
     Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false);
+    Task<List<Transaction>> BuscarContasMensais(DateTime dateTime, int userId, bool pesquisaDataCompleta = false);
     Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false);
     Task<IEnumerable<Transaction>> GetContaVencida(DateTime hoje, int userId);
     Task<Transaction> GetTransactionById(int id, int userId);

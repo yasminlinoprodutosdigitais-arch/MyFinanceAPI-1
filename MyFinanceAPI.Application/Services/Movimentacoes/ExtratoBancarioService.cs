@@ -44,6 +44,13 @@ namespace MyFinanceAPI.Application.Services
         {
             // Aqui você pode ter um campo UserId no ExtratoBancario (em BaseEntity)
             var extratos = await _extratoBancarioRepository.GetByUserIdAsync(userId, month);
+            
+            extratos = extratos.Select(e =>
+            {
+                var banco = _bancoService.GetBancoById(e.BancoId, userId).Result;
+                e.BancoNome = banco?.NomeBanco ?? "Banco não encontrado";
+                return e;
+            });
             return _mapper.Map<IEnumerable<ExtratoBancarioDTO>>(extratos);
         }
 

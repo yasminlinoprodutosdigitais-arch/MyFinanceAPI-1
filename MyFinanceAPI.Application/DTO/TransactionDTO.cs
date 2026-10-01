@@ -12,7 +12,10 @@ public class TransactionDTO
     public string Name { get; set; }
     public double Value { get; set; }
     public int? IdAccount {get; set; }
+    public string? AccountName {get; set; }
     public int? CategoryId {get; set; }
+    public string? CategoryName {get; set; }
+    public string? SubCategoryName {get; set; }
     public string Status { get; set; }
     [Ignore]
     public int? TipoContaId { get; set; }
@@ -83,6 +86,23 @@ public class TransactionDTO
         Name = name;
         IdAccount = idAccount;
         CategoryId = categoryId;
+        Value = value;
+        Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
+    } 
+
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, double value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    {
+        Id = id;
+        Date = date;
+        Name = name;
+        IdAccount = idAccount;
+        AccountName = accountName;
+        CategoryId = categoryId;
+        CategoryName = categoryName;
         Value = value;
         Status = status;
         EhParcelado = ehParcelado;

@@ -115,6 +115,12 @@ public class TransactionService : ITransactionService
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
+    public async Task<IEnumerable<TransactionDTO>> BuscarContasMensais(DateTime date, int userId, bool pesquisaDataCompleta = false)
+    {
+        var Transaction = await _transactionRepository.BuscarContasMensais(date, userId, pesquisaDataCompleta);
+        return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
+    }
+
     public async Task Update(TransactionDTO transactionDTO, int userId)
     {
         if (transactionDTO.EhParcelado)

@@ -48,7 +48,7 @@ public class TokenService : ITokenService
                 : "America/Sao_Paulo"
             );
 
-            var expiresUtc = DateTime.UtcNow.AddHours(1);
+            var expiresUtc = DateTime.UtcNow.AddHours(3);
             var expiresBrasil = TimeZoneInfo.ConvertTimeFromUtc(expiresUtc, brasilTz);
 
             var tokenDescriptor = new SecurityTokenDescriptor

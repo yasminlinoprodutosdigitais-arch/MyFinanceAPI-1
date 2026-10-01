@@ -13,21 +13,23 @@ public class Banco : BaseEntity
     public int TipoCartaoId { get; set; }
     public decimal SaldoInicial { get; set; }
     public bool? Ativo { get; set; }
+    public DateTime DataAlteracao { get; set;}
 
     public TipoCartao TipoCartao { get; set; }
 
     public Banco() { } 
 
-    public Banco(string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, bool? ativo)
+    public Banco(string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, DateTime dataAlteracao, bool? ativo)
     {
         NomeBanco = nomeBanco;
         NumeroConta = numeroConta;
         TipoCartaoId = tipoCartaoId;
         SaldoInicial = saldoInicial;
+        DataAlteracao = dataAlteracao;
         Ativo = ativo;
     }
 
-    public Banco(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, bool? ativo, TipoCartao tipoCartao)
+    public Banco(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal saldoInicial, DateTime dataAlteracao, bool? ativo, TipoCartao tipoCartao)
     {
         Id = id;
         NomeBanco = nomeBanco;
@@ -35,6 +37,7 @@ public class Banco : BaseEntity
         TipoCartaoId = tipoCartaoId;
         SaldoInicial = saldoInicial;
         Ativo = ativo;
+        DataAlteracao = dataAlteracao;
         TipoCartao = tipoCartao;
     }
 

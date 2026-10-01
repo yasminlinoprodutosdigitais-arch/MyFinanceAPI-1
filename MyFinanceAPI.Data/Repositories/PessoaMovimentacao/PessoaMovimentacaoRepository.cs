@@ -28,7 +28,7 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
 
     public async Task<IEnumerable<PessoaMovimentacao>> GetPessoaMovimentacaoByUserId(int userId)
     {
-        var PessoaMovimentacao = await _context.PessoaMovimentacao.Where(c => c.UserId == userId).OrderBy(c => c.NomePessoa).ToListAsync();
+        var PessoaMovimentacao = await _context.PessoaMovimentacao.Where(c => c.UserId == userId).OrderBy(c => c.NomePessoa).Include(a => a.Categoria).Include(a => a.TipoMovimentacao).ToListAsync();
         return PessoaMovimentacao;
     }
 
@@ -36,6 +36,8 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
     {
         var PessoaMovimentacao = await _context.PessoaMovimentacao
             .Where(c => c.UserId == userId && c.Id == id)
+            .Include(c => c.Categoria)
+            .Include(c => c.TipoMovimentacao)
             .FirstOrDefaultAsync();
 
         if (PessoaMovimentacao == null)
@@ -94,6 +96,8 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
         return await _context.PessoaMovimentacao
             .Where(a => a.UserId == userId)
             .OrderBy(c => c.NomePessoa)
+            .Include(a => a.Categoria)
+            .Include(a => a.TipoMovimentacao)
             .ToListAsync();
     }
 
@@ -104,6 +108,8 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
             return await _context.PessoaMovimentacao
                 .Where(a => a.UserId == userId && a.NomePessoa == nomePessoa)
                 .OrderBy(c => c.NomePessoa)
+                .Include(a => a.Categoria)
+                .Include(a => a.TipoMovimentacao)
                 .ToListAsync();
         }
         catch (Exception ex)

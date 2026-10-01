@@ -11,6 +11,7 @@ public class ItemListaDTO
     public int ListaId { get; set; }
     public string Descricao { get; set; }
     public int? Quantidade { get; set; }
+    public string? Observacao { get; set; }
     public string? Status { get; set; }
     public decimal? Valor { get; set; }
     public DateOnly? DataTarefa { get; set; }
@@ -21,20 +22,22 @@ public class ItemListaDTO
         
     public ItemListaDTO() { } 
 
-    public ItemListaDTO( int listaId, string descricao, int quantidade, string status)
+    public ItemListaDTO( int listaId, string descricao, int quantidade, string observacao, string status)
     {
         ListaId = listaId;
         Descricao = descricao;
         Quantidade = quantidade;
+        Observacao = observacao;
         Status = status;
     }
 
-    public ItemListaDTO(int id, int listaId, string descricao, int quantidade, string status)
+    public ItemListaDTO(int id, int listaId, string descricao, int quantidade, string observacao, string status)
     {
         Id = id;
         ListaId = listaId;
         Descricao = descricao;
         Quantidade = quantidade;
+        Observacao = observacao;
         Status = status;
     }
 

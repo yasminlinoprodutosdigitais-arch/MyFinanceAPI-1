@@ -80,6 +80,7 @@ public class ItemListaRepository(ContextDB context) : IItemListaRepository
         existingItemLista.Descricao = incomingItemLista.Descricao;
         existingItemLista.Quantidade = incomingItemLista.Quantidade;
         existingItemLista.Status = incomingItemLista.Status;
+        existingItemLista.Observacao = incomingItemLista.Observacao;
         existingItemLista.Valor = incomingItemLista.Valor;
 
         await _context.SaveChangesAsync();

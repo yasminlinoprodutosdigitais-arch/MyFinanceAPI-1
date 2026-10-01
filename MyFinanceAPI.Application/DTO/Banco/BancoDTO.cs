@@ -13,6 +13,8 @@ public class BancoDTO
     public string? NumeroConta { get; set; }
     public int TipoCartaoId { get; set; }
     public decimal? SaldoInicial { get; set; }
+    public DateTime DataAlteracao { get; set;}
+
     public bool Ativo { get; set; }
 
     public TipoCartao? TipoCartao { get; set; }
@@ -28,23 +30,25 @@ public class BancoDTO
         Ativo = ativo;
     }
 
-    public BancoDTO(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal? saldoInicial, bool ativo)
+    public BancoDTO(int id, string? nomeBanco, string? numeroConta, int tipoCartaoId, decimal? saldoInicial, DateTime dataAlteracao, bool ativo)
     {
         Id = id;
         NomeBanco = nomeBanco;
         NumeroConta = numeroConta;
         TipoCartaoId = tipoCartaoId;
         SaldoInicial = saldoInicial;
+        DataAlteracao = dataAlteracao;
         Ativo = ativo;
     }
 
-    public BancoDTO(int id, string nomeBanco, string numeroConta, int tipoCartaoId, decimal? saldoInicial, bool ativo, TipoCartao? tipoCartao)
+    public BancoDTO(int id, string nomeBanco, string numeroConta, int tipoCartaoId, decimal? saldoInicial, bool ativo, DateTime dataAlteracao, TipoCartao? tipoCartao)
     {
         Id = id;
         NomeBanco = nomeBanco;
         NumeroConta = numeroConta;
         TipoCartaoId = tipoCartaoId;
         SaldoInicial = saldoInicial;
+        DataAlteracao = dataAlteracao;
         Ativo = ativo;
         TipoCartao = tipoCartao;
     }

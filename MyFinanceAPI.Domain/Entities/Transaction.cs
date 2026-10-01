@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace MyFinanceAPI.Domain.Entities;
@@ -9,7 +10,13 @@ public class Transaction : BaseEntity
     public string Name { get; set; }
     public decimal? Value { get; set; }
     public int? IdAccount { get; set; }  // Nome correto da coluna no banco de dados
+    [NotMapped]
+    public string? AccountName { get; set; }  // Nome correto da coluna no banco de dados
     public int? CategoryId { get; set; }  // Nome correto da coluna no banco de dados
+    [NotMapped]
+    public string? CategoryName { get; set; }  // Nome correto da coluna no banco de dados
+    [NotMapped]
+    public string? SubCategoryName { get; set; }  // Nome correto da coluna no banco de dados
     public string Status { get; set; }
     public bool EhParcelado { get; set; }
     public int? ParcelaAtual { get; set; }
@@ -46,6 +53,23 @@ public class Transaction : BaseEntity
         Name = name;
         IdAccount = idAccount;
         CategoryId = categoryId;
+        Value = value;
+        Status = status;
+        EhParcelado = ehParcelado;
+        ParcelaAtual = parcelaAtual;    
+        QuantidadeParcelas = quantidadeParcelas;
+        Observacao = observacao;
+    }
+
+    public Transaction(int id, DateTime date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    {
+        Id = id;
+        Date = date;
+        Name = name;
+        IdAccount = idAccount;
+        AccountName = accountName;
+        CategoryId = categoryId;
+        CategoryName = CategoryName;
         Value = value;
         Status = status;
         EhParcelado = ehParcelado;

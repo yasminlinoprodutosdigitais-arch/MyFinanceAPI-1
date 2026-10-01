@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyFinanceAPI.Domain.Entities
 {
@@ -11,6 +12,8 @@ namespace MyFinanceAPI.Domain.Entities
         public DateOnly? DataFimPeriodo { get; set; }
 
         public int BancoId { get; set; }
+        [NotMapped]
+        public string? BancoNome { get; set; }
         public int? TipoCartaoId { get; set; }
 
         public int QuantidadeLancamentos { get; set; }

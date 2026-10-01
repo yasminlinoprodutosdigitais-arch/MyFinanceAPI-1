@@ -107,6 +107,20 @@ namespace MyFinanceAPI.Api.Controllers
                 return Ok(transaction);
         }
 
+        [HttpGet("/BuscarContasMensais/{date}/{pesquisaDataCompleta}")]
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> BuscarContasMensais(DateTime date, bool pesquisaDataCompleta)
+        {
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == 0)
+                return Unauthorized("User not authorized");
+
+            var transaction = await _transactionService.BuscarContasMensais(date, userId, pesquisaDataCompleta);
+            if (transaction is null)
+                return NotFound();
+            else
+                return Ok(transaction);
+        }
+
         [HttpPost("/CreateTransaction")]
         public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] TransactionDTO transactionDTO)
         {

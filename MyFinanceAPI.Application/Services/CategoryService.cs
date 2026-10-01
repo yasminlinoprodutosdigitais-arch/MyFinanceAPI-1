@@ -75,6 +75,7 @@ public class CategoryService : ICategoryService
         cat.SubCategory = newSub;
         cat.NaturezaOperacao = newNatureza;
         cat.Status = newStatus;
+        cat.DataAlteracao = DateTime.UtcNow;
         
         var saved = await _categoryRepository.UpdateAsync(cat);
 

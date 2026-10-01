@@ -75,10 +75,16 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     }
     public async Task RemoveContaVencimento(int id, int userId) // O método recebe id e userId
     {
-        var contas = await _context.ContaVencimento.FirstOrDefaultAsync(a => a.ContaId == id && a.UserId == userId);
-        if (contas != null)
+        var account = await _context.Accounts
+           .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (account != null)
         {
-            _context.ContaVencimento.Remove(contas);
+            var vencimentos = await _context.ContaVencimento
+                .Where(v => v.ContaId == id)
+                .ToListAsync();
+
+            _context.ContaVencimento.RemoveRange(vencimentos);
             await _context.SaveChangesAsync();
         }
     }
@@ -129,6 +135,19 @@ public class AccountRepository(ContextDB context) : IAccountRepository
             .Where(a => a.UserId == userId)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
             .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas
+            .Select(t => new Account
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Value = t.Value,
+                CategoryId = t.CategoryId,
+                CategoryName = t.Category.Name,
+                Status = t.Status,
+                EhParcelado = t.EhParcelado,
+                ParcelaAtual = t.ParcelaAtual,
+                QuantidadeParcelas = t.QuantidadeParcelas,
+                ContaVencimentos = t.ContaVencimentos
+            })
             .OrderBy(c => c.Name)
             .ToListAsync();
 

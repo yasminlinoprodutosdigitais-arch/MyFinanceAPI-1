@@ -10,11 +10,13 @@ public class BancoRepository(ContextDB context) : IBancoRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<Banco> Create(Banco Banco)
+    public async Task<Banco> Create(Banco banco)
     {
-        await _context.Banco.AddAsync(Banco);
+        banco.DataAlteracao = DateTime.UtcNow;
+        await _context.Banco.AddAsync(banco);
         await _context.SaveChangesAsync();
-        return Banco;
+        
+        return banco;
     }
 
     public async Task<IEnumerable<Banco>> GetBancoByUserId(int userId)
@@ -69,7 +71,8 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         existingBanco.NumeroConta = incomingBanco.NumeroConta;
         existingBanco.TipoCartaoId = incomingBanco.TipoCartaoId;
         existingBanco.SaldoInicial = incomingBanco.SaldoInicial;
-        existingBanco.Ativo = incomingBanco.Ativo;      
+        existingBanco.Ativo = incomingBanco.Ativo;
+        existingBanco.DataAlteracao = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
         return true;
