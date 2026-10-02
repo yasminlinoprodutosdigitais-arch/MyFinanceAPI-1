@@ -62,13 +62,11 @@ namespace MyFinanceAPI.Application.Services
             if (userId is null || userId == 0)
                 throw new UnauthorizedAccessException("Usuário não autorizado.");
 
-            var extrato = await _extratoBancarioRepository.GetByIdAsync(id);
+            // Extrato de outro usuário volta como "não encontrado" (BE-P0-06).
+            var extrato = await _extratoBancarioRepository.GetByIdAsync(id, userId.Value);
 
             if (extrato == null)
                 return null;
-
-            // Se tiver UserId na entidade, valide:
-            // if (extrato.UserId != userId.Value) throw new UnauthorizedAccessException();
 
             return _mapper.Map<ExtratoBancarioDTO>(extrato);
         }
@@ -149,7 +147,8 @@ namespace MyFinanceAPI.Application.Services
                 try
                 {
                     var tipoLancamento = valor < 0 ? "Saída" : "Entrada";
-                    var valorInteiro = Math.Abs((int)valor);
+                    // Sem cast para int: o (int) descartava os centavos (BE-P0-07).
+                    var valorAbsoluto = Math.Abs(valor);
                     
                     string? nomePessoa = null;
                     if (!string.IsNullOrWhiteSpace(descricaoStr))
@@ -188,7 +187,7 @@ namespace MyFinanceAPI.Application.Services
                         TipoCartaoId = banco.TipoCartaoId,
                         CategoriaId = categoriaId != 0 ? categoriaId : null,
                         TipoMovimentacaoId =  tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null,
-                        Valor = valorInteiro,
+                        Valor = valorAbsoluto,
                         TipoLancamento = tipoLancamento,
                         Descricao = descricaoStr,
                         PessoaMovimentacaoId = pessoaId,
@@ -287,9 +286,6 @@ namespace MyFinanceAPI.Application.Services
             var extrato = await _extratoBancarioRepository.GetByIdAsync(id, userId);
             if (extrato == null)
                 throw new KeyNotFoundException("Extrato bancário não encontrado.");
-
-            // Se tiver UserId na entidade, valide:
-            // if (extrato.UserId != userId) throw new UnauthorizedAccessException();
 
             // Remove itens primeiro (FK)
             await _extratoBancarioItemRepository.RemoveByExtratoIdAsync(id);

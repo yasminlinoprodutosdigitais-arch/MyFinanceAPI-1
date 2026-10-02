@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -10,6 +11,8 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
     [Produces("application/json")]
     public class AuthenticationController : Controller
     {
+        private static readonly string[] RolesPermitidas = { "Admin", "Empresa" };
+
         private readonly ITokenService _tokenService;
         private readonly IUsuarioService _usuarioService;
 
@@ -24,9 +27,10 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         {
             // Verificando se o usuário existe
             Usuario usuario = await _usuarioService.BuscarUsuario(command.Login, command.Senha);
-            var usuarioDto = new UsuarioDto(usuario.UserName, command.Senha);
             if (usuario == null)
                 return NotFound("Usuário não encontrado. Verifique o login e senha.");
+
+            var usuarioDto = new UsuarioDto(usuario.UserName, command.Senha);
 
             // Criando o token para o usuário
             TokenDto tokenDto = await _tokenService.CreateToken(usuarioDto);
@@ -47,21 +51,17 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         }
 
 
-        [HttpPost("/RefreshToken")]
-        public IActionResult RefreshToken([FromBody] RefreshTokenDto request)
-        {
-            TokenDto tokenDto = _tokenService.RefreshToken(request.Token, request.TokenRefresh);
-            if (tokenDto == null)
-                return UnprocessableEntity("Erro ao atualizar token.");
-
-            return Ok(tokenDto);
-        }
-
+        // Exige usuário autenticado (BE-P0-02): antes era anônimo e aceitava qualquer Role do body,
+        // o que dava acesso total à API a quem se cadastrasse.
+        [Authorize(Policy = "Admin")]
         [HttpPost("/CadastrarUsuario")]
         public IActionResult Cadastrar([FromBody] CadastrarUsuarioDto request)
         {
-            // if (_usuarioService.VerificaSeUsuarioExiste(request.Login, request.NomeUsuario))
-            //     return BadRequest("Usuário já cadastrado.");
+            if (!RolesPermitidas.Contains(request.Role))
+                return BadRequest($"Role inválida. Valores aceitos: {string.Join(", ", RolesPermitidas)}.");
+
+            if (_usuarioService.VerificaSeUsuarioExiste(request.Login, request.NomeUsuario))
+                return BadRequest("Usuário já cadastrado.");
 
             // Chamando o serviço para cadastrar o usuário
             UsuarioDto usuario = _usuarioService.CadastrarUsuario(request);

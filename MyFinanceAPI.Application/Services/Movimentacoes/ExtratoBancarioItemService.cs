@@ -45,9 +45,8 @@ namespace MyFinanceAPI.Application.Services
         {
             var entities = await _itemRepository.GetByExtratoAsync(extratoId);
 
-            // filtra por UserId, se estiver preenchido
             var filtrados = entities
-                .Where(e => e.UserId == null || e.UserId == userId)
+                .Where(e => e.UserId == userId)
                 .ToList();
 
             return _mapper.Map<IEnumerable<ExtratoBancarioItemDTO>>(filtrados);

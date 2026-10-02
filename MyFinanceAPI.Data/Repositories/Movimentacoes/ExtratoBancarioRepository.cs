@@ -71,15 +71,6 @@ namespace MyFinanceAPI.Infra.Data.Repositories
         //            GET
         // =========================
 
-        // Usado pelo service (sem userId)
-        public async Task<ExtratoBancario?> GetByIdAsync(int id)
-        {
-            return await _context.ExtratoBancario
-                .Include(e => e.Itens)
-                .FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        // Versão com userId (se quiser usar em outros fluxos)
         public async Task<ExtratoBancario?> GetByIdAsync(int id, int userId)
         {
             return await _context.ExtratoBancario

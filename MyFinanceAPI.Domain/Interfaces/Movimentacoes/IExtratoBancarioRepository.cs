@@ -16,10 +16,7 @@ namespace MyFinanceAPI.Domain.Interfaces.Repositories
 
         // ----- GET -----
 
-        // usado pelo service (sem userId)
-        Task<ExtratoBancario?> GetByIdAsync(int id);
-
-        // versão com filtro por usuário (opcional)
+        // Sempre filtra pelo dono (BE-P0-06) — não existe mais a sobrecarga só com id.
         Task<ExtratoBancario?> GetByIdAsync(int id, int userId);
 
         // o service está chamando GetByUserIdAsync

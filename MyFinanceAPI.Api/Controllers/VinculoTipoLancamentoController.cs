@@ -14,16 +14,23 @@ namespace MyFinanceAPI.Api.Controllers
     public class VinculoTipoMovimentacaoController : ControllerBase
     {
         private readonly IVinculoTipoMovimentacaoService _service;
+        private readonly IUserContextService _userContextService;
 
-        public VinculoTipoMovimentacaoController(IVinculoTipoMovimentacaoService service)
+        public VinculoTipoMovimentacaoController(
+            IVinculoTipoMovimentacaoService service,
+            IUserContextService userContextService)
         {
             _service = service;
+            _userContextService = userContextService;
         }
 
         [HttpGet("pendentes")]
         public async Task<IActionResult> GetPendentes()
         {
-            int userId = 1; // pegar do token depois
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == 0)
+                return Unauthorized("Usuário não autorizado!");
+
             var lista = await _service.ObterPendentesAsync(userId);
             return Ok(lista);
         }
@@ -31,9 +38,19 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Atualizar(int id, [FromBody] VinculoUpdateDTO dto)
         {
-            int userId = 1;
-            await _service.AtualizarVinculoAsync(id, dto, userId);
-            return NoContent();
+            var userId = _userContextService.GetUserIdFromClaims();
+            if (userId == 0)
+                return Unauthorized("Usuário não autorizado!");
+
+            try
+            {
+                await _service.AtualizarVinculoAsync(id, dto, userId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

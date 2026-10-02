@@ -32,7 +32,7 @@ public class TransactionService : ITransactionService
             var novaConta = new AccountDTO
             {
                 Name = transactionDTO.Name,
-                Value = (decimal)transactionDTO.Value,
+                Value = transactionDTO.Value,
                 Categoryid = (int)transactionDTO.CategoryId,
                 Status = 1,
                 DataOperacao = [mesAno.Day],

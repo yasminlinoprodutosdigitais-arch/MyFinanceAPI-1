@@ -19,9 +19,19 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.Services.RegisterService(builder.Configuration);
 
 // ----- App settings / secrets
+// Segredos NÃO ficam no appsettings.json versionado (BE-P0-01):
+//   dev  → dotnet user-secrets (carregado automaticamente em Development)
+//   prod → variáveis de ambiente AppSettings__SecretKey e ConnectionStrings__DefaultConnection
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("AppSettings"));
-var secretKey = builder.Configuration.GetSection("AppSettings")["SecretKey"]
-               ?? throw new Exception("Erro: SecretKey não foi carregada do appsettings.json/ENV!");
+var secretKey = builder.Configuration.GetSection("AppSettings")["SecretKey"];
+if (string.IsNullOrWhiteSpace(secretKey))
+    throw new InvalidOperationException(
+        "AppSettings:SecretKey não configurada. Use 'dotnet user-secrets set' em dev " +
+        "ou a variável de ambiente AppSettings__SecretKey em produção.");
+if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection")))
+    throw new InvalidOperationException(
+        "ConnectionStrings:DefaultConnection não configurada. Use 'dotnet user-secrets set' em dev " +
+        "ou a variável de ambiente ConnectionStrings__DefaultConnection em produção.");
 
 // ----- Identity / Auth
 builder.Services.AddIdentity<Usuario, IdentityRole<int>>()

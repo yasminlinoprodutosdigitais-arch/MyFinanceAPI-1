@@ -41,3 +41,8 @@ artifacts/
 .idea/
 *.suo
 *.user
+
+# Segredos locais (BE-P0-01) — use dotnet user-secrets; nunca versione credenciais
+**/appsettings.Development.json
+**/appsettings.Local.json
+*.env

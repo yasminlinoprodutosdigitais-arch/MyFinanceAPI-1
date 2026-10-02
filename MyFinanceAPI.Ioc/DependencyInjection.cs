@@ -10,6 +10,7 @@ using MyFinanceAPI.Application.Mapping;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Infra.Data.Repositories;
 using MyFinanceAPI.Domain.Interfaces.Repositories;
+using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Ioc
 {
@@ -49,6 +50,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IItemListaService, ItemListaService>();
             services.AddScoped<IListaService, ListaService>();  
             services.AddScoped<IPessoaMovimentacaoService, PessoaMovimentacaoService>();
+            services.AddScoped<IVinculoTipoMovimentacaoService, VinculoTipoMovimentacaoService>();
 
 
             // Registro do repositório IUsuarioRepository
@@ -68,6 +70,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IItemListaRepository, ItemListaRepository>();
             services.AddScoped<IListaRepository, ListaRepository>();
             services.AddScoped<IPessoaMovimentacaoRepository, PessoaMovimentacaoRepository>();
+            services.AddScoped<IVinculoTipoMovimentacaoRepository, VinculoTipoMovimentacaoRepository>();
 
             // Configuração do AutoMapper
             services.AddAutoMapper(typeof(DomainToDTOMappingProfile));

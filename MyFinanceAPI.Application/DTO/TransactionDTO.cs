@@ -10,7 +10,7 @@ public class TransactionDTO
     public int Id { get; set; }
     public DateTime Date { get; set; }
     public string Name { get; set; }
-    public double Value { get; set; }
+    public decimal Value { get; set; }
     public int? IdAccount {get; set; }
     public string? AccountName {get; set; }
     public int? CategoryId {get; set; }
@@ -33,7 +33,7 @@ public class TransactionDTO
         
     }
 
-    public TransactionDTO(DateTime date, string name, double value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    public TransactionDTO(DateTime date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
     {
         Date = date;
         Name = name;
@@ -48,7 +48,7 @@ public class TransactionDTO
         TipoContaId = tipoContaId;
     }
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, double value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
     {
         Id = id;
         Date = date;
@@ -65,7 +65,7 @@ public class TransactionDTO
     } 
     
 
-    public TransactionDTO(DateTime date, string name, double value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(DateTime date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Date = date;
         Name = name;
@@ -79,7 +79,7 @@ public class TransactionDTO
         Observacao = observacao;
     }
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, double value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Id = id;
         Date = date;
@@ -94,7 +94,7 @@ public class TransactionDTO
         Observacao = observacao;
     } 
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, double value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(int id, DateTime date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Id = id;
         Date = date;

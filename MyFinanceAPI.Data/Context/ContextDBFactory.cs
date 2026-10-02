@@ -8,6 +8,8 @@ namespace MyFinanceAPI.Data.Context;
 
 public class ContextDBFactory : IDesignTimeDbContextFactory<ContextDB>
 {
+    private const string ApiUserSecretsId = "f53683bb-7c9d-4764-9771-0523faa4c8ad";
+
     public ContextDB CreateDbContext(string[] args)
     {
         // 1) Permite usar env var: ConnectionStrings__DefaultConnection
@@ -24,12 +26,15 @@ public class ContextDBFactory : IDesignTimeDbContextFactory<ContextDB>
                 .SetBasePath(apiProj)
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddJsonFile("appsettings.Development.json", optional: true)
+                // Mesmo UserSecretsId do MyFinanceAPI.Api.csproj — a connection string vive lá (BE-P0-01).
+                .AddUserSecrets(ApiUserSecretsId)
                 .Build();
 
-            cs = cfg.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException(
+            cs = cfg.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(cs))
+                throw new InvalidOperationException(
                     "Connection string 'DefaultConnection' não encontrada. " +
-                    "Defina no appsettings da API ou na env 'ConnectionStrings__DefaultConnection'.");
+                    "Defina via 'dotnet user-secrets' no projeto da API ou na env 'ConnectionStrings__DefaultConnection'.");
         }
 
         var options = new DbContextOptionsBuilder<ContextDB>()

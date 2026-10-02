@@ -46,7 +46,7 @@ public class VinculoTipoMovimentacaoService : IVinculoTipoMovimentacaoService
         var vinculo = await _repo.GetByIdAsync(id, userId);
 
         if (vinculo == null)
-            throw new Exception("Vínculo não encontrado.");
+            throw new KeyNotFoundException("Vínculo não encontrado.");
 
         vinculo.TipoMovimentacaoId = dto.TipoMovimentacaoId;
         vinculo.CategoriaId = dto.CategoriaId;
