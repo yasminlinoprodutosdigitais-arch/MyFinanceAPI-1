@@ -87,6 +87,10 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         [HttpPut("/UpdateTipoCartao")]
@@ -101,6 +105,10 @@ namespace MyFinanceAPI.Api.Controllers
 
                 await _TipoCartaoService.UpdateAsync(TipoCartaoDTO, userId);
                 return TipoCartaoDTO;
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
             }
             catch (Exception ex)
             {

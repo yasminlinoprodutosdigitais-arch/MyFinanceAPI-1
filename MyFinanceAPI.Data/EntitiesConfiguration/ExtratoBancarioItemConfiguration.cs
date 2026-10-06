@@ -24,6 +24,16 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
         builder.HasIndex(e => e.ExtratoBancarioId).HasDatabaseName("idx_extratobancarioitem_extrato");
         builder.HasIndex(e => e.DataMovimentacao).HasDatabaseName("idx_extratobancarioitem_datamov");
 
+        // Idempotência da importação (DB-P0-04): a mesma linha do arquivo não entra duas vezes.
+        builder.Property(e => e.ChaveImportacao).HasMaxLength(64);
+        builder.HasIndex(e => new { e.UserId, e.BancoId, e.ChaveImportacao })
+            .IsUnique()
+            .HasFilter("\"ChaveImportacao\" IS NOT NULL")
+            .HasDatabaseName("UX_ExtratoBancarioItem_ChaveImportacao");
+        // A unique acima é parcial (fora os itens manuais) e não serve às consultas por UserId:
+        // sem esta declaração o EF a trataria como cobertura da FK e removeria o índice simples.
+        builder.HasIndex(e => e.UserId).HasDatabaseName("IX_ExtratoBancarioItem_UserId");
+
         builder.HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)

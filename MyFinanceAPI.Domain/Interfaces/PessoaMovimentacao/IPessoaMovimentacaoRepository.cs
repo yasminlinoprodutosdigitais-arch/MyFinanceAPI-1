@@ -8,7 +8,8 @@ namespace MyFinanceAPI.Domain.Interfaces;
 public interface IPessoaMovimentacaoRepository
 {
     Task<List<PessoaMovimentacao>>? GetPessoaMovimentacao(int userId);
-    Task<IEnumerable<PessoaMovimentacao>>? VerificaPossuiPessoa(string nomePessoa, int userId);
+    /// <summary>Busca pelo nome normalizado (trim + maiúsculas); nome vazio devolve lista vazia.</summary>
+    Task<IEnumerable<PessoaMovimentacao>>? VerificaPossuiPessoa(string? nomePessoa, int userId);
     Task<PessoaMovimentacao> GetPessoaMovimentacaoById(int id, int userId);
     Task<PessoaMovimentacao> Create(PessoaMovimentacao PessoaMovimentacao, int userId);
     Task<bool> UpdateAsync(PessoaMovimentacao PessoaMovimentacao, int userId);

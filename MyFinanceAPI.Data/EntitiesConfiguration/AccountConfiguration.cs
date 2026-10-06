@@ -23,11 +23,11 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasConstraintName("FK_Accounts_AspNetUsers_UserId")
             .OnDelete(DeleteBehavior.Cascade);
 
-        // DB-P0-03 (subprojeto 3) troca para RESTRICT.
+        // DB-P0-03: categoria com contas não se apaga (a guarda do CategoryService passa a valer no banco).
         builder.HasOne(e => e.Category)
             .WithMany()
             .HasForeignKey(e => e.CategoryId)
             .HasConstraintName("FK_Accounts_Categories_CategoryId")
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -76,6 +76,10 @@ namespace MyFinanceAPI.Api.Controllers
                 var created = await _extratoBancarioItemService.AddAsync(dto, userId);
                 return CreatedAtRoute("GetExtratoBancarioItemById", new { id = created.Id }, created);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao criar item de extrato.", error = ex.Message });
@@ -102,6 +106,10 @@ namespace MyFinanceAPI.Api.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
             }
             catch (Exception ex)
             {

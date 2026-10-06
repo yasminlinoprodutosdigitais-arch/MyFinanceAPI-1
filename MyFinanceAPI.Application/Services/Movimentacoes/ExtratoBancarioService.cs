@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -88,6 +90,17 @@ namespace MyFinanceAPI.Application.Services
 
             int criados = 0;
             int ignorados = 0;
+            int jaImportados = 0;
+            int corrigidos = 0;
+
+            // Idempotência: linhas cuja chave já existe (ou repetidas no próprio arquivo) são puladas.
+            var chavesExistentes = await _extratoBancarioItemRepository.ObterChavesImportacaoAsync(userId, banco.Id);
+
+            // Reparo do BE-P0-07: importações antigas gravaram o valor sem os centavos, então a chave
+            // delas não bate. Uma linha com centavos que casa com um desses itens corrige o item em vez de duplicar.
+            var truncados = (await _extratoBancarioItemRepository.ObterCandidatosTruncadosAsync(userId, banco.Id))
+                .GroupBy(i => ChaveLegado(i.Identificador!, i.DataMovimentacao, i.TipoLancamento, i.Descricao))
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var listaItens = new List<ExtratoBancarioItemDTO>();
 
@@ -144,6 +157,31 @@ namespace MyFinanceAPI.Application.Services
                     continue;
                 }
 
+                var chaveImportacao = GerarChaveImportacao(identificadorStr, dataMov, valor, descricaoStr);
+                if (!chavesExistentes.Add(chaveImportacao))
+                {
+                    jaImportados++;
+                    continue;
+                }
+
+                var valorSemSinal = Math.Abs(valor);
+                if (valorSemSinal != Math.Truncate(valorSemSinal)
+                    && truncados.TryGetValue(
+                        ChaveLegado(identificadorStr, dataMov, valor < 0 ? "Saída" : "Entrada", descricaoStr),
+                        out var candidatos))
+                {
+                    var truncado = candidatos.FirstOrDefault(c => c.Valor == Math.Truncate(valorSemSinal));
+                    if (truncado != null)
+                    {
+                        candidatos.Remove(truncado);
+                        truncado.Valor = valorSemSinal;
+                        truncado.ChaveImportacao = chaveImportacao;
+                        await _extratoBancarioItemRepository.UpdateAsync(truncado);
+                        corrigidos++;
+                        continue;
+                    }
+                }
+
                 try
                 {
                     var tipoLancamento = valor < 0 ? "Saída" : "Entrada";
@@ -158,26 +196,28 @@ namespace MyFinanceAPI.Application.Services
                             nomePessoa = partesDesc[1].Trim() == null ? descricaoStr.ToUpper() : partesDesc[1].Trim().ToUpper();
                     }
 
-                    var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
-                    var pessoaId = 0;
+                    // Descrição sem pessoa identificável (ex.: "Pagamento de fatura") → item sem pessoa.
+                    int? pessoaId = null;
                     var tipoMovimentacaoId = 0;
                     var categoriaId = 0;
 
-                    if(pessoaCadastrada.Any())
+                    if (!string.IsNullOrWhiteSpace(nomePessoa))
                     {
-                        pessoaId = pessoaCadastrada.First().Id;
-                        tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
-                        categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
-                    }
-                    else
-                    {
-                       var novaPessoa = new PessoaMovimentacao
-                       {
-                            NomePessoa = nomePessoa,
-                            UserId = userId
-                       };
-                       await _pessoaMovimentacaoRepository.Create(novaPessoa, userId);
-                       pessoaId = novaPessoa.Id;
+                        var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
+                        if (pessoaCadastrada.Any())
+                        {
+                            pessoaId = pessoaCadastrada.First().Id;
+                            tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
+                            categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
+                        }
+                        else
+                        {
+                            var novaPessoa = await _pessoaMovimentacaoRepository.Create(
+                                new PessoaMovimentacao { NomePessoa = nomePessoa }, userId);
+                            pessoaId = novaPessoa.Id;
+                            tipoMovimentacaoId = novaPessoa.TipoMovimentacaoId ?? 0;
+                            categoriaId = novaPessoa.CategoriaId ?? 0;
+                        }
                     }
 
                     var item = new ExtratoBancarioItemDTO
@@ -193,6 +233,7 @@ namespace MyFinanceAPI.Application.Services
                         PessoaMovimentacaoId = pessoaId,
                         NomePessoaTransacao = nomePessoa,
                         Identificador = identificadorStr,
+                        ChaveImportacao = chaveImportacao,
                         UserId = userId
                     };
 
@@ -214,12 +255,17 @@ namespace MyFinanceAPI.Application.Services
 
             if (!listaItens.Any())
             {
+                var semNovos = jaImportados + corrigidos > 0
+                    ? $"Nenhum lançamento novo: {jaImportados} já importado(s)"
+                      + (corrigidos > 0 ? $", {corrigidos} corrigido(s) (centavos)" : "")
+                      + (ignorados > 0 ? $", {ignorados} ignorado(s)." : ".")
+                    : "Nenhum lançamento válido foi encontrado no arquivo.";
                 return new ExtratoImportacaoResultadoDTO(
                     0,
                     0,
                     ignorados,
                     0,
-                    "Nenhum lançamento válido foi encontrado no arquivo."
+                    semNovos
                 );
             }
 
@@ -250,7 +296,9 @@ namespace MyFinanceAPI.Application.Services
             var itens = _mapper.Map<IEnumerable<ExtratoBancarioItem>>(listaItens);
             await _extratoBancarioItemRepository.CreateRangeAsync(itens);
 
-            var mensagem = $"Importação concluída. Criados: {criados}, ignorados: {ignorados}.";
+            var mensagem = $"Importação concluída. Criados: {criados}, já importados: {jaImportados}, "
+                + (corrigidos > 0 ? $"corrigidos (centavos): {corrigidos}, " : "")
+                + $"ignorados: {ignorados}.";
             return new ExtratoImportacaoResultadoDTO(
                 extrato.Id,
                 criados,
@@ -259,6 +307,26 @@ namespace MyFinanceAPI.Application.Services
                 mensagem
             );
         }
+
+        /// <summary>
+        /// Chave de idempotência de uma linha do extrato. A mesma fórmula está no SQL da migration
+        /// Integridade (preenchimento dos itens antigos) — mudar uma exige mudar a outra.
+        /// O Nubank repete o Identificador no estorno; o valor com sinal e a descrição os distinguem.
+        /// </summary>
+        public static string GerarChaveImportacao(string identificador, DateOnly data, decimal valorComSinal, string? descricao)
+        {
+            var linha = string.Join('|',
+                identificador.Trim(),
+                data.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                valorComSinal.ToString("0.00", CultureInfo.InvariantCulture),
+                (descricao ?? string.Empty).Trim());
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(linha))).ToLowerInvariant();
+        }
+
+        /// <summary>Identifica a mesma linha do arquivo sem depender do valor (que o BE-P0-07 truncou).</summary>
+        private static string ChaveLegado(string identificador, DateOnly data, string tipoLancamento, string? descricao) =>
+            string.Join('|', identificador.Trim(), data.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                tipoLancamento, (descricao ?? string.Empty).Trim());
 
         public static string GerarChaveDescricao(string descricao)
         {

@@ -57,14 +57,17 @@ namespace MyFinanceAPI.Application.Services
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
+            NormalizarIds(dto);
             var entity = _mapper.Map<ExtratoBancarioItem>(dto);
             entity.PessoaMovimentacao = null;
+            // Item manual nunca tem chave de importação (ela é a garantia de idempotência do import).
+            entity.ChaveImportacao = null;
 
             entity.UserId = userId;
-            
+
             var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(entity.NomePessoaTransacao, userId);
             if(dto.PessoaMovimentacao != null)
-            {   
+            {
                 entity.PessoaMovimentacaoId = dto.PessoaMovimentacao.Id;
                 entity.NomePessoaTransacao = dto.PessoaMovimentacao.NomePessoa;
                 entity.TipoMovimentacaoId = dto.PessoaMovimentacao.TipoMovimentacaoId;
@@ -73,15 +76,21 @@ namespace MyFinanceAPI.Application.Services
                 var pessoaId = pessoaCadastrada.First().Id;
                 var tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
                 var categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
-                
+
                 entity.PessoaMovimentacaoId = pessoaId;
                 entity.TipoMovimentacaoId = tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null;
                 entity.CategoriaId = categoriaId != 0 ? categoriaId : null;
-            }else
+            }
+            else if (string.IsNullOrWhiteSpace(entity.NomePessoaTransacao))
+            {
+                // Sem nome de pessoa → item sem pessoa (não existe mais o placeholder "Pessoa sem nome").
+                entity.PessoaMovimentacaoId = null;
+            }
+            else
             {
                 var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
                 {
-                    NomePessoa = entity.NomePessoaTransacao.ToUpper() ?? "Pessoa sem nome",
+                    NomePessoa = entity.NomePessoaTransacao,
                     CategoriaId = entity.CategoriaId
                 }, userId);
                 entity.PessoaMovimentacaoId = pessoaCriada.Id;
@@ -92,11 +101,27 @@ namespace MyFinanceAPI.Application.Services
             return _mapper.Map<ExtratoBancarioItemDTO>(created);
         }
 
+        /// <summary>
+        /// Referência "vazia" vinda como 0 (padrão de algumas telas) vira null: Id 0 não existe e a FK
+        /// recusaria a gravação com erro 500.
+        /// </summary>
+        private static void NormalizarIds(ExtratoBancarioItemDTO dto)
+        {
+            static int? IdOuNulo(int? id) => id is > 0 ? id : null;
+
+            dto.CategoriaId = IdOuNulo(dto.CategoriaId);
+            dto.TipoMovimentacaoId = IdOuNulo(dto.TipoMovimentacaoId);
+            dto.TipoCartaoId = IdOuNulo(dto.TipoCartaoId);
+            dto.BancoId = IdOuNulo(dto.BancoId);
+            dto.PessoaMovimentacaoId = IdOuNulo(dto.PessoaMovimentacaoId);
+        }
+
         public async Task UpdateAsync(ExtratoBancarioItemDTO dto, int userId)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
+            NormalizarIds(dto);
             var existing = await _itemRepository.GetByIdAsync(dto.Id);
             if (existing == null)
                 throw new KeyNotFoundException("Item de extrato não encontrado.");
@@ -120,34 +145,35 @@ namespace MyFinanceAPI.Application.Services
 
             if (dto.AlteraVinculoPessoa)
             {
-                if (dto.PessoaMovimentacaoId == null || dto.PessoaMovimentacaoId == 0)
+                if (string.IsNullOrWhiteSpace(dto.NomePessoaTransacao))
                 {
-                    var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
-                    {
-                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome"
-                    }, userId);
-                    dto.PessoaMovimentacaoId = pessoaCriada.Id;
-                    existing.PessoaMovimentacaoId = pessoaCriada.Id;
-                }
-                var pessoaId = dto.PessoaMovimentacaoId ?? 0;
-                var pessoaMovimentacao = await _pessoaMovimentacaoRepository.GetPessoaMovimentacaoById(pessoaId, userId);
-                if (pessoaMovimentacao == null)
-                {
-                    pessoaMovimentacao = new PessoaMovimentacao
-                    {
-                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome"
-                    };
-                    _pessoaMovimentacaoRepository.Create(pessoaMovimentacao, userId);
+                    // Sem nome de pessoa → item sem pessoa.
+                    existing.PessoaMovimentacaoId = null;
                 }
                 else
                 {
+                    var pessoaId = dto.PessoaMovimentacaoId ?? 0;
+                    var pessoaMovimentacao = pessoaId == 0
+                        ? null
+                        : await _pessoaMovimentacaoRepository.GetPessoaMovimentacaoById(pessoaId, userId);
+
+                    if (pessoaMovimentacao == null)
+                    {
+                        // Busca-ou-cria pelo nome (o repositório normaliza e trata a unique).
+                        var pessoaCriada = await _pessoaMovimentacaoRepository.Create(
+                            new PessoaMovimentacao { NomePessoa = dto.NomePessoaTransacao }, userId);
+                        pessoaId = pessoaCriada.Id;
+                    }
+
+                    // Como antes: a pessoa vinculada passa a ter a categoria/tipo do item.
                     await _pessoaMovimentacaoRepository.UpdateAsync(new PessoaMovimentacao
                     {
                         Id = pessoaId,
-                        NomePessoa = dto.NomePessoaTransacao ?? "Pessoa sem nome",
+                        NomePessoa = dto.NomePessoaTransacao,
                         CategoriaId = dto.CategoriaId,
                         TipoMovimentacaoId = dto.TipoMovimentacaoId
                     }, userId);
+                    existing.PessoaMovimentacaoId = pessoaId;
                 }
             }
 

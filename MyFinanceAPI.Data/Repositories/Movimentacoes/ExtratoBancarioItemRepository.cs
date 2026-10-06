@@ -45,6 +45,24 @@ namespace MyFinanceAPI.Infra.Data.Repositories
             }
         }
 
+        public async Task<HashSet<string>> ObterChavesImportacaoAsync(int userId, int bancoId)
+        {
+            var chaves = await _context.ExtratoBancarioItens
+                .Where(i => i.UserId == userId && i.BancoId == bancoId && i.ChaveImportacao != null)
+                .Select(i => i.ChaveImportacao!)
+                .ToListAsync();
+            return chaves.ToHashSet();
+        }
+
+        public async Task<List<ExtratoBancarioItem>> ObterCandidatosTruncadosAsync(int userId, int bancoId)
+        {
+            return await _context.ExtratoBancarioItens
+                .Where(i => i.UserId == userId && i.BancoId == bancoId
+                            && i.ExtratoBancarioId != null && i.Identificador != null
+                            && i.Valor == Math.Truncate(i.Valor))
+                .ToListAsync();
+        }
+
         // =========================
         //          UPDATE
         // =========================

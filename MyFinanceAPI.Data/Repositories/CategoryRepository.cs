@@ -54,6 +54,14 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
         return category;
     }
 
+    public async Task<bool> ExisteNomeAsync(int userId, string name, string subCategory, int ignorarId)
+    {
+        var nome = (name ?? string.Empty).Trim().ToUpper();
+        var sub = (subCategory ?? string.Empty).Trim().ToUpper();
+        return await _context.Categories.AnyAsync(c => c.UserId == userId && c.Id != ignorarId
+            && c.Name.Trim().ToUpper() == nome && c.SubCategory.Trim().ToUpper() == sub);
+    }
+
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
         if (!await _context.Categories.AnyAsync(c => c.Id == id && c.UserId == userId))

@@ -16,6 +16,10 @@ public class BancoConfiguration : IEntityTypeConfiguration<Banco>
         builder.Property(e => e.Ativo).HasDefaultValue(true);
         builder.Property(e => e.DataAlteracao).HasDefaultValueSql("now()");
 
+        builder.HasIndex(e => new { e.UserId, e.NomeBanco })
+            .IsUnique()
+            .HasDatabaseName("UX_Banco_UserId_NomeBanco");
+
         // "UerId": grafia legada do nome da constraint no banco.
         builder.HasOne(e => e.User)
             .WithMany()

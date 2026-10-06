@@ -87,6 +87,10 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         [HttpPut("/UpdateBanco")]
@@ -107,6 +111,10 @@ namespace MyFinanceAPI.Api.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
             }
         }
 

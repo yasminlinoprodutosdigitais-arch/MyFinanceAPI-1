@@ -34,6 +34,11 @@ namespace MyFinanceAPI.Domain.Entities
         public int? TipoMovimentacaoId { get; set; }
         public TipoMovimentacao? TipoMovimentacao { get; set; }
         public string? ChaveDescricao { get; set; }
+        /// <summary>
+        /// Hash da linha do arquivo importado (idempotência da importação). Gravado só na importação,
+        /// nunca editado; nulo em itens lançados à mão.
+        /// </summary>
+        public string? ChaveImportacao { get; set; }
         public PessoaMovimentacao? PessoaMovimentacao { get; set; }
     }
 

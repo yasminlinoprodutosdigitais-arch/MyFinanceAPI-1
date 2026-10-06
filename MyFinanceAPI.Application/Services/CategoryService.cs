@@ -23,6 +23,8 @@ public class CategoryService : ICategoryService
     }
     public async Task Add(CategoryDTO categoryDTO, int userId)
     {
+        await GarantirNomeUnico(userId, categoryDTO.Name, categoryDTO.SubCategory, ignorarId: 0);
+
         var category = _mapper.Map<Category>(categoryDTO);
         category.UserId = userId;
         await _categoryRepository.Create(category);
@@ -65,6 +67,7 @@ public class CategoryService : ICategoryService
 
         var newName = dto.Name?.Trim() ?? string.Empty;
         var newSub  = dto.SubCategory?.Trim() ?? string.Empty;
+        await GarantirNomeUnico(userId, newName, newSub, ignorarId: cat.Id);
         var newNatureza  = dto.NaturezaOperacao;
         var newStatus  = dto.Status;
 
@@ -83,5 +86,12 @@ public class CategoryService : ICategoryService
         var saved = await _categoryRepository.UpdateAsync(cat);
 
         return saved;
+    }
+
+    // UX_Categories_UserId_Name_SubCategory é exata; aqui a regra também ignora maiúsculas e espaços.
+    private async Task GarantirNomeUnico(int userId, string? name, string? subCategory, int ignorarId)
+    {
+        if (await _categoryRepository.ExisteNomeAsync(userId, name ?? string.Empty, subCategory ?? string.Empty, ignorarId))
+            throw new InvalidOperationException($"Já existe a categoria {name?.Trim()} / {subCategory?.Trim()}.");
     }
 }

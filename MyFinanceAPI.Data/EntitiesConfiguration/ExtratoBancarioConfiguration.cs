@@ -26,11 +26,18 @@ public class ExtratoBancarioConfiguration : IEntityTypeConfiguration<ExtratoBanc
             .HasConstraintName("extratobancario_user_fkey")
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Banco em uso não se apaga (D-8). A FK de TipoCartaoId fica para DB-P0-06.
+        // Catálogo em uso não se apaga (D-8).
         builder.HasOne<Banco>()
             .WithMany()
             .HasForeignKey(e => e.BancoId)
             .HasConstraintName("extratobancario_bancoid_fkey")
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // DB-P0-06: TipoCartaoId não tinha FK em lugar nenhum.
+        builder.HasOne<TipoCartao>()
+            .WithMany()
+            .HasForeignKey(e => e.TipoCartaoId)
+            .HasConstraintName("FK_ExtratoBancario_TipoCartao_TipoCartaoId")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(e => e.Itens)

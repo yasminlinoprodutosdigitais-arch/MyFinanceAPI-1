@@ -13,17 +13,21 @@ public class PessoaMovimentacaoConfiguration : IEntityTypeConfiguration<PessoaMo
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
 
-        // constraint_1 / constraint_2: nomes genéricos herdados do banco (renomear no subprojeto 3).
+        // DB-P0-04: o nome é gravado normalizado (trim + maiúsculas) pelo repositório.
+        builder.HasIndex(e => new { e.UserId, e.NomePessoa })
+            .IsUnique()
+            .HasDatabaseName("UX_PessoaMovimentacao_UserId_NomePessoa");
+
         builder.HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)
-            .HasConstraintName("constraint_1")
+            .HasConstraintName("FK_PessoaMovimentacao_AspNetUsers_UserId")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.TipoMovimentacao)
             .WithMany()
             .HasForeignKey(e => e.TipoMovimentacaoId)
-            .HasConstraintName("constraint_2")
+            .HasConstraintName("FK_PessoaMovimentacao_TipoMovimentacao_TipoMovimentacaoId")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Categoria)

@@ -21,6 +21,8 @@ public class TipoCartaoService : ITipoCartaoService
     }
     public async Task Add(TipoCartaoDTO TipoCartaoDTO, int userId)
     {
+        await GarantirNomeUnico(userId, TipoCartaoDTO.NomeTipoCartao, ignorarId: 0);
+
         var TipoCartao = _mapper.Map<TipoCartao>(TipoCartaoDTO);
         TipoCartao.UserId = userId;
         await _tipoCartaoRepository.Create(TipoCartao);
@@ -41,16 +43,25 @@ public class TipoCartaoService : ITipoCartaoService
     public async Task Remove(int id, int userId)
     {
         if (await _tipoCartaoRepository.EmUsoAsync(id, userId))
-            throw new InvalidOperationException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos ou lançamentos.");
+            throw new InvalidOperationException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos, extratos ou lançamentos.");
 
         await _tipoCartaoRepository.Remove(id, userId);
     }
 
     public async Task<bool> UpdateAsync(TipoCartaoDTO dto, int userId)
-    {   
+    {
+        await GarantirNomeUnico(userId, dto.NomeTipoCartao, ignorarId: dto.Id);
+
         var tipoCartao = _mapper.Map<TipoCartao>(dto);
         await _tipoCartaoRepository.UpdateAsync(tipoCartao, userId);
         return true;
+    }
+
+    // UX_TipoCartao_UserId_NomeTipoCartao é exata; aqui a regra também ignora maiúsculas e espaços.
+    private async Task GarantirNomeUnico(int userId, string? nomeTipoCartao, int ignorarId)
+    {
+        if (await _tipoCartaoRepository.ExisteNomeAsync(userId, nomeTipoCartao ?? string.Empty, ignorarId))
+            throw new InvalidOperationException($"Já existe um tipo de cartão chamado {nomeTipoCartao?.Trim()}.");
     }
 
 }

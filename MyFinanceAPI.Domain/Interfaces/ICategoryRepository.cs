@@ -15,4 +15,6 @@ public interface ICategoryRepository
     Task<Category?> Remove(int id, int userId);
     /// <summary>True se a categoria é do usuário e está em uso por transações, pessoas ou itens de extrato.</summary>
     Task<bool> EmUsoAsync(int id, int userId);
+    /// <summary>True se o usuário já tem outra categoria com o mesmo nome e subcategoria (ignora maiúsculas e espaços).</summary>
+    Task<bool> ExisteNomeAsync(int userId, string name, string subCategory, int ignorarId);
 }

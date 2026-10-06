@@ -37,6 +37,7 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public string? TipoMovimentacaoNome { get; set; }
         public int UserId { get; set; }
         public string? ChaveDescricao { get; set; }
+        public string? ChaveImportacao { get; set; }
 
         public bool AlteraVinculoPessoa { get; set; }
 

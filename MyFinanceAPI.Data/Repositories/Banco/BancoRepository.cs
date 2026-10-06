@@ -50,6 +50,13 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         return Banco;
     }
 
+    public async Task<bool> ExisteNomeAsync(int userId, string nome, int ignorarId)
+    {
+        var alvo = (nome ?? string.Empty).Trim().ToUpper();
+        return await _context.Banco.AnyAsync(b => b.UserId == userId && b.Id != ignorarId
+            && b.NomeBanco.Trim().ToUpper() == alvo);
+    }
+
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
         if (!await _context.Banco.AnyAsync(b => b.Id == id && b.UserId == userId))

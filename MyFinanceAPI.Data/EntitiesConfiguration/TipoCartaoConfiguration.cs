@@ -12,6 +12,10 @@ public class TipoCartaoConfiguration : IEntityTypeConfiguration<TipoCartao>
         builder.HasKey(e => e.Id).HasName("tipocartao_pkey");
         builder.Property(e => e.Id).UseSerialColumn();
 
+        builder.HasIndex(e => new { e.UserId, e.NomeTipoCartao })
+            .IsUnique()
+            .HasDatabaseName("UX_TipoCartao_UserId_NomeTipoCartao");
+
         builder.HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)

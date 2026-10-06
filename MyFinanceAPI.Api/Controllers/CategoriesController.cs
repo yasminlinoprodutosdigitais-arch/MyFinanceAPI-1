@@ -73,7 +73,14 @@ namespace MyFinanceAPI.WebUI.Controllers
             if (categoryDto is null)
                 return BadRequest("Invalid Data");
 
-            await _categoryService.Add(categoryDto, userId.Value);
+            try
+            {
+                await _categoryService.Add(categoryDto, userId.Value);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             return new CreatedAtRouteResult("GetCategory", new { id = categoryDto.Id }, categoryDto);
         }
 
@@ -95,6 +102,10 @@ namespace MyFinanceAPI.WebUI.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
             }
             catch (Exception ex)
             {

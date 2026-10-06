@@ -21,6 +21,8 @@ public class BancoService : IBancoService
     }
     public async Task Add(BancoDTO BancoDTO, int userId)
     {
+        await GarantirNomeUnico(userId, BancoDTO.NomeBanco, ignorarId: 0);
+
         var Banco = _mapper.Map<Banco>(BancoDTO);
         Banco.UserId = userId;
         await _bancoRepository.Create(Banco);
@@ -47,10 +49,19 @@ public class BancoService : IBancoService
     }
 
     public async Task<bool> UpdateAsync(BancoDTO dto, int userId)
-    {   
+    {
+        await GarantirNomeUnico(userId, dto.NomeBanco, ignorarId: dto.Id);
+
         var banco = _mapper.Map<Banco>(dto);
         await _bancoRepository.UpdateAsync(banco, userId);
         return true;
+    }
+
+    // UX_Banco_UserId_NomeBanco é exata; aqui a regra também ignora maiúsculas e espaços.
+    private async Task GarantirNomeUnico(int userId, string? nomeBanco, int ignorarId)
+    {
+        if (await _bancoRepository.ExisteNomeAsync(userId, nomeBanco ?? string.Empty, ignorarId))
+            throw new InvalidOperationException($"Já existe um banco chamado {nomeBanco?.Trim()}.");
     }
   
     public async Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId)

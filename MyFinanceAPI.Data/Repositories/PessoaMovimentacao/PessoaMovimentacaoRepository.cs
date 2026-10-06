@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
+using Npgsql;
 
 namespace MyFinanceAPI.Data.Repositories;
 
@@ -10,19 +11,37 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
 {
     private readonly ContextDB _context = context;
 
+    /// <summary>
+    /// Forma única do nome gravado (UX_PessoaMovimentacao_UserId_NomePessoa): trim + maiúsculas.
+    /// Nome vazio vira null — o chamador decide não vincular pessoa.
+    /// </summary>
+    private static string? Normalizar(string? nome) =>
+        string.IsNullOrWhiteSpace(nome) ? null : nome.Trim().ToUpperInvariant();
+
+    private static bool ViolaUnique(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
+
+    /// <summary>
+    /// Busca-ou-cria: se outra gravação já criou a mesma pessoa (unique), devolve a existente.
+    /// </summary>
     public async Task<PessoaMovimentacao> Create(PessoaMovimentacao PessoaMovimentacao, int userId)
     {
+        var nome = Normalizar(PessoaMovimentacao.NomePessoa)
+            ?? throw new InvalidOperationException("O nome da pessoa é obrigatório.");
+
+        PessoaMovimentacao.UserId = userId;
+        PessoaMovimentacao.NomePessoa = nome;
+        await _context.PessoaMovimentacao.AddAsync(PessoaMovimentacao);
         try
         {
-            PessoaMovimentacao.UserId = userId;
-            await _context.PessoaMovimentacao.AddAsync(PessoaMovimentacao);
             await _context.SaveChangesAsync();
             return PessoaMovimentacao;
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex) when (ViolaUnique(ex))
         {
-            // veja ex.Message e ex.InnerException
-            throw;
+            // Sem o detach, a entidade com erro ficaria no contexto e derrubaria o próximo SaveChanges.
+            _context.Entry(PessoaMovimentacao).State = EntityState.Detached;
+            return await _context.PessoaMovimentacao.FirstAsync(p => p.UserId == userId && p.NomePessoa == nome);
         }
     }
 
@@ -74,29 +93,32 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
 
     public async Task<bool> UpdateAsync(PessoaMovimentacao incomingPessoaMovimentacao, int userId)
     {
+        var existingPessoaMovimentacao = await _context.PessoaMovimentacao
+            .FirstOrDefaultAsync(a => a.Id == incomingPessoaMovimentacao.Id && a.UserId == userId);
+
+        if (existingPessoaMovimentacao == null)
+        {
+            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
+        }
+
+        var nome = Normalizar(incomingPessoaMovimentacao.NomePessoa)
+            ?? throw new InvalidOperationException("O nome da pessoa é obrigatório.");
+
+        existingPessoaMovimentacao.NomePessoa = nome;
+        existingPessoaMovimentacao.CategoriaId = incomingPessoaMovimentacao.CategoriaId;
+        existingPessoaMovimentacao.TipoMovimentacaoId = incomingPessoaMovimentacao.TipoMovimentacaoId;
+
         try
         {
-            var existingPessoaMovimentacao = await _context.PessoaMovimentacao
-                .FirstOrDefaultAsync(a => a.Id == incomingPessoaMovimentacao.Id && a.UserId == userId);
-
-            if (existingPessoaMovimentacao == null)
-            {
-                throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-            }
-
-            existingPessoaMovimentacao.NomePessoa = incomingPessoaMovimentacao.NomePessoa;
-            existingPessoaMovimentacao.CategoriaId = incomingPessoaMovimentacao.CategoriaId;
-            existingPessoaMovimentacao.TipoMovimentacaoId = incomingPessoaMovimentacao.TipoMovimentacaoId;
-
             await _context.SaveChangesAsync();
-
-            return true;
         }
-        catch (Exception ex)
+        catch (DbUpdateException ex) when (ViolaUnique(ex))
         {
-            // Log the exception (ex.Message, ex.StackTrace, etc.)
-            throw; // Rethrow or handle as needed
+            await _context.Entry(existingPessoaMovimentacao).ReloadAsync();
+            throw new InvalidOperationException($"Já existe uma pessoa chamada {nome}.");
         }
+
+        return true;
     }
 
     public async Task<List<PessoaMovimentacao>> GetPessoaMovimentacao(int userId)
@@ -109,12 +131,16 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<PessoaMovimentacao>> VerificaPossuiPessoa(string nomePessoa, int userId)
+    public async Task<IEnumerable<PessoaMovimentacao>> VerificaPossuiPessoa(string? nomePessoa, int userId)
     {
+        var nome = Normalizar(nomePessoa);
+        if (nome == null)
+            return [];
+
         try
         {
             return await _context.PessoaMovimentacao
-                .Where(a => a.UserId == userId && a.NomePessoa == nomePessoa)
+                .Where(a => a.UserId == userId && a.NomePessoa == nome)
                 .OrderBy(c => c.NomePessoa)
                 .Include(a => a.Categoria)
                 .Include(a => a.TipoMovimentacao)
