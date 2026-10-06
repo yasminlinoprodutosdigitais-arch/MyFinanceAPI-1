@@ -12,4 +12,6 @@ public interface ITipoMovimentacaoRepository
     Task<TipoMovimentacao> Create(TipoMovimentacao TipoMovimentacao);
     Task<bool> UpdateAsync(TipoMovimentacao TipoMovimentacao, int userId);
     Task<TipoMovimentacao?> Remove(int id, int userId);
+    /// <summary>True se o tipo de movimentação é do usuário e está em uso por lançamentos ou pessoas.</summary>
+    Task<bool> EmUsoAsync(int id, int userId);
 }

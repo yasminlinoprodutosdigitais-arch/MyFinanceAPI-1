@@ -13,4 +13,6 @@ public interface ICategoryRepository
     Task<Category?> FindByIdForUserAsync(int id, int userId);
     Task<bool> UpdateAsync(Category entity);
     Task<Category?> Remove(int id, int userId);
+    /// <summary>True se a categoria é do usuário e está em uso por transações, pessoas ou itens de extrato.</summary>
+    Task<bool> EmUsoAsync(int id, int userId);
 }

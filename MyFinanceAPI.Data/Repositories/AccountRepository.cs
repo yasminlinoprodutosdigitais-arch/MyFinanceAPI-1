@@ -62,16 +62,19 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
         if (account != null)
         {
-            var vencimentos = await _context.ContaVencimento
-                .Where(v => v.ContaId == id)
-                .ToListAsync();
-
-            _context.ContaVencimento.RemoveRange(vencimentos);
-
+            // Os vencimentos saem junto pelo ON DELETE CASCADE de ContaVencimento_ContaId_fkey (D-9).
             _context.Accounts.Remove(account);
 
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.Accounts.AnyAsync(a => a.Id == id && a.UserId == userId))
+            return false;
+
+        return await _context.Transactions.AnyAsync(t => t.IdAccount == id);
     }
     public async Task RemoveContaVencimento(int id, int userId) // O método recebe id e userId
     {

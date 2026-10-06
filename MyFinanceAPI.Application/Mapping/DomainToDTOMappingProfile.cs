@@ -26,7 +26,6 @@ public class DomainToDTOMappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore());
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
-        CreateMap<VinculoTipoMovimentacao, VinculoTipoMovimentacaoDTO>().ReverseMap();
         CreateMap<PessoaMovimentacao, PessoaMovimentacaoDTO>().ReverseMap();
     }
 }

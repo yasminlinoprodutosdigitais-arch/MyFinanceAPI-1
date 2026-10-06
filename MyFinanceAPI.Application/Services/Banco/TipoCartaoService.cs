@@ -40,6 +40,9 @@ public class TipoCartaoService : ITipoCartaoService
 
     public async Task Remove(int id, int userId)
     {
+        if (await _tipoCartaoRepository.EmUsoAsync(id, userId))
+            throw new InvalidOperationException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos ou lançamentos.");
+
         await _tipoCartaoRepository.Remove(id, userId);
     }
 

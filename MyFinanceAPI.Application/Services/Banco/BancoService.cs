@@ -40,6 +40,9 @@ public class BancoService : IBancoService
 
     public async Task Remove(int id, int userId)
     {
+        if (await _bancoRepository.EmUsoAsync(id, userId))
+            throw new InvalidOperationException("Não é possível excluir este banco, pois ele possui lançamentos ou extratos. Inative o banco em vez de excluí-lo.");
+
         await _bancoRepository.Remove(id, userId);
     }
 

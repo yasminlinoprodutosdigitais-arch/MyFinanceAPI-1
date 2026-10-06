@@ -50,6 +50,16 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         return Banco;
     }
 
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.Banco.AnyAsync(b => b.Id == id && b.UserId == userId))
+            return false;
+
+        return await _context.MovimentacaoDiaria.AnyAsync(m => m.BancoId == id)
+            || await _context.ExtratoBancario.AnyAsync(e => e.BancoId == id)
+            || await _context.ExtratoBancarioItens.AnyAsync(i => i.BancoId == id);
+    }
+
     public async Task<Banco?> FindByIdForUserAsync(int id, int userId)
     {
         return await _context.Banco

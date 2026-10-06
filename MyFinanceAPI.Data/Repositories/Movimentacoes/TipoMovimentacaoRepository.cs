@@ -47,6 +47,16 @@ public class TipoMovimentacaoRepository(ContextDB context) : ITipoMovimentacaoRe
         return TipoMovimentacao;
     }
 
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.TipoMovimentacao.AnyAsync(t => t.Id == id && t.UserId == userId))
+            return false;
+
+        return await _context.MovimentacaoDiaria.AnyAsync(m => m.TipoMovimentacaoId == id)
+            || await _context.ExtratoBancarioItens.AnyAsync(i => i.TipoMovimentacaoId == id)
+            || await _context.PessoaMovimentacao.AnyAsync(p => p.TipoMovimentacaoId == id);
+    }
+
     public async Task<TipoMovimentacao?> FindByIdForUserAsync(int id, int userId)
     {
         return await _context.TipoMovimentacao

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyFinanceAPI.Domain.Entities;
@@ -9,12 +8,26 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        builder.HasKey(t => t.Id);
         builder.ToTable("Accounts");
-        // builder.HasOne(e => e.Category)
-        //              .WithMany(c => c.Accounts)
-        //              .HasForeignKey(e => e.CategoryId)
-        //              .HasConstraintName("fk_category")
-        //              .OnDelete(DeleteBehavior.Restrict);
+        builder.HasKey(e => e.Id).HasName("PK_Accounts");
+
+        builder.Property(e => e.Value).HasPrecision(10, 2);
+
+        // Colunas que só o banco tinha; nenhum código lê, então ficam como shadow properties.
+        builder.Property<string?>("DataOperacao");
+        builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
+
+        builder.HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .HasConstraintName("FK_Accounts_AspNetUsers_UserId")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // DB-P0-03 (subprojeto 3) troca para RESTRICT.
+        builder.HasOne(e => e.Category)
+            .WithMany()
+            .HasForeignKey(e => e.CategoryId)
+            .HasConstraintName("FK_Accounts_Categories_CategoryId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

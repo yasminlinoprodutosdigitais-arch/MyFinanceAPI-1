@@ -58,6 +58,14 @@ public class PessoaMovimentacaoRepository(ContextDB context) : IPessoaMovimentac
         return PessoaMovimentacao;
     }
 
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.PessoaMovimentacao.AnyAsync(p => p.Id == id && p.UserId == userId))
+            return false;
+
+        return await _context.ExtratoBancarioItens.AnyAsync(i => i.PessoaMovimentacaoId == id);
+    }
+
     public async Task<PessoaMovimentacao?> FindByIdForUserAsync(int id, int userId)
     {
         return await _context.PessoaMovimentacao

@@ -115,6 +115,10 @@ namespace MyFinanceAPI.Api.Controllers
                 await _TipoMovimentacaoService.Remove(id, userId);
                 return Ok(TipoMovimentacao);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao deletar Tipo Movimentacao.", error = ex.Message, detail = ex.StackTrace });

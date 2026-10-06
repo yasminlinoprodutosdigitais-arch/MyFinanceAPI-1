@@ -124,6 +124,10 @@ namespace MyFinanceAPI.Api.Controllers
                 await _PessoaMovimentacaoService.Remove(id, userId);
                 return Ok(PessoaMovimentacao);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao deletar PessoaMovimentacao.", error = ex.Message, detail = ex.StackTrace });

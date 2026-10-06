@@ -1,0 +1,23 @@
+tipo	nome	detalhe
+extension	plpgsql	1.0
+migration	20250924002229_InitialCreate	8.0.8
+nulos	Accounts.EhParcelado	0
+nulos	Accounts.Value	0
+nulos	Banco.SaldoInicial	0
+nulos	Banco.TipoCartaoId	0
+nulos	Banco.UserId	0
+nulos	Categories.NaturezaOperacao	0
+nulos	ContaVencimento.UserId	0
+nulos	ExtratoBancario.BancoId	0
+nulos	ExtratoBancario.LoteImportacaoId	0
+nulos	ExtratoBancarioItem.UserId	0
+nulos	Lista.Status	0
+nulos	Lista.TipoMovimentacao	0
+nulos	MovimentacaoDiaria.TipoLancamento	0
+nulos	PessoaMovimentacao.NomePessoa	0
+nulos	PessoaMovimentacao.UserId	0
+nulos	TipoCartao.UserId	0
+nulos	TipoMovimentacao.Descricao	0
+nulos	TipoMovimentacao.UserId	0
+nulos	TipoMovimentacao.ValorMeta	0
+versao	server_version	17.11 (fcae950)

@@ -52,6 +52,9 @@ public class CategoryService : ICategoryService
         if (contas.Any())
             throw new InvalidOperationException("Não é possível excluir essa categoria, pois ela possui contas cadastradas.");
 
+        if (await _categoryRepository.EmUsoAsync(id, userId))
+            throw new InvalidOperationException("Não é possível excluir essa categoria, pois ela está em uso por transações, pessoas ou itens de extrato.");
+
         await _categoryRepository.Remove(id, userId);
     }
 

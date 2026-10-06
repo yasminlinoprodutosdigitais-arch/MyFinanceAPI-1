@@ -40,6 +40,9 @@ public class TipoMovimentacaoService : ITipoMovimentacaoService
 
     public async Task Remove(int id, int userId)
     {
+        if (await _tipoMovimentacaoRepository.EmUsoAsync(id, userId))
+            throw new InvalidOperationException("Não é possível excluir este tipo de movimentação, pois ele está em uso por lançamentos ou pessoas.");
+
         await _tipoMovimentacaoRepository.Remove(id, userId);
     }
 

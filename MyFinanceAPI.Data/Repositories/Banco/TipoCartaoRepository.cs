@@ -47,6 +47,16 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
         return TipoCartao;
     }
 
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.TipoCartao.AnyAsync(t => t.Id == id && t.UserId == userId))
+            return false;
+
+        return await _context.Banco.AnyAsync(b => b.TipoCartaoId == id)
+            || await _context.MovimentacaoDiaria.AnyAsync(m => m.TipoCartaoId == id)
+            || await _context.ExtratoBancarioItens.AnyAsync(i => i.TipoCartaoId == id);
+    }
+
     public async Task<TipoCartao?> FindByIdForUserAsync(int id, int userId)
     {
         return await _context.TipoCartao

@@ -159,6 +159,10 @@ namespace MyFinanceAPI.Api.Controllers
                 await _accountService.Remove(id, userId);
                 return Ok(account);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao deletar conta.", error = ex.Message, detail = ex.StackTrace });

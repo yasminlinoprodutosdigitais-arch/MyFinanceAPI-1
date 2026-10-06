@@ -15,6 +15,8 @@ public interface IAccountRepository
     Task CreateContaVencimento (List<ContaVencimento> contaVencimento);
     Task<Account> Update(Account account, int userId);
     Task Remove(int id, int userId);
+    /// <summary>True se a conta é do usuário e tem transações (FK RESTRICT bloqueia o DELETE).</summary>
+    Task<bool> EmUsoAsync(int id, int userId);
     Task RemoveContaVencimento(int id, int userId);
     Task<IEnumerable<Account>> GetAccountsByCategory(int categoryId, int userId);
 }

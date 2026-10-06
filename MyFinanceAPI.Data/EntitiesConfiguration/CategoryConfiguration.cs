@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyFinanceAPI.Domain.Entities;
@@ -9,7 +8,15 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        builder.HasKey(t => t.Id);
         builder.ToTable("Categories");
+        builder.HasKey(e => e.Id).HasName("PK_Categories");
+
+        builder.Property(e => e.DataAlteracao).HasDefaultValueSql("now()");
+
+        builder.HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .HasConstraintName("FK_Categories_AspNetUsers_UserId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -13,4 +13,6 @@ public interface IBancoRepository
     Task<bool> UpdateAsync(Banco Banco, int userId);
     Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId);
     Task<Banco?> Remove(int id, int userId);
+    /// <summary>True se o banco é do usuário e tem lançamentos ou extratos (FKs RESTRICT bloqueiam o DELETE).</summary>
+    Task<bool> EmUsoAsync(int id, int userId);
 }

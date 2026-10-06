@@ -114,7 +114,14 @@ namespace MyFinanceAPI.WebUI.Controllers
             if (category is null)
                 return NotFound("Categoria não encontrada!");
 
-            await _categoryService.Remove(id, userId.Value);
+            try
+            {
+                await _categoryService.Remove(id, userId.Value);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             return Ok(category);
         }
     }

@@ -54,6 +54,16 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
         return category;
     }
 
+    public async Task<bool> EmUsoAsync(int id, int userId)
+    {
+        if (!await _context.Categories.AnyAsync(c => c.Id == id && c.UserId == userId))
+            return false;
+
+        return await _context.Transactions.AnyAsync(t => t.CategoryId == id)
+            || await _context.PessoaMovimentacao.AnyAsync(p => p.CategoriaId == id)
+            || await _context.ExtratoBancarioItens.AnyAsync(i => i.CategoriaId == id);
+    }
+
     public async Task<Category?> FindByIdForUserAsync(int id, int userId)
     {
         // tracking ligado (vamos editar a entidade)

@@ -13,4 +13,6 @@ public interface IPessoaMovimentacaoRepository
     Task<PessoaMovimentacao> Create(PessoaMovimentacao PessoaMovimentacao, int userId);
     Task<bool> UpdateAsync(PessoaMovimentacao PessoaMovimentacao, int userId);
     Task<PessoaMovimentacao?> Remove(int id, int userId);
+    /// <summary>True se a pessoa é do usuário e está vinculada a itens de extrato.</summary>
+    Task<bool> EmUsoAsync(int id, int userId);
 }

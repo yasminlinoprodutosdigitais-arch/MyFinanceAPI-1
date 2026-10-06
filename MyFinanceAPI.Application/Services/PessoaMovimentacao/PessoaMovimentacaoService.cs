@@ -44,6 +44,9 @@ public class PessoaMovimentacaoService : IPessoaMovimentacaoService
 
     public async Task Remove(int id, int userId)
     {
+        if (await _PessoaMovimentacaoRepository.EmUsoAsync(id, userId))
+            throw new InvalidOperationException("Não é possível excluir esta pessoa, pois ela está vinculada a itens de extrato.");
+
         await _PessoaMovimentacaoRepository.Remove(id, userId);
     }
 

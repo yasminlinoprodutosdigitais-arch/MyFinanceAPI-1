@@ -126,6 +126,10 @@ namespace MyFinanceAPI.Api.Controllers
                 await _BancoService.Remove(id, userId);
                 return Ok(Banco);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao deletar Banco.", error = ex.Message, detail = ex.StackTrace });

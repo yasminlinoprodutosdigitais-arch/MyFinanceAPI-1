@@ -124,6 +124,10 @@ namespace MyFinanceAPI.Api.Controllers
                 await _TipoCartaoService.Remove(id, userId);
                 return Ok(TipoCartao);
             }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro ao deletar TipoCartao.", error = ex.Message, detail = ex.StackTrace });
