@@ -2,9 +2,6 @@ using System;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using MyFinanceAPI.Application.DTO;
-using MyFinanceAPI.Data.Configuration;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
@@ -235,6 +232,15 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
             throw new Exception("Nenhuma transação encontrada");
 
         return transaction;
+    }
+
+    public async Task<List<int>> GetParcelasLancadas(int accountId, int userId)
+    {
+        return await _context.Transactions
+            .Where(t => t.UserId == userId && t.IdAccount == accountId && t.ParcelaAtual != null)
+            .Select(t => t.ParcelaAtual!.Value)
+            .Distinct()
+            .ToListAsync();
     }
 
     public async Task<Transaction> Remove(int id, int userId)

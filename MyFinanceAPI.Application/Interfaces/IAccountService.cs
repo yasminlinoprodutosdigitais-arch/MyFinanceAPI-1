@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http.Headers;
-using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
 
 namespace MyFinanceAPI.Application.Interfaces;

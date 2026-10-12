@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\MyFinanceAPI.Domain\MyFinanceAPI.Domain.csproj" />
-    <ProjectReference Include="..\MyFinanceAPI.Integrations\MyFinanceAPI.Integrations.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="11.0.1" />
-    <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.0" />
   </ItemGroup>
   <PropertyGroup>

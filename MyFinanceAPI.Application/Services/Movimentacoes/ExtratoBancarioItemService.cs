@@ -8,7 +8,6 @@ using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
-using MyFinanceAPI.Domain.Interfaces.Repositories;
 
 namespace MyFinanceAPI.Application.Services
 {

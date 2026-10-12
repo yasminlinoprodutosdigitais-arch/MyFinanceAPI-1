@@ -4,7 +4,6 @@
     <ProjectReference Include="..\MyFinanceAPI.Application\MyFinanceAPI.Application.csproj" />
     <ProjectReference Include="..\MyFinanceAPI.Data\MyFinanceAPI.Data.csproj" />
     <ProjectReference Include="..\MyFinanceAPI.Domain\MyFinanceAPI.Domain.csproj" />
-    <ProjectReference Include="..\MyFinanceAPI.Integrations\MyFinanceAPI.Integrations.csproj" />
   </ItemGroup>
 
   <ItemGroup>

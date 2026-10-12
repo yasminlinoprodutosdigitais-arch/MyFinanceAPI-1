@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using MongoDB.Bson;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Application.DTO;

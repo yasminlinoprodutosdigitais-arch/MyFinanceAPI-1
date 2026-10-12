@@ -1,5 +1,4 @@
 using System;
-using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.DTO.Movimentacoes;

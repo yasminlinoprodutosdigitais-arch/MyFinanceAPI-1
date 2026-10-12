@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;

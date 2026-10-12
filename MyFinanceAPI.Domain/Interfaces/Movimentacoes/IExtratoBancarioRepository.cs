@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyFinanceAPI.Domain.Entities;
 
-namespace MyFinanceAPI.Domain.Interfaces.Repositories
+namespace MyFinanceAPI.Domain.Interfaces
 {
     public interface IExtratoBancarioRepository
     {

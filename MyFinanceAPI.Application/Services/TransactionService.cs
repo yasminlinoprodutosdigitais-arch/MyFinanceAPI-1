@@ -39,6 +39,8 @@ public class TransactionService : ITransactionService
             };
             conta = await _accountService.Add(novaConta, userId);
         }
+        int? parcela = conta.EhParcelado ? await ProximaParcela(conta, userId) : null;
+
         var ultimoDiaMes = DateTime.DaysInMonth(mesAno.Year, mesAno.Month);
         var valorParcelaMensal = conta.Value / conta.ContaVencimentos.Count();
         foreach (var vencimento in conta.ContaVencimentos)
@@ -51,9 +53,9 @@ public class TransactionService : ITransactionService
                 UserId = userId,
                 Value = (decimal)valorParcelaMensal,
                 Status = transactionDTO.Status,
-                EhParcelado = transactionDTO.EhParcelado,
-                ParcelaAtual = transactionDTO.ParcelaAtual,
-                QuantidadeParcelas = transactionDTO.QuantidadeParcelas,
+                EhParcelado = conta.EhParcelado,
+                ParcelaAtual = parcela,
+                QuantidadeParcelas = conta.EhParcelado ? conta.QuantidadeParcelas : null,
                 CategoryId = conta.Categoryid,
                 Date = new DateTime(
                     mesAno.Year,
@@ -66,6 +68,22 @@ public class TransactionService : ITransactionService
         }
 
         await _transactionRepository.Create(transacoes);
+    }
+
+    // A ParcelaAtual da conta só anda quando se paga; por isso o número vem do que já foi lançado:
+    // a menor parcela a partir dela que ainda não existe (lançar dois meses sem pagar dá 4 e 5).
+    private async Task<int> ProximaParcela(AccountDTO conta, int userId)
+    {
+        var lancadas = (await _transactionRepository.GetParcelasLancadas(conta.Id, userId)).ToHashSet();
+
+        var parcela = Math.Max(1, conta.ParcelaAtual ?? 1);
+        while (lancadas.Contains(parcela))
+            parcela++;
+
+        if (parcela > conta.QuantidadeParcelas)
+            throw new ArgumentException("Todas as parcelas desta conta já foram lançadas.");
+
+        return parcela;
     }
 
     public async Task Delete(int id, int userId)
@@ -155,7 +173,8 @@ public class TransactionService : ITransactionService
                 }
                 await _accountService.UpdateParcela(account, userId);
             }
-            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO") || deleted)
+            // Excluir uma parcela não paga não mexe na conta: ParcelaAtual só anda quando se paga.
+            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO" || deleted))
             {
                 if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
                 {

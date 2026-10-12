@@ -1,7 +1,6 @@
 using MyFinanceAPI.Domain.Interfaces;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyFinanceAPI.Data.Repositories
@@ -13,26 +12,6 @@ namespace MyFinanceAPI.Data.Repositories
         public UsuarioRepository(ContextDB context)
         {
             _context = context;
-        }
-
-        public void AlterarStatusAtivo(int codigoId, bool statusAtivo)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Atualizar(Usuario entidade, int codigoId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Usuario> BuscarPorExpressao(Expression<Func<Usuario, bool>> filtro)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Usuario BuscarPorId(int codigoId)
-        {
-            throw new NotImplementedException();
         }
 
         public IEnumerable<Usuario> BuscarTodos()
@@ -52,11 +31,6 @@ namespace MyFinanceAPI.Data.Repositories
         {
             _context.Usuarios.Add(entidade);
             _context.SaveChanges();
-        }
-
-        public void Deletar(int codigoId)
-        {
-            throw new NotImplementedException();
         }
 
         public bool ValidaSeUsuarioExiste(string login, string usuarioNome)

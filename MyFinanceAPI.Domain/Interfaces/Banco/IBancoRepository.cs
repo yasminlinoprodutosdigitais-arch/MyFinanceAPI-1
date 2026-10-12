@@ -1,6 +1,4 @@
 using System;
-using MongoDB.Bson;
-using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Domain.Interfaces;

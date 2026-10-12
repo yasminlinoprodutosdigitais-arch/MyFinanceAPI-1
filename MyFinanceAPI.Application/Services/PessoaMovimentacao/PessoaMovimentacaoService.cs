@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using System.Security.Claims;
 using AutoMapper;
-using MongoDB.Bson;
-using MongoDB.Driver.Linq;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;

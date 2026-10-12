@@ -1,7 +1,6 @@
 using System;
-using MyFinanceAPI.Domain.Entities;
 
-namespace MyFinanceAPI.Application.DTO;
+namespace MyFinanceAPI.Domain.Entities;
 
 public class AccountGrouping
 {

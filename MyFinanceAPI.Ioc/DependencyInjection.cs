@@ -8,8 +8,6 @@ using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Application.Mapping;
 using Microsoft.EntityFrameworkCore;
-using MyFinanceAPI.Infra.Data.Repositories;
-using MyFinanceAPI.Domain.Interfaces.Repositories;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Ioc
@@ -39,6 +37,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddHttpContextAccessor();
             services.AddScoped<IUserContextService, UserContextService>();
 
             services.AddScoped<IBancoService, BancoService>();

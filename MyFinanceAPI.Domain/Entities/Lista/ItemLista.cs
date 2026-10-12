@@ -2,8 +2,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.VisualBasic;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace MyFinanceAPI.Domain.Entities;
 public class ItemLista : BaseEntity

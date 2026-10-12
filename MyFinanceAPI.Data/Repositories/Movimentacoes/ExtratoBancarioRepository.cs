@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
-using MyFinanceAPI.Domain.Interfaces.Repositories;
+using MyFinanceAPI.Domain.Interfaces;
 
-namespace MyFinanceAPI.Infra.Data.Repositories
+namespace MyFinanceAPI.Data.Repositories
 {
     public class ExtratoBancarioRepository : IExtratoBancarioRepository
     {

@@ -5,7 +5,7 @@ using MyFinanceAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MyFinanceAPI.WebUI.Controllers
+namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]

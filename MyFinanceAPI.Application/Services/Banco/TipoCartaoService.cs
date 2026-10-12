@@ -1,7 +1,6 @@
 using System;
 using System.Security.Claims;
 using AutoMapper;
-using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;

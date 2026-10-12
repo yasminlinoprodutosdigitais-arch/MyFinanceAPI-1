@@ -1,10 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MyFinanceAPI.Application.DTO;
-using MyFinanceAPI.Data.Configuration;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;

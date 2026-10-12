@@ -1,6 +1,5 @@
 using System;
 using System.Text.Json.Serialization;
-using MongoDB.Bson;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Application.DTO;

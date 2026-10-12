@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text;
 using AutoMapper;
-using MongoDB.Bson;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Interfaces;
