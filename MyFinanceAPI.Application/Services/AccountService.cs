@@ -11,15 +11,18 @@ public class AccountService : IAccountService
 {
     private IAccountRepository _accountRepository;
     private IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
 
-    public AccountService(IAccountRepository AccountRepository, IMapper mapper)
+    public AccountService(IAccountRepository AccountRepository, IMapper mapper, IUnitOfWork unitOfWork)
     {
         _accountRepository = AccountRepository;
         _mapper = mapper;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<AccountDTO> Add(AccountDTO accountDTO, int userId)
+    // Conta e vencimentos valem juntos (BE-P1-05).
+    public Task<AccountDTO> Add(AccountDTO accountDTO, int userId) => _unitOfWork.ExecuteAsync(async () =>
     {
         var account = _mapper.Map<Account>(accountDTO);
         account.UserId = userId;
@@ -35,9 +38,9 @@ public class AccountService : IAccountService
 
         await _accountRepository.CreateContaVencimento(vencimentos);
         return _mapper.Map<AccountDTO>(conta);
-    }
+    });
 
-    public async Task Update(AccountDTO accountDTO, int userId)
+    public Task Update(AccountDTO accountDTO, int userId) => _unitOfWork.ExecuteAsync(async () =>
     {
         var account = _mapper.Map<Account>(accountDTO);
 
@@ -57,8 +60,7 @@ public class AccountService : IAccountService
 
             await _accountRepository.CreateContaVencimento(vencimentos);
         }
-
-    }
+    });
 
     public async Task UpdateParcela(AccountDTO accountDTO, int userId)
     {

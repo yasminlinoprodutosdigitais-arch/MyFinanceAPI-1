@@ -60,16 +60,8 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
             transaction.Date = localDate.ToUniversalTime();
         }
 
-        try
-        {
-            await _context.Transactions.AddRangeAsync(transactions);
-            await _context.SaveChangesAsync();
-
-        }
-        catch (Exception e)
-        {
-
-        }
+        await _context.Transactions.AddRangeAsync(transactions);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)

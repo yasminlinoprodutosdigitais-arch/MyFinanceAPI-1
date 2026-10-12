@@ -25,15 +25,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     public async Task CreateContaVencimento(List<ContaVencimento> vencimentos)
     {
         await _context.ContaVencimento.AddRangeAsync(vencimentos);
-        try
-        {
-            await _context.SaveChangesAsync();
-
-        }
-        catch (Exception e)
-        {
-
-        }
+        await _context.SaveChangesAsync();
     }
 
     public async Task<List<Account>>? GetAccountByCategory(int categoryId, int userId)

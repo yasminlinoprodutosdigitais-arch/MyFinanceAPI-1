@@ -24,6 +24,7 @@ public class ExtratoBancarioServiceTests
     private readonly Mock<IExtratoBancarioItemRepository> _itemRepo = new();
     private readonly Mock<IPessoaMovimentacaoRepository> _pessoaRepo = new();
     private readonly Mock<IBancoService> _bancoService = new();
+    private readonly UnitOfWorkFalso _uow = new();
 
     private readonly HashSet<string> _chavesExistentes = new();
     private readonly List<ExtratoBancarioItem> _candidatosTruncados = new();
@@ -42,14 +43,14 @@ public class ExtratoBancarioServiceTests
         _itemRepo.Setup(r => r.ObterChavesImportacaoAsync(UserId, BancoId)).ReturnsAsync(() => _chavesExistentes);
         _itemRepo.Setup(r => r.ObterCandidatosTruncadosAsync(UserId, BancoId)).ReturnsAsync(() => _candidatosTruncados);
         _itemRepo.Setup(r => r.CreateRangeAsync(It.IsAny<IEnumerable<ExtratoBancarioItem>>()))
-            .Callback<IEnumerable<ExtratoBancarioItem>>(itens => _itensCriados = itens.ToList())
+            .Callback<IEnumerable<ExtratoBancarioItem>>(itens => { _uow.Registrar("Itens.CreateRange"); _itensCriados = itens.ToList(); })
             .Returns(Task.CompletedTask);
         _itemRepo.Setup(r => r.UpdateAsync(It.IsAny<ExtratoBancarioItem>()))
-            .Callback<ExtratoBancarioItem>(i => _itensAtualizados.Add(i))
+            .Callback<ExtratoBancarioItem>(i => { _uow.Registrar("Item.Update"); _itensAtualizados.Add(i); })
             .Returns(Task.CompletedTask);
 
         _extratoRepo.Setup(r => r.CreateAsync(It.IsAny<ExtratoBancario>()))
-            .Callback<ExtratoBancario>(e => { e.Id = ExtratoIdGerado; _extratoCriado = e; })
+            .Callback<ExtratoBancario>(e => { _uow.Registrar("Extrato.Create"); e.Id = ExtratoIdGerado; _extratoCriado = e; })
             .ReturnsAsync((ExtratoBancario e) => e);
 
         _pessoaRepo.Setup(r => r.VerificaPossuiPessoa(It.IsAny<string?>(), UserId))
@@ -58,6 +59,7 @@ public class ExtratoBancarioServiceTests
         _pessoaRepo.Setup(r => r.Create(It.IsAny<PessoaMovimentacao>(), UserId))
             .ReturnsAsync((PessoaMovimentacao p, int _) =>
             {
+                _uow.Registrar("Pessoa.Create");
                 p.Id = 900 + _pessoasCriadas.Count;
                 _pessoasCriadas.Add(p);
                 return p;
@@ -69,7 +71,7 @@ public class ExtratoBancarioServiceTests
         var csv = string.Join("\n", linhas);
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
         var service = new ExtratoBancarioService(
-            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create(), _bancoService.Object);
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
         return service.ImportarExtratoAsync(stream, "NU_2026-10.csv", UserId, BancoId);
     }
 
@@ -327,5 +329,52 @@ public class ExtratoBancarioServiceTests
     public void GerarChaveDescricao_normaliza(string descricao, string esperado)
     {
         Assert.Equal(esperado, ExtratoBancarioService.GerarChaveDescricao(descricao));
+    }
+
+    // ---------- transação (BE-P1-05) ----------
+
+    [Fact]
+    public async Task Importacao_grava_correcoes_pessoas_cabecalho_e_itens_na_mesma_operacao()
+    {
+        _candidatosTruncados.Add(new ExtratoBancarioItem
+        {
+            Identificador = "a",
+            DataMovimentacao = new DateOnly(2026, 9, 5),
+            TipoLancamento = "Saída",
+            Descricao = "Compra - LOJA",
+            Valor = 1234m,
+        });
+
+        await Importar(
+            Cabecalho,
+            "05/09/2026,-1234.56,a,Compra - LOJA",
+            "06/09/2026,-20.00,b,Transferência enviada pelo Pix - Maria Souza - BANCO X");
+
+        Assert.Single(_itensAtualizados);
+        Assert.Single(_pessoasCriadas);
+        Assert.NotNull(_extratoCriado);
+        Assert.NotEmpty(_itensCriados);
+        Assert.Empty(_uow.Fora);
+    }
+
+    [Fact]
+    public async Task Remove_apaga_itens_e_cabecalho_na_mesma_operacao()
+    {
+        _extratoRepo.Setup(r => r.GetByIdAsync(ExtratoIdGerado, UserId))
+            .ReturnsAsync(new ExtratoBancario { Id = ExtratoIdGerado, UserId = UserId });
+        _itemRepo.Setup(r => r.RemoveByExtratoIdAsync(ExtratoIdGerado))
+            .Callback(() => _uow.Registrar("Itens.Remove"))
+            .Returns(Task.CompletedTask);
+        _extratoRepo.Setup(r => r.RemoveAsync(ExtratoIdGerado))
+            .Callback(() => _uow.Registrar("Extrato.Remove"))
+            .Returns(Task.CompletedTask);
+        var service = new ExtratoBancarioService(
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+
+        await service.Remove(ExtratoIdGerado, UserId);
+
+        _itemRepo.Verify(r => r.RemoveByExtratoIdAsync(ExtratoIdGerado), Times.Once);
+        _extratoRepo.Verify(r => r.RemoveAsync(ExtratoIdGerado), Times.Once);
+        Assert.Empty(_uow.Fora);
     }
 }

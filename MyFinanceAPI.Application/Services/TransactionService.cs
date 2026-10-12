@@ -13,15 +13,21 @@ public class TransactionService : ITransactionService
     private readonly ITransactionRepository _transactionRepository;
     private readonly IAccountService _accountService;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public TransactionService(ITransactionRepository transactionRepository, IMapper mapper, IAccountService accountService)
+    public TransactionService(ITransactionRepository transactionRepository, IMapper mapper, IAccountService accountService, IUnitOfWork unitOfWork)
     {
         _transactionRepository = transactionRepository;
         _mapper = mapper;
         _accountService = accountService;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task Add(TransactionDTO transactionDTO, int userId)
+    // Conta nova, parcela da conta e transações valem juntas (BE-P1-05).
+    public Task Add(TransactionDTO transactionDTO, int userId) =>
+        _unitOfWork.ExecuteAsync(() => AddNaOperacao(transactionDTO, userId));
+
+    private async Task AddNaOperacao(TransactionDTO transactionDTO, int userId)
     {
         var conta = await _accountService.GetAccountById(transactionDTO.IdAccount ?? 0, userId);
         var mesAno = transactionDTO.Date;
@@ -86,7 +92,10 @@ public class TransactionService : ITransactionService
         return parcela;
     }
 
-    public async Task Delete(int id, int userId)
+    public Task Delete(int id, int userId) =>
+        _unitOfWork.ExecuteAsync(() => DeleteNaOperacao(id, userId));
+
+    private async Task DeleteNaOperacao(int id, int userId)
     {
         var transaction = _mapper.Map<Domain.Entities.Transaction, TransactionDTO>(await _transactionRepository.GetTransactionById(id, userId));
         if (transaction == null)        {
@@ -139,7 +148,10 @@ public class TransactionService : ITransactionService
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 
-    public async Task Update(TransactionDTO transactionDTO, int userId)
+    public Task Update(TransactionDTO transactionDTO, int userId) =>
+        _unitOfWork.ExecuteAsync(() => UpdateNaOperacao(transactionDTO, userId));
+
+    private async Task UpdateNaOperacao(TransactionDTO transactionDTO, int userId)
     {
         if (transactionDTO.EhParcelado)
         {
@@ -176,14 +188,10 @@ public class TransactionService : ITransactionService
             // Excluir uma parcela não paga não mexe na conta: ParcelaAtual só anda quando se paga.
             else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO" || deleted))
             {
-                if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
-                {
-                    account.Status = 1; // Ativa
-                }
-                else
-                {
-                    account.ParcelaAtual = transaction.ParcelaAtual;
-                }
+                // A parcela estornada volta a ser a próxima a pagar e a conta fica ativa. Não dá para
+                // olhar só a conta: ela estar na última parcela não quer dizer que a estornada seja a última.
+                account.ParcelaAtual = transaction.ParcelaAtual;
+                account.Status = 1; // Ativa
 
                 await _accountService.UpdateParcela(account, userId);
             }

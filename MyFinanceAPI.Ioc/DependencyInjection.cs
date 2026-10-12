@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Services;
+using MyFinanceAPI.Data;
 using MyFinanceAPI.Data.Repositories;
 using MyFinanceAPI.Domain.Interfaces;
 using MyFinanceAPI.Data.Context;
@@ -20,6 +21,8 @@ namespace MyFinanceAPI.Ioc
             services.AddDbContext<ContextDB>(opt =>
             opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
+            // Transação sobre o mesmo ContextDB que os repositórios usam na requisição (BE-P1-05).
+            services.AddScoped<IUnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<ContextDB>()));
 
             // Configuração da política CORS
             services.AddCors(options =>

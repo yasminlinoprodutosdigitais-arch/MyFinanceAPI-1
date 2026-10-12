@@ -24,18 +24,20 @@ namespace MyFinanceAPI.Application.Services
         private readonly IMapper _mapper;
         private readonly IBancoService _bancoService;
         private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public ExtratoBancarioService(
             IExtratoBancarioRepository extratoBancarioRepository,
             IExtratoBancarioItemRepository extratoBancarioItemRepository,
             IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
-            IMapper mapper, IBancoService bancoService)
+            IMapper mapper, IBancoService bancoService, IUnitOfWork unitOfWork)
         {
             _extratoBancarioRepository = extratoBancarioRepository;
             _extratoBancarioItemRepository = extratoBancarioItemRepository;
             _mapper = mapper;
             _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
             _bancoService = bancoService;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -74,9 +76,16 @@ namespace MyFinanceAPI.Application.Services
 
         /// <summary>
         /// Importa o arquivo de extrato, cria o cabeçalho de extrato e os itens.
+        /// Correções de centavos, pessoas novas, cabeçalho e itens valem juntos (BE-P1-05).
         /// </summary>
+        public Task<ExtratoImportacaoResultadoDTO> ImportarExtratoAsync(
+            Stream arquivoStream,
+            string fileName,
+            int userId,
+            int bancoId
+        ) => _unitOfWork.ExecuteAsync(() => ImportarExtratoNaOperacaoAsync(arquivoStream, fileName, userId, bancoId));
 
-        public async Task<ExtratoImportacaoResultadoDTO> ImportarExtratoAsync(
+        private async Task<ExtratoImportacaoResultadoDTO> ImportarExtratoNaOperacaoAsync(
             Stream arquivoStream,
             string fileName,
             int userId,
@@ -348,7 +357,10 @@ namespace MyFinanceAPI.Application.Services
         /// <summary>
         /// Remove um extrato + itens (se aplicável).
         /// </summary>
-        public async Task Remove(int id, int userId)
+        public Task Remove(int id, int userId) =>
+            _unitOfWork.ExecuteAsync(() => RemoveNaOperacao(id, userId));
+
+        private async Task RemoveNaOperacao(int id, int userId)
         {
             var extrato = await _extratoBancarioRepository.GetByIdAsync(id, userId);
             if (extrato == null)

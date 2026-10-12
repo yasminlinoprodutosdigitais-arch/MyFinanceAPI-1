@@ -21,15 +21,20 @@ public class TransactionServiceTests
     private readonly Mock<ITransactionRepository> _repo = new();
     private readonly Mock<IAccountService> _accountService = new();
     private readonly List<AccountDTO> _parcelasAtualizadas = new();
+    private readonly UnitOfWorkFalso _uow = new();
 
     private TransactionService CriarService()
     {
         _accountService
             .Setup(s => s.UpdateParcela(It.IsAny<AccountDTO>(), UserId))
-            .Callback<AccountDTO, int>((conta, _) => _parcelasAtualizadas.Add(conta))
+            .Callback<AccountDTO, int>((conta, _) =>
+            {
+                _uow.Registrar("UpdateParcela");
+                _parcelasAtualizadas.Add(conta);
+            })
             .Returns(Task.CompletedTask);
 
-        return new TransactionService(_repo.Object, MapperFactory.Create(), _accountService.Object);
+        return new TransactionService(_repo.Object, MapperFactory.Create(), _accountService.Object, _uow);
     }
 
     private AccountDTO ContaParcelada(int parcelaAtual, int quantidadeParcelas, int status = 1)
@@ -274,6 +279,37 @@ public class TransactionServiceTests
         Assert.Equal(1, conta.Status);
     }
 
+    /// <summary>
+    /// Caso real (conta 59 no dev): pagar a 9 de 10 leva a conta para 10; desfazer esse pagamento
+    /// precisa voltar a conta para 9, mesmo ela estando na última parcela. Antes ela ficava em 10,
+    /// e relançar a 9 dava "Todas as parcelas desta conta já foram lançadas".
+    /// </summary>
+    [Fact]
+    public async Task Update_desfazer_pagamento_da_penultima_com_a_conta_na_ultima_volta_para_a_penultima()
+    {
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
+        TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 9);
+
+        await CriarService().Update(Edicao("PENDENTE", parcelaAtual: 9), UserId);
+
+        var conta = Assert.Single(_parcelasAtualizadas);
+        Assert.Equal(9, conta.ParcelaAtual);
+        Assert.Equal(1, conta.Status);
+    }
+
+    [Fact]
+    public async Task Delete_da_penultima_paga_com_a_conta_na_ultima_volta_para_a_penultima()
+    {
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
+        TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 9);
+
+        await CriarService().Delete(TransactionId, UserId);
+
+        var conta = Assert.Single(_parcelasAtualizadas);
+        Assert.Equal(9, conta.ParcelaAtual);
+        Assert.Equal(1, conta.Status);
+    }
+
     [Fact]
     public async Task Update_desfazer_pagamento_da_ultima_parcela_reativa_a_conta()
     {
@@ -370,5 +406,75 @@ public class TransactionServiceTests
 
         Assert.Contains("não encontrada", ex.Message);
         _repo.Verify(r => r.Remove(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    // ---------- Transação (BE-P1-05): as gravações de uma operação valem juntas ----------
+
+    private void RegistrarGravacoesDaTransacao()
+    {
+        _repo.Setup(r => r.Update(It.IsAny<Transaction>(), UserId))
+            .Callback(() => _uow.Registrar("Transaction.Update"))
+            .ReturnsAsync(new Transaction());
+        _repo.Setup(r => r.Remove(TransactionId, UserId))
+            .Callback(() => _uow.Registrar("Transaction.Remove"))
+            .ReturnsAsync(new Transaction());
+        _repo.Setup(r => r.Create(It.IsAny<List<Transaction>>()))
+            .Callback(() => _uow.Registrar("Transaction.Create"))
+            .Returns(Task.CompletedTask);
+    }
+
+    [Fact]
+    public async Task Update_de_pagamento_grava_conta_e_transacao_na_mesma_operacao()
+    {
+        ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 3);
+        RegistrarGravacoesDaTransacao();
+
+        await CriarService().Update(Edicao("PAGO NO PRAZO"), UserId);
+
+        Assert.Single(_parcelasAtualizadas);
+        Assert.Empty(_uow.Fora);
+    }
+
+    [Fact]
+    public async Task Delete_de_parcela_paga_grava_conta_e_remove_na_mesma_operacao()
+    {
+        ContaParcelada(parcelaAtual: 4, quantidadeParcelas: 10);
+        TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 3);
+        RegistrarGravacoesDaTransacao();
+
+        await CriarService().Delete(TransactionId, UserId);
+
+        Assert.Single(_parcelasAtualizadas);
+        _repo.Verify(r => r.Remove(TransactionId, UserId), Times.Once);
+        Assert.Empty(_uow.Fora);
+    }
+
+    [Fact]
+    public async Task Add_com_conta_nova_cria_conta_e_transacoes_na_mesma_operacao()
+    {
+        _accountService.Setup(s => s.GetAccountById(It.IsAny<int>(), UserId)).ReturnsAsync((AccountDTO)null!);
+        _accountService.Setup(s => s.Add(It.IsAny<AccountDTO>(), UserId))
+            .Callback(() => _uow.Registrar("Account.Add"))
+            .ReturnsAsync(new AccountDTO
+            {
+                Id = AccountId,
+                Value = 80m,
+                Categoryid = 4,
+                ContaVencimentos = new List<ContaVencimento> { new() { ContaId = AccountId, Dia = 15 } },
+            });
+        RegistrarGravacoesDaTransacao();
+
+        await CriarService().Add(new TransactionDTO
+        {
+            Name = "Farmácia",
+            Value = 80m,
+            CategoryId = 4,
+            Status = "PENDENTE",
+            Date = new DateTime(2026, 10, 15),
+        }, UserId);
+
+        _repo.Verify(r => r.Create(It.IsAny<List<Transaction>>()), Times.Once);
+        Assert.Empty(_uow.Fora);
     }
 }
