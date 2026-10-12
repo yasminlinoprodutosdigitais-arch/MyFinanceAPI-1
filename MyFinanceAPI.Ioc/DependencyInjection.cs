@@ -15,7 +15,9 @@ namespace MyFinanceAPI.Ioc
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration)
+        public const string CorsPolicy = "Front";
+
+        public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration, bool ambienteLocal)
         {
             // Configuração do Entity Framework Core com PostgreSQL
             services.AddDbContext<ContextDB>(opt =>
@@ -24,11 +26,12 @@ namespace MyFinanceAPI.Ioc
             // Transação sobre o mesmo ContextDB que os repositórios usam na requisição (BE-P1-05).
             services.AddScoped<IUnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<ContextDB>()));
 
-            // Configuração da política CORS
+            // CORS só para as origens do front (Cors__AllowedOrigins); sem configuração fora do local a API não sobe (BE-P1-10).
+            var origens = CorsOrigins.Ler(configuration, ambienteLocal);
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
-                    builder.AllowAnyOrigin()
+                options.AddPolicy(CorsPolicy, builder =>
+                    builder.WithOrigins(origens)
                            .AllowAnyMethod()
                            .AllowAnyHeader());
             });

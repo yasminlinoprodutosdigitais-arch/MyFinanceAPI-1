@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MyFinanceAPI.Application\MyFinanceAPI.Application.csproj" />
     <ProjectReference Include="..\MyFinanceAPI.Data\MyFinanceAPI.Data.csproj" />
+    <ProjectReference Include="..\MyFinanceAPI.Ioc\MyFinanceAPI.Ioc.csproj" />
   </ItemGroup>
 
 </Project>

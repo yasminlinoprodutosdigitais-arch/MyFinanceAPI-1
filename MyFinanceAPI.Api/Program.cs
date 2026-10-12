@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -11,12 +12,22 @@ using MyFinanceAPI.Ioc; // << importante
 var builder = WebApplication.CreateBuilder(args);
 
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-// builder.WebHost.UseUrls($"http://localhost:5034");
+// ----- Hospedagem (BE-P1-10): o Cloud Run informa a porta em PORT; no local vale o launchSettings.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-// ----- IoC: registra DbContext (DefaultConnection), CORS "AllowAll",
+// O TLS termina no proxy do Cloud Run: o esquema e o IP originais chegam nos X-Forwarded-*.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.KnownNetworks.Clear(); // o proxy do Cloud Run não tem IP fixo conhecido
+    o.KnownProxies.Clear();
+});
+
+// ----- IoC: registra DbContext (DefaultConnection), CORS (Cors__AllowedOrigins),
 // AutoMapper, Services (ITokenService etc.), Repositories (IUsuarioRepository etc.)
-builder.Services.RegisterService(builder.Configuration);
+builder.Services.RegisterService(builder.Configuration, builder.Environment.IsDevelopment());
 
 // ----- App settings / secrets
 // Segredos NÃO ficam no appsettings.json versionado (BE-P0-01):
@@ -78,6 +89,8 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 // ----- Swagger em Dev OU via flag
 var enableSwagger = app.Environment.IsDevelopment()
     || builder.Configuration.GetValue<bool>("Swagger:Enabled")
@@ -88,19 +101,14 @@ if (enableSwagger)
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyFinance API v1"));
 }
 
-// ----- CORS: use a policy registrada pelo IoC ("AllowAll") OU crie outra e use só uma.
-// Se quiser controlar por origem via env, crie a policy lá; aqui aplique uma única policy:
-app.UseCors("AllowAll");
+// ----- CORS: policy do IoC, só com as origens de Cors__AllowedOrigins. O middleware já
+// responde o preflight (OPTIONS). Sem UseHttpsRedirection: o Cloud Run força HTTPS na borda.
+app.UseCors(DependencyInjection.CorsPolicy);
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// (Opcional) OPTIONS catch-all se quiser redundância
-app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.NoContent())
-   .RequireCors("AllowAll");
 
 // 2) expor SEM auth
 app.UseHealthChecks("/healthz");

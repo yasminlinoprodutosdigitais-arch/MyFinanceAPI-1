@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyFinanceAPI.Application.DTO;
@@ -19,11 +20,13 @@ public class TokenService : ITokenService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly TokenSettings _tokenSettings;
+    private readonly ILogger<TokenService> _logger;
 
-    public TokenService(IUsuarioRepository usuarioRepository, IOptions<TokenSettings> tokenSettings)
+    public TokenService(IUsuarioRepository usuarioRepository, IOptions<TokenSettings> tokenSettings, ILogger<TokenService> logger)
     {
         _usuarioRepository = usuarioRepository;
         _tokenSettings = tokenSettings.Value;
+        _logger = logger;
     }
     public async Task<TokenDto> CreateToken(UsuarioDto usuarioDto)
     {
@@ -67,8 +70,7 @@ public class TokenService : ITokenService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao gerar o token: {ex.Message}");
-            Console.WriteLine($"Detalhes: {ex.StackTrace}");
+            _logger.LogError(ex, "Erro ao gerar o token do usuário {Login}", usuarioDto.Login);
             return null;
         }
 
