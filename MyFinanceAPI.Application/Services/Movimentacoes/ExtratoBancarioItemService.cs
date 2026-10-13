@@ -87,7 +87,7 @@ namespace MyFinanceAPI.Application.Services
             }
             else
             {
-                var pessoaCriada = await _pessoaMovimentacaoRepository.Create(new PessoaMovimentacao
+                var pessoaCriada = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(new PessoaMovimentacao
                 {
                     NomePessoa = entity.NomePessoaTransacao,
                     CategoriaId = entity.CategoriaId
@@ -154,18 +154,18 @@ namespace MyFinanceAPI.Application.Services
                     var pessoaId = dto.PessoaMovimentacaoId ?? 0;
                     var pessoaMovimentacao = pessoaId == 0
                         ? null
-                        : await _pessoaMovimentacaoRepository.GetPessoaMovimentacaoById(pessoaId, userId);
+                        : await _pessoaMovimentacaoRepository.ObterPorIdAsync(pessoaId, userId);
 
                     if (pessoaMovimentacao == null)
                     {
                         // Busca-ou-cria pelo nome (o repositório normaliza e trata a unique).
-                        var pessoaCriada = await _pessoaMovimentacaoRepository.Create(
+                        var pessoaCriada = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(
                             new PessoaMovimentacao { NomePessoa = dto.NomePessoaTransacao }, userId);
                         pessoaId = pessoaCriada.Id;
                     }
 
                     // Como antes: a pessoa vinculada passa a ter a categoria/tipo do item.
-                    await _pessoaMovimentacaoRepository.UpdateAsync(new PessoaMovimentacao
+                    await _pessoaMovimentacaoRepository.AtualizarAsync(new PessoaMovimentacao
                     {
                         Id = pessoaId,
                         NomePessoa = dto.NomePessoaTransacao,

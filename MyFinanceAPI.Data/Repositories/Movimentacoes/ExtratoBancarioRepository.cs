@@ -41,19 +41,6 @@ namespace MyFinanceAPI.Data.Repositories
         //          DELETE
         // =========================
 
-        // Versão usada pelo service (sem userId)
-        public async Task RemoveAsync(int id)
-        {
-            var extrato = await _context.ExtratoBancario
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (extrato == null)
-                return;
-
-            _context.ExtratoBancario.Remove(extrato);
-            await _context.SaveChangesAsync();
-        }
-
         // Versão com segurança por usuário
         public async Task DeleteAsync(int id, int userId)
         {
@@ -101,12 +88,6 @@ namespace MyFinanceAPI.Data.Repositories
             return extratos;
         }
 
-
-        // Alias / reaproveitamento
-        public async Task<IEnumerable<ExtratoBancario>> GetByUserAsync(int userId)
-        {
-            return await GetByUserIdAsync(userId, null);
-        }
 
         public async Task<IEnumerable<ExtratoBancario>> GetByPeriodoAsync(
             int userId,

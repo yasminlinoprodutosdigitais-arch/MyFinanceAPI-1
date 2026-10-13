@@ -30,52 +30,5 @@ public class Transaction : BaseEntity
 
     public Transaction()
     {
-
-    }
-
-    public Transaction(DateOnly date, string name, decimal value, int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
-    {
-        Date = date;
-        Name = name;
-        Value = value;
-        IdAccount = idAccount;
-        CategoryId = categoryId;
-        Status = status;
-        EhParcelado = ehParcelado;
-        ParcelaAtual = parcelaAtual;
-        QuantidadeParcelas = quantidadeParcelas;
-        Observacao = observacao;
-    }
-
-    public Transaction(int id, DateOnly date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
-    {
-        Id = id;
-        Date = date;
-        Name = name;
-        IdAccount = idAccount;
-        CategoryId = categoryId;
-        Value = value;
-        Status = status;
-        EhParcelado = ehParcelado;
-        ParcelaAtual = parcelaAtual;    
-        QuantidadeParcelas = quantidadeParcelas;
-        Observacao = observacao;
-    }
-
-    public Transaction(int id, DateOnly date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
-    {
-        Id = id;
-        Date = date;
-        Name = name;
-        IdAccount = idAccount;
-        AccountName = accountName;
-        CategoryId = categoryId;
-        CategoryName = CategoryName;
-        Value = value;
-        Status = status;
-        EhParcelado = ehParcelado;
-        ParcelaAtual = parcelaAtual;    
-        QuantidadeParcelas = quantidadeParcelas;
-        Observacao = observacao;
     }
 }

@@ -1,17 +1,10 @@
-using System;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Domain.Interfaces;
 
-public interface ICategoryRepository
+public interface ICategoryRepository : IRepositorioDoUsuario<Category>
 {
-    Task<IEnumerable<Category>> GetCategoriesByUserId(int userId);
     Task<IEnumerable<Category>> GetCategoriesByUserIdAtiva(int userId);
-    Task<Category?> GetCategoryById(int id, int userId);
-    Task<Category> Create(Category category);
-    Task<Category?> FindByIdForUserAsync(int id, int userId);
-    Task<bool> UpdateAsync(Category entity);
-    Task<Category?> Remove(int id, int userId);
     /// <summary>True se a categoria é do usuário e está em uso por transações, pessoas ou itens de extrato.</summary>
     Task<bool> EmUsoAsync(int id, int userId);
     /// <summary>True se o usuário já tem outra categoria com o mesmo nome e subcategoria (ignora maiúsculas e espaços).</summary>

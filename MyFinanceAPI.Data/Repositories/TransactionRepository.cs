@@ -12,43 +12,6 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
 {
     private readonly ContextDB _context = context;
 
-    // public async Task<Transaction> Create(Transaction transaction)
-    // {
-    //     if (transaction.IdAccount != 0)
-    //     {
-    //         var existingAccount = _context.Accounts.Any(a => a.Id == transaction.IdAccount && a.UserId == transaction.UserId);
-
-    //         if (!existingAccount)
-    //         {
-    //             throw new ArgumentException("Account not existing", nameof(transaction));
-    //         }
-    //     }
-    //     else if (transaction.CategoryId != 0)
-    //     {
-    //         var existingCategory = _context.Categories.Any(c => c.Id == transaction.CategoryId && c.UserId == transaction.UserId);
-    //         transaction.IdAccount = null;
-    //         if (!existingCategory)
-    //         {
-    //             throw new ArgumentException("Category not existing", nameof(transaction));
-    //         }
-    //     }
-
-
-    //     DateTime localDate = transaction.Date;
-    //     if (localDate.Kind == DateTimeKind.Unspecified)
-    //     {
-    //         localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);  // Ou UTC, se for o caso
-    //     }
-
-    //     DateTime utcDate = localDate.ToUniversalTime();
-    //     transaction.Date = utcDate;
-
-
-    //     await _context.Transactions.AddAsync(transaction);
-    //     await _context.SaveChangesAsync();
-    //     return transaction;
-    // }
-
     // A data é de calendário (date): grava como veio. A conversão pelo fuso do servidor que havia
     // aqui gravava meia-noite UTC com a API hospedada em UTC — o dia aparecia um antes (DB-P1-02).
     public async Task Create(List<Transaction> transactions)
@@ -117,7 +80,6 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         return groupedAccounts;
     }
 
-
     public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
         var month = dateTime.Month;
@@ -141,7 +103,6 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                 QuantidadeParcelas = t.QuantidadeParcelas,
                 Observacao = t.Observacao,
 
-
                 Account = t.IdAccount == null ? null : new Account
                 {
                     Id = t.Account.Id,
@@ -164,7 +125,6 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                     NaturezaOperacao = t.Account.Category.NaturezaOperacao,
                     Status = t.Account.Category.Status
                 }
-
             })
             .ToListAsync();
 
@@ -199,17 +159,11 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
                 ParcelaAtual = t.ParcelaAtual,
                 QuantidadeParcelas = t.QuantidadeParcelas,
                 Observacao = t.Observacao,
-
             })
             .ToListAsync();
 
         return transactions;
     }
-
-    // public Task<IEnumerable<Transaction>> GetTransactionByCategory(int categoryid, int userId)
-    // {
-    //     throw new NotImplementedException();
-    // }
 
     public async Task<Transaction> GetTransactionById(int id, int userId)
     {
@@ -218,7 +172,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
             .FirstOrDefaultAsync();
 
         if (transaction == null)
-            throw new Exception("Nenhuma transação encontrada");
+            throw new NaoEncontradoException("Transação não encontrada.");
 
         return transaction;
     }
@@ -241,7 +195,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
             _context.SaveChanges();
         }
         else
-            throw new Exception("Nenhuma transação encontrada");
+            throw new NaoEncontradoException("Transação não encontrada.");
 
         return update;
     }
@@ -249,7 +203,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     public async Task<Transaction> Update(Transaction transaction, int userId)
     {
         var existingTransaction = await _context.Transactions
-            .FirstOrDefaultAsync(t => t.UserId == userId && t.Id == transaction.Id) ?? throw new Exception("Update not found");
+            .FirstOrDefaultAsync(t => t.UserId == userId && t.Id == transaction.Id) ?? throw new NaoEncontradoException("Transação não encontrada.");
 
         existingTransaction.Date = transaction.Date;
         existingTransaction.Name = transaction.Name;
@@ -261,10 +215,8 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         existingTransaction.QuantidadeParcelas = transaction.QuantidadeParcelas;
         existingTransaction.Observacao = transaction.Observacao;
 
-
         await _context.SaveChangesAsync();
 
         return existingTransaction;
     }
-
 }

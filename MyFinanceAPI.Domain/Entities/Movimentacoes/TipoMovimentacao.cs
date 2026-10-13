@@ -11,20 +11,4 @@ public class TipoMovimentacao : BaseEntity
     public ICollection<ExtratoBancarioItem>? ExtratoBancarioItem { get; set; }
         
     public TipoMovimentacao() { } 
-
-    public TipoMovimentacao(string nomeTipoMovimentacao, string descricao, decimal valorMeta)
-    {
-        NomeTipoMovimentacao = nomeTipoMovimentacao;
-        Descricao = descricao;
-        ValorMeta = valorMeta;
-    }
-
-    public TipoMovimentacao(int id, string nomeTipoMovimentacao, string descricao, decimal valorMeta)
-    {
-        Id = id;
-        NomeTipoMovimentacao = nomeTipoMovimentacao;
-        Descricao = descricao;
-        ValorMeta = valorMeta;
-    }
-
 }

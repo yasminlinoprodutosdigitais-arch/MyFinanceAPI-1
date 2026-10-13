@@ -15,28 +15,4 @@ public class PessoaMovimentacaoDTO
     public TipoMovimentacao? TipoMovimentacao { get; set; }
 
     public PessoaMovimentacaoDTO() { } 
-
-    public PessoaMovimentacaoDTO(string nomePessoa, int? categoriaId, int? tipoMovimentacaoId)
-    {
-        NomePessoa = nomePessoa;
-        CategoriaId = categoriaId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-    }
-
-    public PessoaMovimentacaoDTO(int id, string nomePessoa, int? categoriaId, int? tipoMovimentacaoId)
-    {
-        Id = id;
-        NomePessoa = nomePessoa;
-        CategoriaId = categoriaId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-    }
-    public PessoaMovimentacaoDTO(int id, string nomePessoa, int? categoriaId, int? tipoMovimentacaoId, string mes)
-    {
-        Id = id;
-        NomePessoa = nomePessoa;
-        CategoriaId = categoriaId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-        MesAtualizacao = mes;
-    }
-
 }

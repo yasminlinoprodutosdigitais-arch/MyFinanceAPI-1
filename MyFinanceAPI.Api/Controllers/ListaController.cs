@@ -10,115 +10,69 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class ListasController : ControllerBase
+    public class ListasController : ApiControllerBase
     {
         private readonly IListaService _ListaService;
-        private readonly IUserContextService _userContextService;
 
-        public ListasController(IListaService ListaService, IUserContextService userContextService)
+        public ListasController(IListaService ListaService)
         {
             _ListaService = ListaService;
-            _userContextService = userContextService;
         }
 
         [HttpGet("/GetListas")]
         public async Task<ActionResult<IEnumerable<ListaDTO>>> GetListas()
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
-                    return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-                var Listas = await _ListaService.GetLista(userId.Value);
-                return Ok(Listas);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
-            }
+            var Listas = await _ListaService.ListarAsync(userId);
+            return Ok(Listas);
         }
-
 
         [HttpGet("/GetListaById/{id}", Name = "GetLista")]
         public async Task<ActionResult<ListaDTO>> GetListaById(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var Lista = await _ListaService.GetListaById(id, userId);
-                if (Lista is null)
-                    return NotFound("Lista não encontrada!");
-                else
-                    return Ok(Lista);
+            var Lista = await _ListaService.ObterPorIdAsync(id, userId);
+            if (Lista is null)
+                return NotFound("Lista não encontrada!");
+            else
+                return Ok(Lista);
 
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
         }
 
         [HttpPost("/CreateLista")]
         public async Task<ActionResult> CreateLista([FromBody] ListaDTO ListaDTO)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                if (ListaDTO is null)
-                    return BadRequest("Dados inválidos.");
+            if (ListaDTO is null)
+                return BadRequest("Dados inválidos.");
 
-                await _ListaService.Add(ListaDTO, userId);
-                return Ok("Lista criada com sucesso!");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _ListaService.AdicionarAsync(ListaDTO, userId);
+            return Ok("Lista criada com sucesso!");
         }
 
         [HttpPut("/UpdateLista")]
         public async Task<ActionResult<ListaDTO>> UpdateLista(ListaDTO ListaDTO)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-            await _ListaService.UpdateAsync(ListaDTO, userId);
+            await _ListaService.AtualizarAsync(ListaDTO, userId);
             return ListaDTO;
         }
 
         [HttpDelete("/DeleteLista/{id}")]
         public async Task<ActionResult<ListaDTO>> DeleteLista(int id)
         {
-            try 
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var Lista = await _ListaService.GetListaById(id, userId);
-                if(Lista == null)
-                    return NotFound(new {message = "Lista não encontrada."});
+            var Lista = await _ListaService.ObterPorIdAsync(id, userId);
+            if(Lista == null)
+                return NotFound(new {message = "Lista não encontrada."});
 
-                await _ListaService.Remove(id, userId);
-                return Ok(Lista);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao deletar Lista.", error = ex.Message, detail = ex.StackTrace });
-            }
+            await _ListaService.RemoverAsync(id, userId);
+            return Ok(Lista);
         }
     }
 }

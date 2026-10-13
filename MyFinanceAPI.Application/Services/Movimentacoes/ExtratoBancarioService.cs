@@ -50,7 +50,7 @@ namespace MyFinanceAPI.Application.Services
             
             extratos = extratos.Select(e =>
             {
-                var banco = _bancoService.GetBancoById(e.BancoId, userId).Result;
+                var banco = _bancoService.ObterPorIdAsync(e.BancoId, userId).Result;
                 e.BancoNome = banco?.NomeBanco ?? "Banco não encontrado";
                 return e;
             });
@@ -92,7 +92,7 @@ namespace MyFinanceAPI.Application.Services
             int bancoId
         )
         {
-            var banco = await _bancoService.GetBancoById(bancoId, userId);
+            var banco = await _bancoService.ObterPorIdAsync(bancoId, userId);
             var culturePtBr = new CultureInfo("pt-BR");
             var cultureDecimal = CultureInfo.InvariantCulture;
 
@@ -220,7 +220,7 @@ namespace MyFinanceAPI.Application.Services
                         }
                         else
                         {
-                            var novaPessoa = await _pessoaMovimentacaoRepository.Create(
+                            var novaPessoa = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(
                                 new PessoaMovimentacao { NomePessoa = nomePessoa }, userId);
                             pessoaId = novaPessoa.Id;
                             tipoMovimentacaoId = novaPessoa.TipoMovimentacaoId ?? 0;
@@ -370,7 +370,7 @@ namespace MyFinanceAPI.Application.Services
             await _extratoBancarioItemRepository.RemoveByExtratoIdAsync(id);
 
             // Remove o cabeçalho
-            await _extratoBancarioRepository.RemoveAsync(extrato.Id);
+            await _extratoBancarioRepository.DeleteAsync(extrato.Id, userId);
         }
     }
 }

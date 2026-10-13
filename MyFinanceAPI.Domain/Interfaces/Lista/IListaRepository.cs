@@ -1,13 +1,7 @@
-using System;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Domain.Interfaces;
 
-public interface IListaRepository
+public interface IListaRepository : IRepositorioDoUsuario<Lista>
 {
-    Task<List<Lista>>? GetListas(int userId);
-    Task<Lista> GetListaById(int id, int userId);
-    Task<Lista> Create(Lista Lista);
-    Task<bool> UpdateAsync(Lista Lista, int userId);
-    Task<Lista?> Remove(int id, int userId);
 }

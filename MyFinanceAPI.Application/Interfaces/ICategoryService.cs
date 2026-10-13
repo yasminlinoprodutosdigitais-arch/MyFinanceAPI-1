@@ -1,15 +1,9 @@
-using System;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Application.Interfaces;
 
-public interface ICategoryService
+public interface ICategoryService : IServicoCadastro<CategoryDTO>
 {
-    Task Add(CategoryDTO categoryDTO, int userId);
-    Task<IEnumerable<CategoryDTO>> GetCategories(int userId);
     Task<IEnumerable<CategoryDTO>> GetCategoriasAtivas(int userId);
-    Task<CategoryDTO> GetCategoryById(int id, int userId);
-    Task<bool> UpdateAsync(CategoryDTO dto, int userId);
-    Task Remove(int id, int userId);
 }

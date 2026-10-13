@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
@@ -5,47 +6,26 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class BancoRepository(ContextDB context) : IBancoRepository
+public class BancoRepository(ContextDB context) : RepositorioDoUsuario<Banco>(context), IBancoRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<Banco> Create(Banco banco)
+    protected override string MensagemNaoEncontrado => "Banco não encontrado.";
+
+    protected override Expression<Func<Banco, bool>> Proprios(int userId) => b => b.UserId == userId;
+
+    protected override IQueryable<Banco> ComDetalhes(IQueryable<Banco> query) => query.Include(b => b.TipoCartao);
+
+    protected override IOrderedQueryable<Banco> Ordenar(IQueryable<Banco> query) => query.OrderBy(b => b.NomeBanco);
+
+    protected override void CopiarAlteracoes(Banco existente, Banco entrada)
     {
-        await _context.Banco.AddAsync(banco);
-        await _context.SaveChangesAsync();
-        
-        return banco;
-    }
-
-    public async Task<IEnumerable<Banco>> GetBancoByUserId(int userId)
-    {
-        var Banco = await _context.Banco.Where(c => c.UserId == userId).OrderBy(c => c.NomeBanco).ToListAsync();
-        return Banco;
-    }
-
-    public async Task<Banco?> GetBancoById(int id, int userId)
-    {
-        var Banco = await _context.Banco
-            .Where(c => c.UserId == userId && c.Id == id)
-            .Include(c => c.TipoCartao)
-            .FirstOrDefaultAsync();
-
-        if (Banco == null)
-            return null;
-
-        return Banco;
-    }
-
-    public async Task<Banco?> Remove(int id, int userId)
-    {
-        var Banco = await GetBancoById(id, userId);
-        if (Banco == null)
-            return null;
-
-        _context.Banco.Remove(Banco);
-        await _context.SaveChangesAsync();
-
-        return Banco;
+        existente.NomeBanco = entrada.NomeBanco;
+        existente.Agencia = entrada.Agencia;
+        existente.NumeroConta = entrada.NumeroConta;
+        existente.TipoCartaoId = entrada.TipoCartaoId;
+        existente.SaldoInicial = entrada.SaldoInicial;
+        existente.Ativo = entrada.Ativo;
     }
 
     public async Task<bool> ExisteNomeAsync(int userId, string nome, int ignorarId)
@@ -65,57 +45,14 @@ public class BancoRepository(ContextDB context) : IBancoRepository
             || await _context.ExtratoBancarioItens.AnyAsync(i => i.BancoId == id);
     }
 
-    public async Task<Banco?> FindByIdForUserAsync(int id, int userId)
-    {
-        return await _context.Banco
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(Banco incomingBanco, int userId)
-    {
-        var existingBanco = await _context.Banco
-            .FirstOrDefaultAsync(a => a.Id == incomingBanco.Id && a.UserId == userId);
-
-        if (existingBanco == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
-
-        existingBanco.NomeBanco = incomingBanco.NomeBanco;
-        existingBanco.Agencia = incomingBanco.Agencia;
-        existingBanco.NumeroConta = incomingBanco.NumeroConta;
-        existingBanco.TipoCartaoId = incomingBanco.TipoCartaoId;
-        existingBanco.SaldoInicial = incomingBanco.SaldoInicial;
-        existingBanco.Ativo = incomingBanco.Ativo;
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
     public async Task<bool> UpdateSaldo(int bancoId, decimal SaldoAtual, int userId)
     {
-        var existingBanco = await _context.Banco
-            .FirstOrDefaultAsync(a => a.Id == bancoId && a.UserId == userId);
-
-        if (existingBanco == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
+        var existingBanco = await ObterProprioAsync(bancoId, userId)
+            ?? throw new NaoEncontradoException(MensagemNaoEncontrado);
 
         existingBanco.SaldoInicial = SaldoAtual;
         await _context.SaveChangesAsync();
 
         return true;
-    }
-
-    public async Task<List<Banco>>? GetBancos(int userId)
-    {
-        var movimentacoesDiarias = await _context.Banco
-           .Where(a => a.UserId == userId)
-           .OrderBy(c => c.NomeBanco)
-           .Include(c => c.TipoCartao)
-           .ToListAsync();
-
-        return movimentacoesDiarias;
     }
 }

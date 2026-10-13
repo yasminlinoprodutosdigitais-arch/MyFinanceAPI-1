@@ -11,17 +11,4 @@ public class ContaVencimento : BaseEntity
     [JsonIgnore]
     public Account? Account { get; set; }  // Relacionamento com Category
     public ContaVencimento() { } // Construtor padrão
-
-    public ContaVencimento(int contaId, int dia)
-    {
-        ContaId = contaId;
-        Dia = dia;
-    }
-    public ContaVencimento(int id, int contaId, int dia)
-    {
-        Id = id;
-        ContaId = contaId;
-        Dia = dia;
-    }
-
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using MyFinanceAPI.Api.Erros;
 using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Ioc; // << importante
@@ -69,6 +70,11 @@ builder.Services.AddAuthentication(o =>
 builder.Services.AddAuthorization(o => o.AddPolicy("Admin", p => p.RequireRole("Admin", "Empresa")));
 
 builder.Services.AddHealthChecks();
+
+// Erros num lugar só, sempre { message } e sem stack trace (BE-P2-01).
+builder.Services.AddExceptionHandler<ErroHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -88,6 +94,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Primeiro do pipeline: envolve tudo. Os cabeçalhos de CORS sobrevivem (CorsMiddleware usa OnStarting).
+app.UseExceptionHandler();
 
 app.UseForwardedHeaders();
 

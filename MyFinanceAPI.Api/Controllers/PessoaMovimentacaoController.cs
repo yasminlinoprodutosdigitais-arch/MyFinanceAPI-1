@@ -10,136 +10,70 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class PessoaMovimentacaoController : ControllerBase
+    public class PessoaMovimentacaoController : ApiControllerBase
     {
         private readonly IPessoaMovimentacaoService _PessoaMovimentacaoService;
-        private readonly IUserContextService _userContextService;
 
-        public PessoaMovimentacaoController(IPessoaMovimentacaoService PessoaMovimentacaoService, IUserContextService userContextService)
+        public PessoaMovimentacaoController(IPessoaMovimentacaoService PessoaMovimentacaoService)
         {
             _PessoaMovimentacaoService = PessoaMovimentacaoService;
-            _userContextService = userContextService;
         }
 
         [HttpGet("/GetPessoaMovimentacao")]
         public async Task<ActionResult<IEnumerable<PessoaMovimentacaoDTO>>> GetPessoaMovimentacao()
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacao(userId.Value);
-                return Ok(PessoaMovimentacao);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
-            }
+            var PessoaMovimentacao = await _PessoaMovimentacaoService.ListarAsync(userId);
+            return Ok(PessoaMovimentacao);
         }
-
 
         [HttpGet("/GetPessoaMovimentacaoById/{id}", Name = "GetPessoaMovimentacao")]
         public async Task<ActionResult<PessoaMovimentacaoDTO>> GetPessoaMovimentacaoById(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacaoById(id, userId);
-                if (PessoaMovimentacao is null)
-                    return NotFound("PessoaMovimentacao não encontrada!");
-                else
-                    return Ok(PessoaMovimentacao);
+            var PessoaMovimentacao = await _PessoaMovimentacaoService.ObterPorIdAsync(id, userId);
+            if (PessoaMovimentacao is null)
+                return NotFound("PessoaMovimentacao não encontrada!");
+            else
+                return Ok(PessoaMovimentacao);
 
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
         }
 
         [HttpPost("/CreatePessoaMovimentacao")]
         public async Task<ActionResult> CreatePessoaMovimentacao([FromBody] PessoaMovimentacaoDTO dto)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-                if (dto is null)
-                    return BadRequest(new { message = "Dados inválidos." });
+            if (dto is null)
+                return BadRequest(new { message = "Dados inválidos." });
 
-                await _PessoaMovimentacaoService.Add(dto, userId);
+            await _PessoaMovimentacaoService.AdicionarAsync(dto, userId);
 
-                return Ok(new { success = true, message = "PessoaMovimentacao criada com sucesso!" });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            return Ok(new { success = true, message = "PessoaMovimentacao criada com sucesso!" });
         }
 
         [HttpPut("/UpdatePessoaMovimentacao")]
         public async Task<ActionResult<PessoaMovimentacaoDTO>> UpdatePessoaMovimentacao(PessoaMovimentacaoDTO PessoaMovimentacaoDTO)
         {
-            try
-            {
+            var userId = UsuarioId;
 
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
-
-                await _PessoaMovimentacaoService.UpdateAsync(PessoaMovimentacaoDTO, userId);
-                return PessoaMovimentacaoDTO;
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao atualizar PessoaMovimentacao.", error = ex.Message });
-            }
+            await _PessoaMovimentacaoService.AtualizarAsync(PessoaMovimentacaoDTO, userId);
+            return PessoaMovimentacaoDTO;
         }
 
         [HttpDelete("/DeletePessoaMovimentacao/{id}")]
         public async Task<ActionResult<PessoaMovimentacaoDTO>> DeletePessoaMovimentacao(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var PessoaMovimentacao = await _PessoaMovimentacaoService.GetPessoaMovimentacaoById(id, userId);
-                if (PessoaMovimentacao == null)
-                    return NotFound(new { message = "PessoaMovimentacao não encontrada." });
+            var PessoaMovimentacao = await _PessoaMovimentacaoService.ObterPorIdAsync(id, userId);
+            if (PessoaMovimentacao == null)
+                return NotFound(new { message = "PessoaMovimentacao não encontrada." });
 
-                await _PessoaMovimentacaoService.Remove(id, userId);
-                return Ok(PessoaMovimentacao);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao deletar PessoaMovimentacao.", error = ex.Message, detail = ex.StackTrace });
-            }
+            await _PessoaMovimentacaoService.RemoverAsync(id, userId);
+            return Ok(PessoaMovimentacao);
         }
     }
 }

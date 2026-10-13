@@ -18,24 +18,4 @@ public class ItemLista : BaseEntity
     public Lista? Lista { get; set; }  
         
     public ItemLista() { } 
-
-    public ItemLista( int listaId, string descricao, int quantidade, string observacao, string status)
-    {
-        ListaId = listaId;
-        Descricao = descricao;
-        Quantidade = quantidade;
-        Observacao = observacao;
-        Status = status;
-    }
-
-    public ItemLista(int id, int listaId, string descricao, int quantidade, string observacao, string status)
-    {
-        Id = id;
-        ListaId = listaId;
-        Descricao = descricao;
-        Quantidade = quantidade;
-        Observacao = observacao;
-        Status = status;
-    }
-
 }

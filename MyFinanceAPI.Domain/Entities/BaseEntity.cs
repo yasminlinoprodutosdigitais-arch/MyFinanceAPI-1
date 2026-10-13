@@ -2,7 +2,7 @@ using System;
 
 namespace MyFinanceAPI.Domain.Entities;
 
-public class BaseEntity
+public class BaseEntity : IEntidade
 {
     public int Id { get; set; }
     public int UserId { get; set; }

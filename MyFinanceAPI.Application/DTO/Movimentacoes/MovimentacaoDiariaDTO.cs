@@ -34,51 +34,5 @@ namespace MyFinanceAPI.Application.DTO.Movimentacoes
         public string? Identificador { get; set; }
 
         public MovimentacaoDiariaDTO() { }
-
-        public MovimentacaoDiariaDTO(
-            DateOnly dataMovimentacao,
-            int bancoId,
-            int? tipoCartaoId,
-            int? tipoMovimentacaoId,
-            decimal valor,
-            string? descricao,
-            string tipoLancamento,
-            string? nomePessoaTransacao = null,
-            string? identificador = null)
-        {
-            DataMovimentacao = dataMovimentacao;
-            BancoId = bancoId;
-            TipoCartaoId = tipoCartaoId;
-            TipoMovimentacaoId = tipoMovimentacaoId;
-            Valor = valor;
-            Descricao = descricao;
-            TipoLancamento = tipoLancamento;
-            NomePessoaTransacao = nomePessoaTransacao;
-            Identificador = identificador;
-        }
-
-        public MovimentacaoDiariaDTO(
-            int id,
-            DateOnly dataMovimentacao,
-            int bancoId,
-            int? tipoCartaoId,
-            int? tipoMovimentacaoId,
-            decimal valor,
-            string? descricao,
-            string tipoLancamento,
-            string? nomePessoaTransacao = null,
-            string? identificador = null)
-        {
-            Id = id;
-            DataMovimentacao = dataMovimentacao;
-            BancoId = bancoId;
-            TipoCartaoId = tipoCartaoId;
-            TipoMovimentacaoId = tipoMovimentacaoId;
-            Valor = valor;
-            Descricao = descricao;
-            TipoLancamento = tipoLancamento;
-            NomePessoaTransacao = nomePessoaTransacao;
-            Identificador = identificador;
-        }
     }
 }

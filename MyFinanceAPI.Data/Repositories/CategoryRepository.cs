@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
@@ -5,51 +6,28 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class CategoryRepository(ContextDB context) : ICategoryRepository
+public class CategoryRepository(ContextDB context) : RepositorioDoUsuario<Category>(context), ICategoryRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<Category> Create(Category category)
-    {
-        await _context.Categories.AddAsync(category);
-        await _context.SaveChangesAsync();
-        return category;
-    }
+    protected override string MensagemNaoEncontrado => "Categoria não encontrada.";
 
-    public async Task<IEnumerable<Category>> GetCategoriesByUserId(int userId)
+    protected override Expression<Func<Category, bool>> Proprios(int userId) => c => c.UserId == userId;
+
+    protected override IOrderedQueryable<Category> Ordenar(IQueryable<Category> query) => query.OrderBy(c => c.Name);
+
+    protected override void CopiarAlteracoes(Category existente, Category entrada)
     {
-        var categories = await _context.Categories.Where(c => c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
-        return categories;
+        existente.Name = entrada.Name;
+        existente.SubCategory = entrada.SubCategory;
+        existente.NaturezaOperacao = entrada.NaturezaOperacao;
+        existente.Status = entrada.Status;
     }
 
     public async Task<IEnumerable<Category>> GetCategoriesByUserIdAtiva(int userId)
     {
         var categories = await _context.Categories.Where(c => c.UserId == userId && c.Status == StatusAtivo.Ativo).OrderBy(c => c.Name).ToListAsync();
         return categories;
-    }
-
-    public async Task<Category?> GetCategoryById(int id, int userId)
-    {
-        var category = await _context.Categories
-            .Where(c => c.UserId == userId && c.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (category == null)
-            return null;
-
-        return category;
-    }
-
-    public async Task<Category?> Remove(int id, int userId)
-    {
-        var category = await GetCategoryById(id, userId);
-        if (category == null)
-            return null;
-
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-
-        return category;
     }
 
     public async Task<bool> ExisteNomeAsync(int userId, string name, string subCategory, int ignorarId)
@@ -69,22 +47,4 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
             || await _context.PessoaMovimentacao.AnyAsync(p => p.CategoriaId == id)
             || await _context.ExtratoBancarioItens.AnyAsync(i => i.CategoriaId == id);
     }
-
-    public async Task<Category?> FindByIdForUserAsync(int id, int userId)
-    {
-        // tracking ligado (vamos editar a entidade)
-        return await _context.Categories
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(Category entity)
-    {
-        // Se a entidade veio do contexto (tracked), nem precisa do Update().
-        // Mas não faz mal; o EF vai marcar modificado.
-        _context.Categories.Update(entity);
-
-        var changes = await _context.SaveChangesAsync();
-        return changes > 0;
-    }
-
 }

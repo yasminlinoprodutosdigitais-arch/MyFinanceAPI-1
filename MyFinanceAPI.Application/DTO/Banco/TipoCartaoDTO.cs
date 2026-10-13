@@ -14,17 +14,4 @@ public class TipoCartaoDTO
     public bool EhSistema { get; set; }
 
     public TipoCartaoDTO() { } 
-
-    public TipoCartaoDTO(string? nomeTipoCartao, string? descricao)
-    {
-        NomeTipoCartao = nomeTipoCartao;
-        Descricao = descricao;
-    }
-
-    public TipoCartaoDTO(int id, string nomeTipoCartao, string descricao)
-    {
-        Id = id;
-        NomeTipoCartao = nomeTipoCartao;
-        Descricao = descricao;
-    }
 }

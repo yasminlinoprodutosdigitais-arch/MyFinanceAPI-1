@@ -17,24 +17,4 @@ public class CategoryDTO
     public ICollection<Account>? Accounts { get; set; }
 
     public CategoryDTO() { }
-
-    public CategoryDTO(string name, string subCategory, int naturezaOperacao, int status, ICollection<Account> accounts, DateTime dataAlteracao)
-    {
-        Name = name;
-        SubCategory = subCategory;
-        NaturezaOperacao = naturezaOperacao;
-        Status = status;
-        Accounts = accounts; 
-        DataAlteracao = dataAlteracao;
-    }
-
-    public CategoryDTO(int id, string name, string subCategory, int naturezaOperacao, int status, ICollection<Account> accounts, DateTime dataAlteracao)
-    {
-        Id = id;
-        Name = name;
-        SubCategory = subCategory;
-        NaturezaOperacao = naturezaOperacao;
-        Accounts = accounts; 
-        DataAlteracao = dataAlteracao;
-    }
 }

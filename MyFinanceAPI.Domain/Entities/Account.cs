@@ -13,7 +13,6 @@ public class Account : BaseEntity
     public int? QuantidadeParcelas { get; set; }
     public int? ParcelaAtual { get; set; }
 
-
     public int CategoryId { get; set; }
     [NotMapped]
     public string? CategoryName { get; set; }
@@ -24,29 +23,4 @@ public class Account : BaseEntity
     public ICollection<Transaction>? Transactions { get; set; } // Relacionamento com MonthlyUpdate
 
     public Account() { } // Construtor padrão
-
-    public Account(string name, decimal value, int categoryId, string? categoryName, int status, bool ehParcelada, int quantidadeParcelas, int parcelaAtual)
-    {
-        Name = name;
-        Value = value;
-        CategoryId = categoryId;
-        CategoryName = categoryName;
-        Status = status;
-        EhParcelado = ehParcelada;
-        QuantidadeParcelas = quantidadeParcelas;
-        ParcelaAtual = parcelaAtual;
-    }
-
-    public Account(int id, string name, decimal value, int categoryId, string? categoryName, int status, bool ehParcelada, int quantidadeParcelas, int parcelaAtual)
-    {
-        Id = id;
-        Name = name;
-        Value = value;
-        CategoryId = categoryId;
-        CategoryName = categoryName;
-        Status = status;
-        EhParcelado = ehParcelada;
-        QuantidadeParcelas = quantidadeParcelas;
-        ParcelaAtual = parcelaAtual;
-    }
 }

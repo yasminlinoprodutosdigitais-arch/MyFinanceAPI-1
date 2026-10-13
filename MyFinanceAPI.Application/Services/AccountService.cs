@@ -70,7 +70,7 @@ public class AccountService : IAccountService
     public async Task Remove(int id, int userId)
     {
         if (await _accountRepository.EmUsoAsync(id, userId))
-            throw new InvalidOperationException("Não é possível excluir essa conta, pois ela possui transações.");
+            throw new RegraNegocioException("Não é possível excluir essa conta, pois ela possui transações.");
 
         await _accountRepository.Remove(id, userId);
     }

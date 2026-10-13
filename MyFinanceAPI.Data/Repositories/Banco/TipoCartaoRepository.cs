@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
@@ -5,45 +6,28 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
+/// <summary>
+/// O usuário enxerga os tipos padrão do sistema (UserId nulo), mas só altera e remove os próprios (DB-P1-07).
+/// </summary>
+public class TipoCartaoRepository(ContextDB context) : RepositorioDoUsuario<TipoCartao>(context), ITipoCartaoRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<TipoCartao> Create(TipoCartao TipoCartao)
+    protected override string MensagemNaoEncontrado => "Tipo de cartão não encontrado.";
+
+    protected override Expression<Func<TipoCartao, bool>> Proprios(int userId) => t => t.UserId == userId;
+
+    protected override Expression<Func<TipoCartao, bool>> Visiveis(int userId) => t => t.UserId == userId || t.UserId == null;
+
+    // Padrão do sistema primeiro.
+    protected override IOrderedQueryable<TipoCartao> Ordenar(IQueryable<TipoCartao> query) =>
+        query.OrderBy(t => t.UserId != null).ThenBy(t => t.NomeTipoCartao);
+
+    protected override void CopiarAlteracoes(TipoCartao existente, TipoCartao entrada)
     {
-        await _context.TipoCartao.AddAsync(TipoCartao);
-        await _context.SaveChangesAsync();
-        return TipoCartao;
-    }
-
-    public async Task<IEnumerable<TipoCartao>> GetTipoCartaoByUserId(int userId)
-    {
-        var TipoCartao = await _context.TipoCartao.Where(c => c.UserId == userId || c.UserId == null).OrderBy(c => c.UserId != null).ThenBy(c => c.NomeTipoCartao).ToListAsync();
-        return TipoCartao;
-    }
-
-    public async Task<TipoCartao?> GetTipoCartaoById(int id, int userId)
-    {
-        var TipoCartao = await _context.TipoCartao
-            .Where(c => (c.UserId == userId || c.UserId == null) && c.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (TipoCartao == null)
-            return null;
-
-        return TipoCartao;
-    }
-
-    public async Task<TipoCartao?> Remove(int id, int userId)
-    {
-        var TipoCartao = await GetTipoCartaoById(id, userId);
-        if (TipoCartao == null)
-            return null;
-
-        _context.TipoCartao.Remove(TipoCartao);
-        await _context.SaveChangesAsync();
-
-        return TipoCartao;
+        existente.NomeTipoCartao = entrada.NomeTipoCartao;
+        existente.Descricao = entrada.Descricao;
+        existente.EhCredito = entrada.EhCredito;
     }
 
     public async Task<bool> EmUsoAsync(int id, int userId)
@@ -63,41 +47,5 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
         // Inclui os padrão do sistema: o usuário não cria outro "Cartão de crédito" (DB-P1-07).
         return await _context.TipoCartao.AnyAsync(t => (t.UserId == userId || t.UserId == null) && t.Id != ignorarId
             && t.NomeTipoCartao.Trim().ToUpper() == alvo);
-    }
-
-    public async Task<TipoCartao?> FindByIdForUserAsync(int id, int userId)
-    {
-        return await _context.TipoCartao
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(TipoCartao incomingTipoCartao, int userId)
-    {
-        var existingTipoCartao = await _context.TipoCartao
-            .FirstOrDefaultAsync(a => a.Id == incomingTipoCartao.Id && a.UserId == userId);
-
-        if (existingTipoCartao == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
-
-        existingTipoCartao.NomeTipoCartao = incomingTipoCartao.NomeTipoCartao;
-        existingTipoCartao.Descricao = incomingTipoCartao.Descricao;
-        existingTipoCartao.EhCredito = incomingTipoCartao.EhCredito;
-        
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<List<TipoCartao>>? GetTipoCartao(int userId)
-    {
-        var movimentacoesDiarias = await _context.TipoCartao
-           .Where(a => a.UserId == userId || a.UserId == null)   // padrão do sistema primeiro (DB-P1-07)
-           .OrderBy(c => c.UserId != null)
-           .ThenBy(c => c.NomeTipoCartao)
-           .ToListAsync();
-
-        return movimentacoesDiarias;
     }
 }

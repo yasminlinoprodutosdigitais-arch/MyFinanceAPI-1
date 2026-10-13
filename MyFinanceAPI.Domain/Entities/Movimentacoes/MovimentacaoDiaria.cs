@@ -16,38 +16,9 @@ public class MovimentacaoDiaria : BaseEntity
     public string? NomePessoaTransacao { get; set; }
     public string? Identificador { get; set; }
 
-
     public Banco? Banco { get; set; }  
     public TipoCartao? TipoCartao { get; set; } 
     public TipoMovimentacao? TipoMovimentacao { get; set; } 
         
     public MovimentacaoDiaria() { } 
-
-    public MovimentacaoDiaria(DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int? tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao, string? nomePessoaTransacao, string? identificador)
-    {
-        DataMovimentacao = dataMovimentacao;
-        BancoId = bancoId;
-        TipoCartaoId = tipoCartaoId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-        Valor = valor;
-        TipoLancamento = tipoLancamento;
-        Descricao = descricao;
-        NomePessoaTransacao = nomePessoaTransacao;
-        Identificador = identificador;
-    }
-
-    public MovimentacaoDiaria(int id, DateOnly dataMovimentacao, int? bancoId, int? tipoCartaoId, int? tipoMovimentacaoId, decimal valor, string tipoLancamento, string? descricao, string? nomePessoaTransacao, string? identificador)
-    {
-        Id = id;
-        DataMovimentacao = dataMovimentacao;
-        BancoId = bancoId;
-        TipoCartaoId = tipoCartaoId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-        Valor = valor;
-        TipoLancamento = tipoLancamento;
-        Descricao = descricao;
-        NomePessoaTransacao = nomePessoaTransacao;
-        Identificador = identificador;
-    }
-
 }

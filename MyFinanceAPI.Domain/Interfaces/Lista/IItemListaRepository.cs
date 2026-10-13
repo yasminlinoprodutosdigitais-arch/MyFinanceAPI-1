@@ -1,14 +1,8 @@
-using System;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Domain.Interfaces;
 
-public interface IItemListaRepository
+public interface IItemListaRepository : IRepositorioDoUsuario<ItemLista>
 {
-    Task<List<ItemLista>>? GetItemListas(int userId);
     Task<List<ItemLista>> GetItemListaByListaId(int id, int userId);
-    Task<ItemLista> GetItemListaById(int id, int userId);
-    Task<ItemLista> Create(ItemLista ItemLista);
-    Task<bool> UpdateAsync(ItemLista ItemLista, int userId);
-    Task<ItemLista?> Remove(int id, int userId);
 }

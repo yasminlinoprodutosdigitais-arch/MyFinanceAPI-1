@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
@@ -5,107 +6,41 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class MovimentacaoDiariaRepository(ContextDB context) : IMovimentacaoDiariaRepository
+public class MovimentacaoDiariaRepository(ContextDB context) : RepositorioDoUsuario<MovimentacaoDiaria>(context), IMovimentacaoDiariaRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<MovimentacaoDiaria> Create(MovimentacaoDiaria MovimentacaoDiaria)
+    protected override string MensagemNaoEncontrado => "Movimentação diária não encontrada.";
+
+    protected override Expression<Func<MovimentacaoDiaria, bool>> Proprios(int userId) => m => m.UserId == userId;
+
+    protected override IOrderedQueryable<MovimentacaoDiaria> Ordenar(IQueryable<MovimentacaoDiaria> query) =>
+        query.OrderBy(m => m.DataMovimentacao);
+
+    // Só a listagem trazia as navegações; o ObterPorId continua sem includes, como antes.
+    public override async Task<List<MovimentacaoDiaria>> ListarAsync(int userId) =>
+        await Ordenar(ComNavegacoes(Tabela.Where(Proprios(userId)))).ToListAsync();
+
+    // Identificador fica de fora: é a chave da importação do extrato.
+    protected override void CopiarAlteracoes(MovimentacaoDiaria existente, MovimentacaoDiaria entrada)
     {
-        await _context.MovimentacaoDiaria.AddAsync(MovimentacaoDiaria);
-        var ret = await _context.SaveChangesAsync();
-        return MovimentacaoDiaria;
+        existente.BancoId = entrada.BancoId;
+        existente.TipoCartaoId = entrada.TipoCartaoId;
+        existente.TipoMovimentacaoId = entrada.TipoMovimentacaoId;
+        existente.Valor = entrada.Valor;
+        existente.TipoLancamento = entrada.TipoLancamento;
+        existente.Descricao = entrada.Descricao;
+        existente.NomePessoaTransacao = entrada.NomePessoaTransacao;
+        existente.DataMovimentacao = entrada.DataMovimentacao;
     }
 
-    public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoDiariasByUserId(int userId)
-    {
-        var MovimentacaoDiarias = await _context.MovimentacaoDiaria.Where(c => c.UserId == userId).OrderBy(c => c.DataMovimentacao).ToListAsync();
-        return MovimentacaoDiarias;
-    }
-
-    public async Task<MovimentacaoDiaria?> GetMovimentacaoDiariaById(int id, int userId)
-    {
-        var MovimentacaoDiaria = await _context.MovimentacaoDiaria
-            .Where(c => c.UserId == userId && c.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (MovimentacaoDiaria == null)
-            return null;
-
-        return MovimentacaoDiaria;
-    }
-
+    private static IQueryable<MovimentacaoDiaria> ComNavegacoes(IQueryable<MovimentacaoDiaria> query) =>
+        query.Include(m => m.Banco).Include(m => m.TipoCartao).Include(m => m.TipoMovimentacao);
 
     public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoByDate(DateTime dateTime, int userId)
     {
-        return await _context.MovimentacaoDiaria
-            .Include(m => m.Banco)
-            .Include(m => m.TipoCartao)
-            .Include(m => m.TipoMovimentacao)
+        return await ComNavegacoes(_context.MovimentacaoDiaria)
             .Where(c => c.UserId == userId && c.DataMovimentacao.Month == dateTime.Month && c.DataMovimentacao.Year == dateTime.Year)
             .ToListAsync();
     }
-
-    public async Task<MovimentacaoDiaria?> Remove(int id, int userId)
-    {
-        var MovimentacaoDiaria = await GetMovimentacaoDiariaById(id, userId);
-        if (MovimentacaoDiaria == null)
-            return null;
-
-        _context.MovimentacaoDiaria.Remove(MovimentacaoDiaria);
-        await _context.SaveChangesAsync();
-
-        return MovimentacaoDiaria;
-    }
-
-    public async Task<MovimentacaoDiaria?> FindByIdForUserAsync(int id, int userId)
-    {
-        return await _context.MovimentacaoDiaria
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(MovimentacaoDiaria incomingMovimentacaoDiaria, int userId)
-    {
-        var existingMovimentacaoDiaria = await _context.MovimentacaoDiaria
-            .FirstOrDefaultAsync(a => a.Id == incomingMovimentacaoDiaria.Id && a.UserId == userId);
-
-        if (existingMovimentacaoDiaria == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
-
-        existingMovimentacaoDiaria.BancoId = incomingMovimentacaoDiaria.BancoId;
-        existingMovimentacaoDiaria.TipoCartaoId = incomingMovimentacaoDiaria.TipoCartaoId;
-        existingMovimentacaoDiaria.TipoMovimentacaoId = incomingMovimentacaoDiaria.TipoMovimentacaoId;
-        existingMovimentacaoDiaria.Valor = incomingMovimentacaoDiaria.Valor;
-        existingMovimentacaoDiaria.DataMovimentacao = incomingMovimentacaoDiaria.DataMovimentacao;
-
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<List<MovimentacaoDiaria>>? GetMovimentacaoDiaria(int userId)
-    {
-        var movimentacoesDiarias = await _context.MovimentacaoDiaria
-            .Include(m => m.Banco)
-            .Include(m => m.TipoCartao)
-            .Include(m => m.TipoMovimentacao)
-           .Where(a => a.UserId == userId)
-           .OrderBy(c => c.DataMovimentacao)
-           .ToListAsync();
-
-        return movimentacoesDiarias;
-    }
-
-    public async Task<decimal> GetValorLancadoAnteriormente(int id, int userId)
-    {
-        var ultimoValor = await _context.MovimentacaoDiaria
-            .Where(c => c.Id == id && c.UserId == userId)
-            .OrderByDescending(c => c.DataMovimentacao)
-            .Select(c => c.Valor)               
-            .FirstOrDefaultAsync();             
-
-        return ultimoValor;
-    }
-
 }

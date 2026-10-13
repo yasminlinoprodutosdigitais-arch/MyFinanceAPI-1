@@ -9,7 +9,7 @@ namespace MyFinanceAPI.Domain.Entities;
 /// "Conta corrente" e "Conta Poupança" —, vale para todos e não pode ser editado nem excluído;
 /// com usuário, é um tipo próprio dele (DB-P1-07). Por isso não herda BaseEntity, cujo UserId é obrigatório.
 /// </summary>
-public class TipoCartao
+public class TipoCartao : IEntidade
 {
     public int Id { get; set; }
     public int? UserId { get; set; }
@@ -23,17 +23,4 @@ public class TipoCartao
     public bool EhSistema => UserId == null;
 
     public TipoCartao() { }
-
-    public TipoCartao(string? nomeTipoCartao, string? descricao)
-    {
-        NomeTipoCartao = nomeTipoCartao;
-        Descricao = descricao;
-    }
-
-    public TipoCartao(int id, string nomeTipoCartao, string descricao)
-    {
-        Id = id;
-        NomeTipoCartao = nomeTipoCartao;
-        Descricao = descricao;
-    }
 }

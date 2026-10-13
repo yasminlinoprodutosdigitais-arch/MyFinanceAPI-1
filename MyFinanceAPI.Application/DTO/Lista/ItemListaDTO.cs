@@ -15,28 +15,7 @@ public class ItemListaDTO
     public DateOnly? DataTarefa { get; set; }
     public TimeOnly? HorarioTarefa { get; set; }
 
-
     public Lista? Lista { get; set; }  
         
     public ItemListaDTO() { } 
-
-    public ItemListaDTO( int listaId, string descricao, int quantidade, string observacao, string status)
-    {
-        ListaId = listaId;
-        Descricao = descricao;
-        Quantidade = quantidade;
-        Observacao = observacao;
-        Status = status;
-    }
-
-    public ItemListaDTO(int id, int listaId, string descricao, int quantidade, string observacao, string status)
-    {
-        Id = id;
-        ListaId = listaId;
-        Descricao = descricao;
-        Quantidade = quantidade;
-        Observacao = observacao;
-        Status = status;
-    }
-
 }

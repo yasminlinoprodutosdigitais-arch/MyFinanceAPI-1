@@ -31,44 +31,44 @@ public class TipoCartaoServiceTests
     [Fact]
     public async Task Editar_tipo_do_sistema_e_recusado()
     {
-        _repo.Setup(r => r.GetTipoCartaoById(1, UserId)).ReturnsAsync(DoSistema);
+        _repo.Setup(r => r.ObterPorIdAsync(1, UserId)).ReturnsAsync(DoSistema);
 
-        var erro = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            CriarService().UpdateAsync(new TipoCartaoDTO { Id = 1, NomeTipoCartao = "Crédito" }, UserId));
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
+            CriarService().AtualizarAsync(new TipoCartaoDTO { Id = 1, NomeTipoCartao = "Crédito" }, UserId));
 
         Assert.Contains("padrão do sistema", erro.Message);
-        _repo.Verify(r => r.UpdateAsync(It.IsAny<TipoCartao>(), It.IsAny<int>()), Times.Never);
+        _repo.Verify(r => r.AtualizarAsync(It.IsAny<TipoCartao>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
     public async Task Excluir_tipo_do_sistema_e_recusado()
     {
-        _repo.Setup(r => r.GetTipoCartaoById(1, UserId)).ReturnsAsync(DoSistema);
+        _repo.Setup(r => r.ObterPorIdAsync(1, UserId)).ReturnsAsync(DoSistema);
 
-        var erro = await Assert.ThrowsAsync<InvalidOperationException>(() => CriarService().Remove(1, UserId));
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().RemoverAsync(1, UserId));
 
         Assert.Contains("padrão do sistema", erro.Message);
-        _repo.Verify(r => r.Remove(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        _repo.Verify(r => r.RemoverAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
     public async Task Editar_tipo_proprio_continua_permitido()
     {
-        _repo.Setup(r => r.GetTipoCartaoById(50, UserId)).ReturnsAsync(DoUsuario);
+        _repo.Setup(r => r.ObterPorIdAsync(50, UserId)).ReturnsAsync(DoUsuario);
 
-        await CriarService().UpdateAsync(new TipoCartaoDTO { Id = 50, NomeTipoCartao = "VR", EhCredito = false }, UserId);
+        await CriarService().AtualizarAsync(new TipoCartaoDTO { Id = 50, NomeTipoCartao = "VR", EhCredito = false }, UserId);
 
-        _repo.Verify(r => r.UpdateAsync(It.Is<TipoCartao>(t => t.Id == 50 && t.NomeTipoCartao == "VR"), UserId), Times.Once);
+        _repo.Verify(r => r.AtualizarAsync(It.Is<TipoCartao>(t => t.Id == 50 && t.NomeTipoCartao == "VR"), UserId), Times.Once);
     }
 
     [Fact]
     public async Task Excluir_tipo_proprio_sem_uso_continua_permitido()
     {
-        _repo.Setup(r => r.GetTipoCartaoById(50, UserId)).ReturnsAsync(DoUsuario);
+        _repo.Setup(r => r.ObterPorIdAsync(50, UserId)).ReturnsAsync(DoUsuario);
 
-        await CriarService().Remove(50, UserId);
+        await CriarService().RemoverAsync(50, UserId);
 
-        _repo.Verify(r => r.Remove(50, UserId), Times.Once);
+        _repo.Verify(r => r.RemoverAsync(50, UserId), Times.Once);
     }
 
     [Fact]
@@ -77,9 +77,9 @@ public class TipoCartaoServiceTests
         // O repositório considera também os tipos do sistema ao checar o nome.
         _repo.Setup(r => r.ExisteNomeAsync(UserId, "cartão de crédito", 0)).ReturnsAsync(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            CriarService().Add(new TipoCartaoDTO { NomeTipoCartao = "cartão de crédito" }, UserId));
+        await Assert.ThrowsAsync<RegraNegocioException>(() =>
+            CriarService().AdicionarAsync(new TipoCartaoDTO { NomeTipoCartao = "cartão de crédito" }, UserId));
 
-        _repo.Verify(r => r.Create(It.IsAny<TipoCartao>()), Times.Never);
+        _repo.Verify(r => r.CriarAsync(It.IsAny<TipoCartao>()), Times.Never);
     }
 }

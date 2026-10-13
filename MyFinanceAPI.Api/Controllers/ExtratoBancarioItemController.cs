@@ -12,27 +12,21 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class ExtratoBancarioItemController : ControllerBase
+    public class ExtratoBancarioItemController : ApiControllerBase
     {
         private readonly IExtratoBancarioItemService _extratoBancarioItemService;
-        private readonly IUserContextService _userContextService;
 
         public ExtratoBancarioItemController(
-            IExtratoBancarioItemService extratoBancarioItemService,
-            IUserContextService userContextService)
+            IExtratoBancarioItemService extratoBancarioItemService)
         {
             _extratoBancarioItemService = extratoBancarioItemService;
-            _userContextService = userContextService;
         }
 
         // GET /GetExtratoBancarioItens/{extratoId}
         [HttpGet("/GetExtratoBancarioItens/{extratoId:int}")]
         public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetExtratoItens(int extratoId)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
             var itens = await _extratoBancarioItemService.GetByExtratoAsync(extratoId, userId);
             return Ok(itens);
@@ -42,106 +36,54 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetExtratoBancarioItemById/{id:int}", Name = "GetExtratoBancarioItemById")]
         public async Task<ActionResult<ExtratoBancarioItemDTO>> GetExtratoItemById(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
-                if (item == null)
-                    return NotFound("Item de extrato não encontrado.");
+            var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
+            if (item == null)
+                return NotFound("Item de extrato não encontrado.");
 
-                return Ok(item);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
+            return Ok(item);
         }
 
         // POST /CreateExtratoBancarioItem
         [HttpPost("/CreateExtratoBancarioItem")]
         public async Task<ActionResult> CreateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                if (dto == null)
-                    return BadRequest("Dados inválidos.");
+            if (dto == null)
+                return BadRequest("Dados inválidos.");
 
-                var created = await _extratoBancarioItemService.AddAsync(dto, userId);
-                return CreatedAtRoute("GetExtratoBancarioItemById", new { id = created.Id }, created);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao criar item de extrato.", error = ex.Message });
-            }
+            var created = await _extratoBancarioItemService.AddAsync(dto, userId);
+            return CreatedAtRoute("GetExtratoBancarioItemById", new { id = created.Id }, created);
         }
 
         // PUT /UpdateExtratoBancarioItem
         [HttpPut("/UpdateExtratoBancarioItem")]
         public async Task<ActionResult> UpdateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                if (dto == null || dto.Id <= 0)
-                    return BadRequest("Dados inválidos.");
+            if (dto == null || dto.Id <= 0)
+                return BadRequest("Dados inválidos.");
 
-                await _extratoBancarioItemService.UpdateAsync(dto, userId);
-                
-                return Ok(new { message = "Item de extrato atualizado com sucesso." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
+            await _extratoBancarioItemService.UpdateAsync(dto, userId);
+            
+            return Ok(new { message = "Item de extrato atualizado com sucesso." });
         }
 
         // DELETE /DeleteExtratoBancarioItem/{id}
         [HttpDelete("/DeleteExtratoBancarioItem/{id:int}")]
         public async Task<ActionResult> DeleteExtratoItem(int id)
         {
-            try 
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
-                if(item == null)
-                    return NotFound(new {message = "Item de extrato não encontrado."});
+            var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
+            if(item == null)
+                return NotFound(new {message = "Item de extrato não encontrado."});
 
-                await _extratoBancarioItemService.RemoveAsync(id, userId);
-                return Ok(item);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao remover item de extrato.", error = ex.Message });
-            }
+            await _extratoBancarioItemService.RemoveAsync(id, userId);
+            return Ok(item);
         }
 
         /// <summary>
@@ -152,9 +94,7 @@ namespace MyFinanceAPI.Api.Controllers
         public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetByMonth(
             [FromQuery] string month, [FromQuery] int? bancoId)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
             if (string.IsNullOrWhiteSpace(month))
                 return BadRequest("Parâmetro 'month' é obrigatório no formato yyyy-MM.");

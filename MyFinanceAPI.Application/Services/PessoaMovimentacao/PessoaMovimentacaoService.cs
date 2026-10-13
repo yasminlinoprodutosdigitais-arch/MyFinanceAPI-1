@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-using System.Security.Claims;
 using AutoMapper;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -9,66 +6,34 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Application.Services;
 
-public class PessoaMovimentacaoService : IPessoaMovimentacaoService
+public class PessoaMovimentacaoService(IPessoaMovimentacaoRepository pessoaMovimentacaoRepository, IExtratoBancarioItemService extratoBancarioItemService, IMapper mapper)
+    : ServicoCadastro<PessoaMovimentacao, PessoaMovimentacaoDTO>(pessoaMovimentacaoRepository, mapper), IPessoaMovimentacaoService
 {
-    private readonly IPessoaMovimentacaoRepository _PessoaMovimentacaoRepository;
-    private readonly IExtratoBancarioItemService _extratoBancarioItemService;
-    private readonly IMapper _mapper;
-
-    public PessoaMovimentacaoService(IPessoaMovimentacaoRepository PessoaMovimentacaoRepository, IExtratoBancarioItemService extratoBancarioItemService, IMapper mapper)
+    protected override async Task ValidarExclusaoAsync(int id, int userId)
     {
-        _PessoaMovimentacaoRepository = PessoaMovimentacaoRepository;
-        _extratoBancarioItemService = extratoBancarioItemService;
-        _mapper = mapper;
-    }
-    public async Task Add(PessoaMovimentacaoDTO PessoaMovimentacaoDTO, int userId)
-    {
-        var PessoaMovimentacao = _mapper.Map<PessoaMovimentacao>(PessoaMovimentacaoDTO);
-        PessoaMovimentacao.UserId = userId;
-        await _PessoaMovimentacaoRepository.Create(PessoaMovimentacao, userId);
+        if (await pessoaMovimentacaoRepository.EmUsoAsync(id, userId))
+            throw new RegraNegocioException("Não é possível excluir esta pessoa, pois ela está vinculada a itens de extrato.");
     }
 
-    public async Task<IEnumerable<PessoaMovimentacaoDTO>> GetPessoaMovimentacao(int userId)
+    /// <summary>Com MesAtualizacao ("AAAA-MM"), leva o novo nome, categoria e tipo aos itens do extrato daquele mês.</summary>
+    public override async Task AtualizarAsync(PessoaMovimentacaoDTO dto, int userId)
     {
-        var movimentacoDiaria = await _PessoaMovimentacaoRepository.GetPessoaMovimentacao(userId);
-        return _mapper.Map<IEnumerable<PessoaMovimentacaoDTO>>(movimentacoDiaria);
-    }
-
-    public async Task<PessoaMovimentacaoDTO> GetPessoaMovimentacaoById(int id, int userId)
-    {
-        var PessoaMovimentacao = await _PessoaMovimentacaoRepository.GetPessoaMovimentacaoById(id, userId);
-        return _mapper.Map<PessoaMovimentacaoDTO>(PessoaMovimentacao);
-    }
-
-    public async Task Remove(int id, int userId)
-    {
-        if (await _PessoaMovimentacaoRepository.EmUsoAsync(id, userId))
-            throw new InvalidOperationException("Não é possível excluir esta pessoa, pois ela está vinculada a itens de extrato.");
-
-        await _PessoaMovimentacaoRepository.Remove(id, userId);
-    }
-
-    public async Task<bool> UpdateAsync(PessoaMovimentacaoDTO dto, int userId)
-    {
-        var PessoaMovimentacao = _mapper.Map<PessoaMovimentacao>(dto);
-        if (dto.MesAtualizacao != null && dto.MesAtualizacao != "")
+        if (!string.IsNullOrEmpty(dto.MesAtualizacao))
         {
-            var dataSeparada = dto.MesAtualizacao.ToString().Split('-');
+            var dataSeparada = dto.MesAtualizacao.Split('-');
             var year = int.Parse(dataSeparada[0]);
             var month = int.Parse(dataSeparada[1]);
 
-            var extratos = await _extratoBancarioItemService.GetByMonthAsync(userId, year, month);
-            extratos = extratos.Where((x) => x.UserId == userId && x.PessoaMovimentacaoId == dto.Id).ToArray();
-            foreach (var extrato in extratos)
+            var extratos = await extratoBancarioItemService.GetByMonthAsync(userId, year, month);
+            foreach (var extrato in extratos.Where(x => x.UserId == userId && x.PessoaMovimentacaoId == dto.Id).ToList())
             {
                 extrato.NomePessoaTransacao = dto.NomePessoa;
                 extrato.CategoriaId = dto.CategoriaId;
                 extrato.TipoMovimentacaoId = dto.TipoMovimentacaoId;
-                await _extratoBancarioItemService.UpdateAsync(extrato, userId);
+                await extratoBancarioItemService.UpdateAsync(extrato, userId);
             }
         }
-        await _PessoaMovimentacaoRepository.UpdateAsync(PessoaMovimentacao, userId);
-        return true;
-    }
 
+        await base.AtualizarAsync(dto, userId);
+    }
 }

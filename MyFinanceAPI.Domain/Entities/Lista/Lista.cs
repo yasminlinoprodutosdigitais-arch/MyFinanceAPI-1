@@ -11,20 +11,4 @@ public class Lista : BaseEntity
     public bool Status { get; set; }
         
     public Lista() { } 
-
-    public Lista(string nomeLista, TipoLista tipoLista, bool status)
-    {
-        Nome = nomeLista;
-        TipoLista = tipoLista;
-        Status = status;
-    }
-
-    public Lista(int id, string nomeLista, TipoLista tipoLista, bool status)
-    {
-        Id = id;
-        Nome = nomeLista;
-        TipoLista = tipoLista;
-        Status = status;
-    }
-
 }

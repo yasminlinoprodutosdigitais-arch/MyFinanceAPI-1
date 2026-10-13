@@ -10,87 +10,50 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class AccountsController : ControllerBase
+    public class AccountsController : ApiControllerBase
     {
         private readonly IAccountService _accountService;
-        private readonly IUserContextService _userContextService;
 
-        public AccountsController(IAccountService accountService, IUserContextService userContextService)
+        public AccountsController(IAccountService accountService)
         {
             _accountService = accountService;
-            _userContextService = userContextService;
         }
 
         [HttpGet("/GetAccounts")]
         public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccounts()
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized(new { message = "User not authorized" });
+            var userId = UsuarioId;
 
-                var accounts = await _accountService.GetAccounts(userId.Value);
-                return Ok(accounts);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = "Erro ao buscar Contas.", error = ex.Message });
-            }
+            var accounts = await _accountService.GetAccounts(userId);
+            return Ok(accounts);
         }
 
         [HttpGet("/GetContasAtivas")]
         public async Task<ActionResult<IEnumerable<AccountDTO>>> GetContasAtivas()
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized(new { message = "User not authorized" });
+            var userId = UsuarioId;
 
-                var accounts = await _accountService.GetContasAtivas(userId.Value);
-                return Ok(accounts);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
-            }
+            var accounts = await _accountService.GetContasAtivas(userId);
+            return Ok(accounts);
         }
-
 
         [HttpGet("/GetAccountById/{id}", Name = "GetAccount")]
         public async Task<ActionResult<AccountDTO>> GetAccountById(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("User not authorized");
+            var userId = UsuarioId;
 
-                var account = await _accountService.GetAccountById(id, userId);
-                if (account is null)
-                    return NotFound("Account Bad Request");
-                else
-                    return Ok(account);
+            var account = await _accountService.GetAccountById(id, userId);
+            if (account is null)
+                return NotFound("Account Bad Request");
+            else
+                return Ok(account);
 
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
         }
 
         [HttpGet("/GetAccountsByCategory/{id}")]
         public async Task<ActionResult<ActionResult<AccountDTO>>> GetAccountByCategory(int id)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("User not authorized");
+            var userId = UsuarioId;
 
             if (id == 0 || id < 0)
                 return BadRequest("");
@@ -106,67 +69,36 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPost("/CreateAccount")]
         public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] AccountDTO accountDTO)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                if (accountDTO is null)
-                    return BadRequest("Dados inválidos.");
+            if (accountDTO is null)
+                return BadRequest("Dados inválidos.");
 
-                await _accountService.Add(accountDTO, userId);
-                return new CreatedAtRouteResult("GetCategory", new { id = accountDTO.Id }, accountDTO);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _accountService.Add(accountDTO, userId);
+            return new CreatedAtRouteResult("GetCategory", new { id = accountDTO.Id }, accountDTO);
         }
 
         [HttpPut("/UpdateAccount")]
         public async Task<ActionResult<AccountDTO>> UpdateAccount([FromBody] AccountDTO accountDTO)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("User not authorized");
+            var userId = UsuarioId;
 
-                await _accountService.Update(accountDTO, userId);
-                return accountDTO;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao atualizar conta.", error = ex.Message });
-            }
+            await _accountService.Update(accountDTO, userId);
+            return accountDTO;
 
         }
 
         [HttpDelete("/DeleteAccount/{id}")]
         public async Task<ActionResult<AccountDTO>> DeleteAccount(int id)
         {
-            try 
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                    if (userId == 0)
-                return Unauthorized("User not authorized");
+            var userId = UsuarioId;
 
-                var account = await _accountService.GetAccountById(id, userId);
-                if(account == null)
-                    return NotFound(new {message = "Conta não encontrada"});
+            var account = await _accountService.GetAccountById(id, userId);
+            if(account == null)
+                return NotFound(new {message = "Conta não encontrada"});
 
-                await _accountService.Remove(id, userId);
-                return Ok(account);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao deletar conta.", error = ex.Message, detail = ex.StackTrace });
-            }
+            await _accountService.Remove(id, userId);
+            return Ok(account);
         }
     }
 }

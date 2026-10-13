@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
@@ -5,95 +6,32 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class ItemListaRepository(ContextDB context) : IItemListaRepository
+public class ItemListaRepository(ContextDB context) : RepositorioDoUsuario<ItemLista>(context), IItemListaRepository
 {
     private readonly ContextDB _context = context;
 
-    public async Task<ItemLista> Create(ItemLista ItemLista)
-    {
-        await _context.ItemLista.AddAsync(ItemLista);
-        await _context.SaveChangesAsync();
-        return ItemLista;
-    }
+    protected override string MensagemNaoEncontrado => "Item da lista não encontrado.";
 
-     public async Task<IEnumerable<ItemLista>> GetItemListasByUserId(int userId)
+    protected override Expression<Func<ItemLista, bool>> Proprios(int userId) => i => i.UserId == userId;
+
+    // Antes ordenava pela navegação (c.Lista), que o EF traduz pela chave: mesmo resultado.
+    protected override IOrderedQueryable<ItemLista> Ordenar(IQueryable<ItemLista> query) => query.OrderBy(i => i.ListaId);
+
+    protected override void CopiarAlteracoes(ItemLista existente, ItemLista entrada)
     {
-        var ItemListas = await _context.ItemLista.Where(c => c.UserId == userId).OrderBy(c => c.Lista).ToListAsync();
-        return ItemListas;
+        existente.ListaId = entrada.ListaId;
+        existente.Descricao = entrada.Descricao;
+        existente.Quantidade = entrada.Quantidade;
+        existente.Status = entrada.Status;
+        existente.Observacao = entrada.Observacao;
+        existente.Valor = entrada.Valor;
     }
 
     public async Task<List<ItemLista>> GetItemListaByListaId(int id, int userId)
     {
-        var ItemListas = await _context.ItemLista
+        return await _context.ItemLista
             .Where(c => c.UserId == userId && c.ListaId == id)
             .OrderBy(c => c.Descricao)
             .ToListAsync();
-
-        if (ItemListas == null)
-            return null;
-
-        return ItemListas;
-    }
-
-    public async Task<ItemLista?> GetItemListaById(int id, int userId)
-    {
-        var ItemLista = await _context.ItemLista
-            .Where(c => c.UserId == userId && c.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (ItemLista == null)
-            return null;
-
-        return ItemLista;
-    }
-
-    public async Task<ItemLista?> Remove(int id, int userId)
-    {
-        var ItemLista = await GetItemListaById(id, userId);
-        if (ItemLista == null)
-            return null;
-
-        _context.ItemLista.Remove(ItemLista);
-        await _context.SaveChangesAsync();
-
-        return ItemLista;
-    }
-
-    public async Task<ItemLista?> FindByIdForUserAsync(int id, int userId)
-    {
-        return await _context.ItemLista
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(ItemLista incomingItemLista, int userId)
-    {
-        var existingItemLista = await _context.ItemLista
-            .FirstOrDefaultAsync(a => a.Id == incomingItemLista.Id && a.UserId == userId);
-
-        if (existingItemLista == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
-
-        existingItemLista.ListaId = incomingItemLista.ListaId;
-        existingItemLista.Descricao = incomingItemLista.Descricao;
-        existingItemLista.Quantidade = incomingItemLista.Quantidade;
-        existingItemLista.Status = incomingItemLista.Status;
-        existingItemLista.Observacao = incomingItemLista.Observacao;
-        existingItemLista.Valor = incomingItemLista.Valor;
-
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<List<ItemLista>>? GetItemListas(int userId)
-    {
-        var movimentacoesDiarias = await _context.ItemLista
-           .Where(a => a.UserId == userId)
-           .OrderBy(c => c.Lista)
-           .ToListAsync();
-
-        return movimentacoesDiarias;
     }
 }

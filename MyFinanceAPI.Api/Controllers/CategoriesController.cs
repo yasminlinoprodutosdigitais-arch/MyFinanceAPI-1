@@ -9,26 +9,21 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoriesController : ApiControllerBase
     {
         private readonly ICategoryService _categoryService;
-        private readonly IUserContextService _userContextService;
 
-        public CategoriesController(ICategoryService categoryService, IUserContextService userContextService)
+        public CategoriesController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _userContextService = userContextService;
         }
 
         [HttpGet("/GetCategories")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
-            int? userId = _userContextService.GetUserIdFromClaims(); ;
-            if (userId == null)
-                return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-            var categories = await _categoryService.GetCategories(userId.Value);
+            var categories = await _categoryService.ListarAsync(userId);
             if (categories is null)
                 return NotFound("");
             else
@@ -38,11 +33,9 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetCategoriasAtivas")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategoriasAtivas()
         {
-            int? userId = _userContextService.GetUserIdFromClaims(); ;
-            if (userId == null)
-                return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-            var categories = await _categoryService.GetCategoriasAtivas(userId.Value);
+            var categories = await _categoryService.GetCategoriasAtivas(userId);
             if (categories is null)
                 return NotFound("");
             else
@@ -52,11 +45,9 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetCategoryById/{id}", Name = "GetCategory")]
         public async Task<ActionResult<CategoryDTO>> GetCategorybyId(int id)
         {
-            int? userId = _userContextService.GetUserIdFromClaims(); ;
-            if (userId == null)
-                return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-            var category = await _categoryService.GetCategoryById(id, userId.Value);
+            var category = await _categoryService.ObterPorIdAsync(id, userId);
             if (category is null)
                 return NotFound("Category not found");
             else
@@ -66,73 +57,35 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPost("/CreateCategory")]
         public async Task<ActionResult<CategoryDTO>> CreateCategory([FromBody] CategoryDTO categoryDto)
         {
-            int? userId = _userContextService.GetUserIdFromClaims(); ;
-            if (userId == null)
-                return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
             if (categoryDto is null)
                 return BadRequest("Invalid Data");
 
-            try
-            {
-                await _categoryService.Add(categoryDto, userId.Value);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            await _categoryService.AdicionarAsync(categoryDto, userId);
             return new CreatedAtRouteResult("GetCategory", new { id = categoryDto.Id }, categoryDto);
         }
 
         [HttpPut("/UpdateCategory")]
         public async Task<IActionResult> UpdateCategory([FromBody] CategoryDTO categoryDto)
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == null)
-                    return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-                var ok = await _categoryService.UpdateAsync(categoryDto, userId.Value);
-                if (!ok)
-                    return NotFound(new { message = "Categoria não encontrada ou sem alterações." });
-
-                return Ok(new { message = "Categoria atualizada com sucesso!" });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
+            // Categoria alheia ou inexistente: NaoEncontradoException → 404.
+            await _categoryService.AtualizarAsync(categoryDto, userId);
+            return Ok(new { message = "Categoria atualizada com sucesso!" });
         }
-
 
         [HttpDelete("/DeleteCategory/{id}")]
         public async Task<ActionResult<CategoryDTO>> DeleteCategory(int id)
         {
-            int? userId = _userContextService.GetUserIdFromClaims(); ;
-            if (userId == null)
-                return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-            var category = await _categoryService.GetCategoryById(id, userId.Value);
+            var category = await _categoryService.ObterPorIdAsync(id, userId);
             if (category is null)
                 return NotFound("Categoria não encontrada!");
 
-            try
-            {
-                await _categoryService.Remove(id, userId.Value);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { message = ex.Message });
-            }
+            await _categoryService.RemoverAsync(id, userId);
             return Ok(category);
         }
     }

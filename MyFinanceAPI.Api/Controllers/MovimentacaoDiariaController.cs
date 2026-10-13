@@ -11,70 +11,40 @@ namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class MovimentacaoDiariaController : ControllerBase
+    public class MovimentacaoDiariaController : ApiControllerBase
     {
         private readonly IMovimentacaoDiariaService _movimentacaoDiariaService;
-        private readonly IUserContextService _userContextService;
 
-        public MovimentacaoDiariaController(IMovimentacaoDiariaService MovimentacaoDiariaService, IUserContextService userContextService)
+        public MovimentacaoDiariaController(IMovimentacaoDiariaService MovimentacaoDiariaService)
         {
             _movimentacaoDiariaService = MovimentacaoDiariaService;
-            _userContextService = userContextService;
         }
 
         [HttpGet("/GetMovimentacaoDiaria")]
         public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoDiaria()
         {
-            try
-            {
-                int? userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized(new { message = "Usuário não autorizado!" });
+            var userId = UsuarioId;
 
-                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiaria(userId.Value);
-                return Ok(MovimentacaoDiaria);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = "Token expired or invalid.", error = ex.Message });
-            }
+            var MovimentacaoDiaria = await _movimentacaoDiariaService.ListarAsync(userId);
+            return Ok(MovimentacaoDiaria);
         }
-
 
         [HttpGet("/GetMovimentacaoDiariaById/{id}", Name = "GetMovimentacaoDiaria")]
         public async Task<ActionResult<MovimentacaoDiariaDTO>> GetMovimentacaoDiariaById(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
-                if (MovimentacaoDiaria is null)
-                    return NotFound("MovimentacaoDiaria não encontrada!");
-                else
-                    return Ok(MovimentacaoDiaria);
-
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Ocorreu um erro inesperado.", details = ex.Message });
-            }
+            var MovimentacaoDiaria = await _movimentacaoDiariaService.ObterPorIdAsync(id, userId);
+            if (MovimentacaoDiaria is null)
+                return NotFound("MovimentacaoDiaria não encontrada!");
+            else
+                return Ok(MovimentacaoDiaria);
         }
-
 
         [HttpGet("/GetMovimentacaoDiariaByDate/{date}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetMovimentacaoByDate(DateTime date)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("User not authorized");
+            var userId = UsuarioId;
 
             var transaction = await _movimentacaoDiariaService.GetMovimentacaoByDate(date, userId);
             if (transaction is null)
@@ -83,91 +53,38 @@ namespace MyFinanceAPI.Api.Controllers
                 return Ok(transaction);
         }
 
-        // [HttpPost("/ImportMovimentacaoDiariaExtrato")]
-        // public async Task<IActionResult> ImportMovimentacaoDiariaExtrato([FromForm] IFormFile arquivo, [FromForm] BancoDTO banco)
-        // {
-        //     try
-        //     {
-        //         var userId = _userContextService.GetUserIdFromClaims();
-        //         if (userId == 0)
-        //             return Unauthorized("Usuário não autorizado!");
-
-        //         if (arquivo == null || arquivo.Length == 0)
-        //             return BadRequest("Nenhum arquivo foi enviado.");
-
-        //         using var stream = arquivo.OpenReadStream();
-
-        //         var resultadoImportacao = await _movimentacaoDiariaService.ImportarExtratoAsync(
-        //             stream,
-        //             arquivo.FileName,
-        //             userId, banco
-        //         );
-
-        //         return Ok(resultadoImportacao);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return StatusCode(500, new
-        //         {
-        //             message = "Erro ao importar extrato.",
-        //             error = ex.Message
-        //         });
-        //     }
-        // }
-
-
         [HttpPost("/CreateMovimentacaoDiaria")]
         public async Task<ActionResult> CreateMovimentacaoDiaria([FromBody] MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                if (MovimentacaoDiariaDTO is null)
-                    return BadRequest("Dados inválidos.");
+            if (MovimentacaoDiariaDTO is null)
+                return BadRequest("Dados inválidos.");
 
-                await _movimentacaoDiariaService.Add(MovimentacaoDiariaDTO, userId);
-                return Ok("MovimentacaoDiaria criada com sucesso!");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await _movimentacaoDiariaService.AdicionarAsync(MovimentacaoDiariaDTO, userId);
+            return Ok("MovimentacaoDiaria criada com sucesso!");
         }
 
         [HttpPut("/UpdateMovimentacaoDiaria")]
         public async Task<ActionResult<MovimentacaoDiariaDTO>> UpdateMovimentacaoDiaria(MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
         {
-            var userId = _userContextService.GetUserIdFromClaims();
-            if (userId == 0)
-                return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-            await _movimentacaoDiariaService.UpdateAsync(MovimentacaoDiariaDTO, userId);
+            await _movimentacaoDiariaService.AtualizarAsync(MovimentacaoDiariaDTO, userId);
             return MovimentacaoDiariaDTO;
         }
 
         [HttpDelete("/DeleteMovimentacaoDiaria/{id}")]
         public async Task<ActionResult<MovimentacaoDiariaDTO>> DeleteMovimentacaoDiaria(int id)
         {
-            try
-            {
-                var userId = _userContextService.GetUserIdFromClaims();
-                if (userId == 0)
-                    return Unauthorized("Usuário não autorizado!");
+            var userId = UsuarioId;
 
-                var MovimentacaoDiaria = await _movimentacaoDiariaService.GetMovimentacaoDiariaById(id, userId);
-                if (MovimentacaoDiaria == null)
-                    return NotFound(new { message = "MovimentacaoDiaria não encontrada." });
+            var MovimentacaoDiaria = await _movimentacaoDiariaService.ObterPorIdAsync(id, userId);
+            if (MovimentacaoDiaria == null)
+                return NotFound(new { message = "MovimentacaoDiaria não encontrada." });
 
-                await _movimentacaoDiariaService.Remove(id, userId);
-                return Ok(MovimentacaoDiaria);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro ao deletar MovimentacaoDiaria.", error = ex.Message, detail = ex.StackTrace });
-            }
+            await _movimentacaoDiariaService.RemoverAsync(id, userId);
+            return Ok(MovimentacaoDiaria);
         }
     }
 }

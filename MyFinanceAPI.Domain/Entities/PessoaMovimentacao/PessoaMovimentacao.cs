@@ -11,20 +11,4 @@ public class PessoaMovimentacao : BaseEntity
     public Category? Categoria{ get; set; }
     public TipoMovimentacao? TipoMovimentacao { get; set; }
     public PessoaMovimentacao() { } 
-
-    public PessoaMovimentacao(string nomePessoa, int? categoriaId, int? tipoMovimentacaoId)
-    {
-        NomePessoa = nomePessoa;
-        CategoriaId = categoriaId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-    }
-
-    public PessoaMovimentacao(int id, string nomePessoa, int? categoriaId, int? tipoMovimentacaoId)
-    {
-        Id = id;
-        NomePessoa = nomePessoa;
-        CategoriaId = categoriaId;
-        TipoMovimentacaoId = tipoMovimentacaoId;
-    }
-
 }

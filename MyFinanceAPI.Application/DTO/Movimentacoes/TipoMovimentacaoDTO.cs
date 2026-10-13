@@ -10,20 +10,4 @@ public class TipoMovimentacaoDTO
     public string Descricao { get; set; }
     public decimal ValorMeta { get; set; }
     public TipoMovimentacaoDTO() { } 
-
-    public TipoMovimentacaoDTO(string nomeTipoMovimentacao, string descricao, decimal valorMeta)
-    {
-        NomeTipoMovimentacao = nomeTipoMovimentacao;
-        Descricao = descricao;
-        ValorMeta = valorMeta;
-    }
-
-    public TipoMovimentacaoDTO(int id, string nomeTipoMovimentacao, string descricao, decimal valorMeta)
-    {
-        Id = id;
-        NomeTipoMovimentacao = nomeTipoMovimentacao;
-        Descricao = descricao;
-        ValorMeta = valorMeta;
-    }
-
 }

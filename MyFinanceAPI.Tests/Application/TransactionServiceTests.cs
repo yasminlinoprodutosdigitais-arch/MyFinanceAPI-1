@@ -402,7 +402,7 @@ public class TransactionServiceTests
     {
         _repo.Setup(r => r.GetTransactionById(TransactionId, UserId)).ReturnsAsync((Transaction)null!);
 
-        var ex = await Assert.ThrowsAsync<Exception>(() => CriarService().Delete(TransactionId, UserId));
+        var ex = await Assert.ThrowsAsync<NaoEncontradoException>(() => CriarService().Delete(TransactionId, UserId));
 
         Assert.Contains("não encontrada", ex.Message);
         _repo.Verify(r => r.Remove(It.IsAny<int>(), It.IsAny<int>()), Times.Never);

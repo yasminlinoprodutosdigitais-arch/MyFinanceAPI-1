@@ -89,7 +89,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
         if (existingAccount == null)
         {
-            throw new Exception("Conta não encontrada ou não pertence ao usuário.");
+            throw new NaoEncontradoException("Conta não encontrada.");
         }
 
         existingAccount.Name = incomingAccount.Name;

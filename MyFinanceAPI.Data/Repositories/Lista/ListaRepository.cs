@@ -1,83 +1,22 @@
-using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using MyFinanceAPI.Data.Context;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Data.Repositories;
 
-public class ListaRepository(ContextDB context) : IListaRepository
+public class ListaRepository(ContextDB context) : RepositorioDoUsuario<Lista>(context), IListaRepository
 {
-    private readonly ContextDB _context = context;
+    protected override string MensagemNaoEncontrado => "Lista não encontrada.";
 
-    public async Task<Lista> Create(Lista Lista)
+    protected override Expression<Func<Lista, bool>> Proprios(int userId) => l => l.UserId == userId;
+
+    protected override IOrderedQueryable<Lista> Ordenar(IQueryable<Lista> query) => query.OrderBy(l => l.Nome);
+
+    protected override void CopiarAlteracoes(Lista existente, Lista entrada)
     {
-        await _context.Lista.AddAsync(Lista);
-        await _context.SaveChangesAsync();
-        return Lista;
-    }
-
-    public async Task<IEnumerable<Lista>> GetListaByUserId(int userId)
-    {
-        var Lista = await _context.Lista.Where(c => c.UserId == userId).OrderBy(c => c.Nome).ToListAsync();
-        return Lista;
-    }
-
-    public async Task<Lista?> GetListaById(int id, int userId)
-    {
-        var Lista = await _context.Lista
-            .Where(c => c.UserId == userId && c.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (Lista == null)
-            return null;
-
-        return Lista;
-    }
-
-    public async Task<Lista?> Remove(int id, int userId)
-    {
-        var Lista = await GetListaById(id, userId);
-        if (Lista == null)
-            return null;
-
-        _context.Lista.Remove(Lista);
-        await _context.SaveChangesAsync();
-
-        return Lista;
-    }
-
-    public async Task<Lista?> FindByIdForUserAsync(int id, int userId)
-    {
-        return await _context.Lista
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-    }
-
-    public async Task<bool> UpdateAsync(Lista incomingLista, int userId)
-    {
-        var existingLista = await _context.Lista
-            .FirstOrDefaultAsync(a => a.Id == incomingLista.Id && a.UserId == userId);
-
-        if (existingLista == null)
-        {
-            throw new Exception("Movimentação não encontrada ou não pertence ao usuário.");
-        }
-
-        existingLista.Nome = incomingLista.Nome;
-        existingLista.TipoLista = incomingLista.TipoLista;
-        existingLista.Status = incomingLista.Status;
-
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<List<Lista>>? GetListas(int userId)
-    {
-        var listas = await _context.Lista
-           .Where(a => a.UserId == userId)
-           .OrderBy(c => c.Nome)
-           .ToListAsync();
-
-        return listas;
+        existente.Nome = entrada.Nome;
+        existente.TipoLista = entrada.TipoLista;
+        existente.Status = entrada.Status;
     }
 }

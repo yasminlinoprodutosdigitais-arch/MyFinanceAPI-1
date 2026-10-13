@@ -99,7 +99,7 @@ public class TransactionService : ITransactionService
     {
         var transaction = _mapper.Map<Domain.Entities.Transaction, TransactionDTO>(await _transactionRepository.GetTransactionById(id, userId));
         if (transaction == null)        {
-            throw new Exception("Transação não encontrada ou não pertence ao usuário.");
+            throw new NaoEncontradoException("Transação não encontrada.");
         }
 
         if(transaction.EhParcelado)
@@ -112,12 +112,6 @@ public class TransactionService : ITransactionService
         var monthlyUpdate = await _transactionRepository.GetTransactions(userId);
         return _mapper.Map<IEnumerable<AccountGroupingDTO>>(monthlyUpdate);
     }
-
-    // public async Task<IEnumerable<TransactionDTO>> GetTransactionByCategory(int categoryId, int userId)
-    // {
-    //     var Transaction = await _transactionRepository.GetTransactionByCategory(categoryId, userId);
-    //     return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
-    // }
 
     public async Task<TransactionDTO> GetTransactionById(int id, int userId)
     {

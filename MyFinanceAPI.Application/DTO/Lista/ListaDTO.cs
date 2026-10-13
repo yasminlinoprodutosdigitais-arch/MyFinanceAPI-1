@@ -11,20 +11,4 @@ public class ListaDTO
     public bool Status { get; set; }
         
     public ListaDTO() { } 
-
-    public ListaDTO(string nomeLista, int tipoMovimentacao, bool status)
-    {
-        Nome = nomeLista;
-        TipoMovimentacao = tipoMovimentacao;
-        Status = status;
-    }
-
-    public ListaDTO(int id, string nomeLista, int tipoMovimentacao, bool status)
-    {
-        Id = id;
-        Nome = nomeLista;
-        TipoMovimentacao = tipoMovimentacao;
-        Status = status;
-    }
-
 }

@@ -1,16 +1,10 @@
-using System;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Domain.Interfaces;
 
-public interface IBancoRepository
+public interface IBancoRepository : IRepositorioDoUsuario<Banco>
 {
-    Task<List<Banco>>? GetBancos(int userId);
-    Task<Banco> GetBancoById(int id, int userId);
-    Task<Banco> Create(Banco Banco);
-    Task<bool> UpdateAsync(Banco Banco, int userId);
     Task<bool> UpdateSaldo(int bancoId, decimal saldoAtual, int userId);
-    Task<Banco?> Remove(int id, int userId);
     /// <summary>True se o banco é do usuário e tem lançamentos ou extratos (FKs RESTRICT bloqueiam o DELETE).</summary>
     Task<bool> EmUsoAsync(int id, int userId);
     /// <summary>True se o usuário já tem outro banco com o mesmo nome (ignora maiúsculas e espaços).</summary>

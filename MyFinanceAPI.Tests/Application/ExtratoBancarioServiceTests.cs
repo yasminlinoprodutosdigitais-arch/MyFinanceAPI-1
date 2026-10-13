@@ -37,7 +37,7 @@ public class ExtratoBancarioServiceTests
 
     public ExtratoBancarioServiceTests()
     {
-        _bancoService.Setup(s => s.GetBancoById(BancoId, UserId))
+        _bancoService.Setup(s => s.ObterPorIdAsync(BancoId, UserId))
             .ReturnsAsync(new BancoDTO { Id = BancoId, NomeBanco = "Nubank", TipoCartaoId = TipoCartaoId });
 
         _itemRepo.Setup(r => r.ObterChavesImportacaoAsync(UserId, BancoId)).ReturnsAsync(() => _chavesExistentes);
@@ -56,7 +56,7 @@ public class ExtratoBancarioServiceTests
         _pessoaRepo.Setup(r => r.VerificaPossuiPessoa(It.IsAny<string?>(), UserId))
             .Returns((string? nome, int _) => Task.FromResult<IEnumerable<PessoaMovimentacao>>(
                 _pessoasCadastradas.Where(p => p.NomePessoa == nome).ToList()));
-        _pessoaRepo.Setup(r => r.Create(It.IsAny<PessoaMovimentacao>(), UserId))
+        _pessoaRepo.Setup(r => r.ObterOuCriarAsync(It.IsAny<PessoaMovimentacao>(), UserId))
             .ReturnsAsync((PessoaMovimentacao p, int _) =>
             {
                 _uow.Registrar("Pessoa.Create");
@@ -291,7 +291,7 @@ public class ExtratoBancarioServiceTests
         Assert.Null(item.PessoaMovimentacaoId);
         Assert.Null(item.NomePessoaTransacao);
         _pessoaRepo.Verify(r => r.VerificaPossuiPessoa(It.IsAny<string?>(), It.IsAny<int>()), Times.Never);
-        _pessoaRepo.Verify(r => r.Create(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
+        _pessoaRepo.Verify(r => r.ObterOuCriarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
     }
 
     // ---------- chaves ----------
@@ -365,7 +365,7 @@ public class ExtratoBancarioServiceTests
         _itemRepo.Setup(r => r.RemoveByExtratoIdAsync(ExtratoIdGerado))
             .Callback(() => _uow.Registrar("Itens.Remove"))
             .Returns(Task.CompletedTask);
-        _extratoRepo.Setup(r => r.RemoveAsync(ExtratoIdGerado))
+        _extratoRepo.Setup(r => r.DeleteAsync(ExtratoIdGerado, UserId))
             .Callback(() => _uow.Registrar("Extrato.Remove"))
             .Returns(Task.CompletedTask);
         var service = new ExtratoBancarioService(
@@ -374,7 +374,7 @@ public class ExtratoBancarioServiceTests
         await service.Remove(ExtratoIdGerado, UserId);
 
         _itemRepo.Verify(r => r.RemoveByExtratoIdAsync(ExtratoIdGerado), Times.Once);
-        _extratoRepo.Verify(r => r.RemoveAsync(ExtratoIdGerado), Times.Once);
+        _extratoRepo.Verify(r => r.DeleteAsync(ExtratoIdGerado, UserId), Times.Once);   // versão que checa o dono (BE-P2-04)
         Assert.Empty(_uow.Fora);
     }
 }

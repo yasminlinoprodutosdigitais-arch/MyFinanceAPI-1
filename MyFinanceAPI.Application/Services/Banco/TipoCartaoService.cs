@@ -1,5 +1,3 @@
-using System;
-using System.Security.Claims;
 using AutoMapper;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -8,70 +6,35 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Application.Services;
 
-public class TipoCartaoService : ITipoCartaoService
+public class TipoCartaoService(ITipoCartaoRepository tipoCartaoRepository, IMapper mapper)
+    : ServicoCadastro<TipoCartao, TipoCartaoDTO>(tipoCartaoRepository, mapper), ITipoCartaoService
 {
-    private readonly ITipoCartaoRepository _tipoCartaoRepository;
-    private readonly IMapper _mapper;
+    // TipoCartao não herda BaseEntity: o dono é opcional (padrão do sistema).
+    protected override void DefinirDono(TipoCartao entidade, int userId) => entidade.UserId = userId;
 
-    public TipoCartaoService(ITipoCartaoRepository TipoCartaoRepository, IMapper mapper)
+    protected override async Task ValidarGravacaoAsync(TipoCartaoDTO dto, int userId, int ignorarId)
     {
-        _tipoCartaoRepository = TipoCartaoRepository;
-        _mapper = mapper;
-    }
-    public async Task Add(TipoCartaoDTO TipoCartaoDTO, int userId)
-    {
-        await GarantirNomeUnico(userId, TipoCartaoDTO.NomeTipoCartao, ignorarId: 0);
+        if (ignorarId != 0)
+            await GarantirQueNaoEhDoSistema(ignorarId, userId);
 
-        var TipoCartao = _mapper.Map<TipoCartao>(TipoCartaoDTO);
-        TipoCartao.UserId = userId;
-        await _tipoCartaoRepository.Create(TipoCartao);
+        // UX_TipoCartao_UserId_NomeTipoCartao é exata; aqui a regra também ignora maiúsculas e espaços.
+        if (await tipoCartaoRepository.ExisteNomeAsync(userId, dto.NomeTipoCartao ?? string.Empty, ignorarId))
+            throw new RegraNegocioException($"Já existe um tipo de cartão chamado {dto.NomeTipoCartao?.Trim()}.");
     }
 
-    public async Task<IEnumerable<TipoCartaoDTO>> GetTipoCartao(int userId)
-    {
-        var movimentacoDiaria = await _tipoCartaoRepository.GetTipoCartao(userId);
-        return _mapper.Map<IEnumerable<TipoCartaoDTO>>(movimentacoDiaria);
-    }
-
-    public async Task<TipoCartaoDTO> GetTipoCartaoById(int id, int userId)
-    {
-        var TipoCartao = await _tipoCartaoRepository.GetTipoCartaoById(id, userId);
-        return _mapper.Map<TipoCartaoDTO>(TipoCartao);
-    }
-
-    public async Task Remove(int id, int userId)
+    protected override async Task ValidarExclusaoAsync(int id, int userId)
     {
         await GarantirQueNaoEhDoSistema(id, userId);
 
-        if (await _tipoCartaoRepository.EmUsoAsync(id, userId))
-            throw new InvalidOperationException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos, extratos ou lançamentos.");
-
-        await _tipoCartaoRepository.Remove(id, userId);
+        if (await tipoCartaoRepository.EmUsoAsync(id, userId))
+            throw new RegraNegocioException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos, extratos ou lançamentos.");
     }
 
-    public async Task<bool> UpdateAsync(TipoCartaoDTO dto, int userId)
-    {
-        await GarantirQueNaoEhDoSistema(dto.Id, userId);
-        await GarantirNomeUnico(userId, dto.NomeTipoCartao, ignorarId: dto.Id);
-
-        var tipoCartao = _mapper.Map<TipoCartao>(dto);
-        await _tipoCartaoRepository.UpdateAsync(tipoCartao, userId);
-        return true;
-    }
-
-    // Remove e UpdateAsync do repositório só acham tipos do próprio usuário; isto só dá a mensagem certa.
+    // O repositório já não altera nem remove tipos do sistema; isto só dá a mensagem certa.
     private async Task GarantirQueNaoEhDoSistema(int id, int userId)
     {
-        var tipo = await _tipoCartaoRepository.GetTipoCartaoById(id, userId);
+        var tipo = await tipoCartaoRepository.ObterPorIdAsync(id, userId);
         if (tipo?.EhSistema == true)
-            throw new InvalidOperationException("Os tipos padrão do sistema não podem ser alterados nem excluídos.");
+            throw new RegraNegocioException("Os tipos padrão do sistema não podem ser alterados nem excluídos.");
     }
-
-    // UX_TipoCartao_UserId_NomeTipoCartao é exata; aqui a regra também ignora maiúsculas e espaços.
-    private async Task GarantirNomeUnico(int userId, string? nomeTipoCartao, int ignorarId)
-    {
-        if (await _tipoCartaoRepository.ExisteNomeAsync(userId, nomeTipoCartao ?? string.Empty, ignorarId))
-            throw new InvalidOperationException($"Já existe um tipo de cartão chamado {nomeTipoCartao?.Trim()}.");
-    }
-
 }

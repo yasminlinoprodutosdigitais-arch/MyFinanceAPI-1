@@ -27,6 +27,12 @@
     <ProjectReference Include="..\MyFinanceAPI.Application\MyFinanceAPI.Application.csproj" />
     <ProjectReference Include="..\MyFinanceAPI.Data\MyFinanceAPI.Data.csproj" />
     <ProjectReference Include="..\MyFinanceAPI.Ioc\MyFinanceAPI.Ioc.csproj" />
+    <ProjectReference Include="..\MyFinanceAPI.Api\MyFinanceAPI.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ErroHandler e ApiControllerBase vivem no projeto Api (BE-P2-01). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

@@ -11,8 +11,7 @@ namespace MyFinanceAPI.Domain.Interfaces
 
         Task<ExtratoBancario> CreateAsync(ExtratoBancario extrato);
         Task UpdateAsync(ExtratoBancario extrato);
-        Task RemoveAsync(int id);                  // usado pelo service
-        Task DeleteAsync(int id, int userId);      // versão com segurança por usuário
+        Task DeleteAsync(int id, int userId);      // só remove se o extrato for do usuário (BE-P2-04)
 
         // ----- GET -----
 
@@ -21,9 +20,6 @@ namespace MyFinanceAPI.Domain.Interfaces
 
         // o service está chamando GetByUserIdAsync
         Task<IEnumerable<ExtratoBancario>> GetByUserIdAsync(int userId, string month);
-
-        // equivalente (mantido para reutilização futura)
-        Task<IEnumerable<ExtratoBancario>> GetByUserAsync(int userId);
 
         // Buscar extratos por período (opcional para tela)
         Task<IEnumerable<ExtratoBancario>> GetByPeriodoAsync(

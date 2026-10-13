@@ -1,5 +1,3 @@
-using System;
-using System.Security.Claims;
 using AutoMapper;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -8,47 +6,7 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Application.Services;
 
-public class ListaService : IListaService
+public class ListaService(IListaRepository listaRepository, IMapper mapper)
+    : ServicoCadastro<Lista, ListaDTO>(listaRepository, mapper), IListaService
 {
-    private readonly IListaRepository _listaRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly IMapper _mapper;
-
-    public ListaService(IListaRepository ListaRepository, IAccountRepository accountRepository, IMapper mapper)
-    {
-        _listaRepository = ListaRepository;
-        _accountRepository = accountRepository;
-        _mapper = mapper;
-    }
-    public async Task Add(ListaDTO ListaDTO, int userId)
-    {
-        var Lista = _mapper.Map<Lista>(ListaDTO);
-        Lista.UserId = userId;
-        await _listaRepository.Create(Lista);
-    }
-
-    public async Task<IEnumerable<ListaDTO>> GetLista(int userId)
-    {
-        var lista = await _listaRepository.GetListas(userId);
-        return _mapper.Map<IEnumerable<ListaDTO>>(lista);
-    }
-
-    public async Task<ListaDTO> GetListaById(int id, int userId)
-    {
-        var Lista = await _listaRepository.GetListaById(id, userId);
-        return _mapper.Map<ListaDTO>(Lista);
-    }
-
-    public async Task Remove(int id, int userId)
-    {
-        await _listaRepository.Remove(id, userId);
-    }
-
-    public async Task<bool> UpdateAsync(ListaDTO dto, int userId)
-    {   
-        var lista = _mapper.Map<Lista>(dto);
-        await _listaRepository.UpdateAsync(lista, userId);
-        return true;
-    }
-
 }

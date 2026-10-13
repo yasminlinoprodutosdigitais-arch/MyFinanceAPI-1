@@ -22,35 +22,4 @@ public class AccountDTO
     public ICollection<ContaVencimento>? ContaVencimentos { get; set; }
 
     public AccountDTO() { }
-
-    public AccountDTO(string name, decimal value, int categoryId, string? categoryName, int status, bool ehParcelada, int quantidadeParcelas, int parcelaAtual,
-                      ICollection<Transaction>? updates, List<int>? dataOperacao )
-    {
-        Name = name;
-        Value = value;
-        Categoryid = categoryId;
-        CategoryName = categoryName;
-        Status = status;
-        EhParcelado = ehParcelada;
-        QuantidadeParcelas = quantidadeParcelas;
-        ParcelaAtual = parcelaAtual;
-        Transactions = updates;
-        DataOperacao = dataOperacao;   // <<< conversão segura
-    }
-
-    public AccountDTO(int id, string name, decimal value, int categoryId, string? categoryName, int status, bool ehParcelada, int quantidadeParcelas, int parcelaAtual,
-                      ICollection<Transaction>? updates, List<int>? dataOperacao)
-    {
-        Id = id;
-        Name = name;
-        Value = value;
-        Categoryid = categoryId;
-        CategoryName = categoryName;
-        Status = status;
-        EhParcelado = ehParcelada;
-        QuantidadeParcelas = quantidadeParcelas;
-        ParcelaAtual = parcelaAtual;
-        Transactions = updates;
-        DataOperacao = dataOperacao;   // <<< conversão segura
-    }
 }
