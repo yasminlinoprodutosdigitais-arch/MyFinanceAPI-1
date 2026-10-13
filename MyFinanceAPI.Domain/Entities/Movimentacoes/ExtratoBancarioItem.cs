@@ -14,6 +14,11 @@ namespace MyFinanceAPI.Domain.Entities
         public string? Descricao { get; set; }
         public string? Observacao { get; set; }
         public int? PessoaMovimentacaoId { get; set; }
+        /// <summary>
+        /// Snapshot intencional (DB-P1-08): o nome como veio no extrato importado ou foi digitado
+        /// no lançamento manual. A pessoa normalizada é o vínculo PessoaMovimentacaoId; renomear a
+        /// pessoa não reescreve este texto.
+        /// </summary>
         public string? NomePessoaTransacao { get; set; }
         public string? Identificador { get; set; }
 

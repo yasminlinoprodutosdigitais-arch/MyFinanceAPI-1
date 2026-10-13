@@ -11,7 +11,6 @@ public class BancoRepository(ContextDB context) : IBancoRepository
 
     public async Task<Banco> Create(Banco banco)
     {
-        banco.DataAlteracao = DateTime.UtcNow;
         await _context.Banco.AddAsync(banco);
         await _context.SaveChangesAsync();
         
@@ -88,7 +87,6 @@ public class BancoRepository(ContextDB context) : IBancoRepository
         existingBanco.TipoCartaoId = incomingBanco.TipoCartaoId;
         existingBanco.SaldoInicial = incomingBanco.SaldoInicial;
         existingBanco.Ativo = incomingBanco.Ativo;
-        existingBanco.DataAlteracao = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
         return true;

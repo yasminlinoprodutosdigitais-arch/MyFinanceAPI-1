@@ -6,23 +6,24 @@ namespace MyFinanceAPI.Domain.Entities;
 public class Lista : BaseEntity
 {
     public string Nome { get; set; }
-    public int TipoMovimentacao { get; set; }
+    /// <summary>Era a coluna "TipoMovimentacao" (DB-P1-06): é o tipo da lista, não FK para TipoMovimentacao.</summary>
+    public TipoLista TipoLista { get; set; }
     public bool Status { get; set; }
         
     public Lista() { } 
 
-    public Lista(string nomeLista, int tipoMovimentacao, bool status)
+    public Lista(string nomeLista, TipoLista tipoLista, bool status)
     {
         Nome = nomeLista;
-        TipoMovimentacao = tipoMovimentacao;
+        TipoLista = tipoLista;
         Status = status;
     }
 
-    public Lista(int id, string nomeLista, int tipoMovimentacao, bool status)
+    public Lista(int id, string nomeLista, TipoLista tipoLista, bool status)
     {
         Id = id;
         Nome = nomeLista;
-        TipoMovimentacao = tipoMovimentacao;
+        TipoLista = tipoLista;
         Status = status;
     }
 

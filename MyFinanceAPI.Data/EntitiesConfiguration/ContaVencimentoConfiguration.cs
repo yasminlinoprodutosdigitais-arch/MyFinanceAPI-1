@@ -8,7 +8,8 @@ public class ContaVencimentoConfiguration : IEntityTypeConfiguration<ContaVencim
 {
     public void Configure(EntityTypeBuilder<ContaVencimento> builder)
     {
-        builder.ToTable("ContaVencimento");
+        builder.ToTable("ContaVencimento", t =>
+            t.HasCheckConstraint("contavencimento_dia_check", "\"Dia\" BETWEEN 1 AND 31"));
         builder.HasKey(e => e.Id).HasName("ContaVencimento_pkey");
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");

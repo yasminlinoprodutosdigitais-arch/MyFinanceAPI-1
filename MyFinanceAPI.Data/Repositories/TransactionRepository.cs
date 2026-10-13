@@ -49,36 +49,31 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     //     return transaction;
     // }
 
+    // A data é de calendário (date): grava como veio. A conversão pelo fuso do servidor que havia
+    // aqui gravava meia-noite UTC com a API hospedada em UTC — o dia aparecia um antes (DB-P1-02).
     public async Task Create(List<Transaction> transactions)
     {
-        foreach (var transaction in transactions)
-        {
-            DateTime localDate = transaction.Date;
-            if (localDate.Kind == DateTimeKind.Unspecified)
-                localDate = DateTime.SpecifyKind(localDate, DateTimeKind.Local);
-
-            transaction.Date = localDate.ToUniversalTime();
-        }
-
         await _context.Transactions.AddRangeAsync(transactions);
         await _context.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
+        var dia = DateOnly.FromDateTime(dateTime);
         var a = await _context.Transactions
-            .Where(c => c.UserId == userId && (pesquisaDataCompleta ? c.Date.Date == dateTime.Date : c.Date.Month == dateTime.Month && c.Date.Year == dateTime.Year))
+            .Where(c => c.UserId == userId && (pesquisaDataCompleta ? c.Date == dia : c.Date.Month == dia.Month && c.Date.Year == dia.Year))
             .ToListAsync();
         return a;
     }
 
     public async Task<IEnumerable<Transaction>> GetContaVencida(DateTime hoje, int userId)
     {
+        var dataHoje = DateOnly.FromDateTime(hoje);
         var a = await _context.Transactions
             .Where(c => c.UserId == userId
-                && c.Date.Date < hoje.Date
-                && c.Status != "PAGO NO PRAZO"
-                && c.Status != "PAGO ATRASADO")
+                && c.Date < dataHoje
+                && c.Status != StatusTransacao.PagoNoPrazo
+                && c.Status != StatusTransacao.PagoAtrasado)
             .ToListAsync();
 
         return a;
@@ -127,10 +122,11 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     {
         var month = dateTime.Month;
         var year = dateTime.Year;
+        var dia = DateOnly.FromDateTime(dateTime);
 
         // 1) Carrega transações do mês (com ou sem conta)
         var transactions = await _context.Transactions
-            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dateTime : t.Date.Month == month && t.Date.Year == year))
+            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dia : t.Date.Month == month && t.Date.Year == year))
             .Select(t => new Transaction
             {
                 Id = t.Id,
@@ -179,10 +175,11 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     {
         var month = dateTime.Month;
         var year = dateTime.Year;
+        var dia = DateOnly.FromDateTime(dateTime);
 
         // 1) Carrega transações do mês (com ou sem conta)
         var transactions = await _context.Transactions
-            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dateTime : t.Date.Month == month && t.Date.Year == year))
+            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dia : t.Date.Month == month && t.Date.Year == year))
             .Select(t => new Transaction
             {
                 Id = t.Id,

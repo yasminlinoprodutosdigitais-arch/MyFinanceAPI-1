@@ -203,7 +203,12 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Accounts", (string)null);
+                    b.ToTable("Accounts", null, t =>
+                        {
+                            t.HasCheckConstraint("accounts_parcelas_check", "NOT \"EhParcelado\" OR (\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 0 AND \"QuantidadeParcelas\")");
+
+                            t.HasCheckConstraint("accounts_status_check", "\"Status\" IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Banco", b =>
@@ -295,7 +300,12 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UX_Categories_UserId_Name_SubCategory");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories", null, t =>
+                        {
+                            t.HasCheckConstraint("categories_naturezaoperacao_check", "\"NaturezaOperacao\" BETWEEN 0 AND 5");
+
+                            t.HasCheckConstraint("categories_status_check", "\"Status\" IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ContaVencimento", b =>
@@ -327,7 +337,10 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ContaVencimento", (string)null);
+                    b.ToTable("ContaVencimento", null, t =>
+                        {
+                            t.HasCheckConstraint("contavencimento_dia_check", "\"Dia\" BETWEEN 1 AND 31");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>
@@ -424,6 +437,11 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<DateOnly>("DataMovimentacao")
                         .HasColumnType("date");
 
@@ -508,7 +526,12 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasDatabaseName("UX_ExtratoBancarioItem_ChaveImportacao")
                         .HasFilter("\"ChaveImportacao\" IS NOT NULL");
 
-                    b.ToTable("ExtratoBancarioItem", (string)null);
+                    b.ToTable("ExtratoBancarioItem", null, t =>
+                        {
+                            t.HasCheckConstraint("extratobancarioitem_parcelas_check", "\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 1 AND \"QuantidadeParcelas\"");
+
+                            t.HasCheckConstraint("extratobancarioitem_tipolancamento_check", "\"TipoLancamento\" IN ('Entrada', 'Saída')");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ItemLista", b =>
@@ -561,7 +584,12 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ItemLista", (string)null);
+                    b.ToTable("ItemLista", null, t =>
+                        {
+                            t.HasCheckConstraint("itemlista_quantidade_check", "\"Quantidade\" >= 0");
+
+                            t.HasCheckConstraint("itemlista_status_check", "\"Status\" IN ('PENDENTE', 'AGUARDANDO', 'OK')");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Lista", b =>
@@ -584,7 +612,7 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("TipoMovimentacao")
+                    b.Property<int>("TipoLista")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserId")
@@ -595,7 +623,10 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Lista", (string)null);
+                    b.ToTable("Lista", null, t =>
+                        {
+                            t.HasCheckConstraint("lista_tipolista_check", "\"TipoLista\" IN (1, 2, 3)");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.MovimentacaoDiaria", b =>
@@ -703,15 +734,23 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Property<string>("Descricao")
                         .HasColumnType("text");
 
+                    b.Property<bool>("EhCredito")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("NomeTipoCartao")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
                         .HasName("tipocartao_pkey");
+
+                    b.HasIndex("NomeTipoCartao")
+                        .IsUnique()
+                        .HasDatabaseName("UX_TipoCartao_Sistema_NomeTipoCartao")
+                        .HasFilter("\"UserId\" IS NULL");
 
                     b.HasIndex("UserId", "NomeTipoCartao")
                         .IsUnique()
@@ -777,8 +816,13 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<bool>("EhParcelado")
                         .ValueGeneratedOnAdd()
@@ -821,7 +865,12 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions", null, t =>
+                        {
+                            t.HasCheckConstraint("transactions_parcelas_check", "\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 1 AND \"QuantidadeParcelas\"");
+
+                            t.HasCheckConstraint("transactions_status_check", "\"Status\" IN ('PENDENTE', 'AGUARDANDO', 'PAGO NO PRAZO', 'PAGO ATRASADO')");
+                        });
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Usuario", b =>
@@ -1222,7 +1271,6 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_tipocartao_aspnetusers");
 
                     b.Navigation("User");

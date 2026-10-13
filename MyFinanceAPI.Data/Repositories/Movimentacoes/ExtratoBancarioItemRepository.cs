@@ -137,16 +137,7 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)
                 .Include(i => i.TipoMovimentacao)
-                .Where(i => (i.TipoCartaoId == 1 || i.TipoCartaoId == 13) && (
-                    i.UserId == userId &&
-                    i.NumeroFatura == numeroFatura &&
-                    (bancoId == null || i.BancoId == bancoId)
-                ) || i.TipoCartaoId != 1 && i.TipoCartaoId != 13 && (
-                    i.UserId == userId &&
-                    i.DataMovimentacao >= inicioInclusive &&
-                    i.DataMovimentacao < fimExclusive &&
-                    (bancoId == null || i.BancoId == bancoId)
-                ))
+                .Where(ExtratoBancarioItemFiltros.DoMesOuDaFatura(userId, inicioInclusive, fimExclusive, numeroFatura, bancoId))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)
                 .ToListAsync();

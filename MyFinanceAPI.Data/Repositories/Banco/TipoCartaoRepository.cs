@@ -18,14 +18,14 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
 
     public async Task<IEnumerable<TipoCartao>> GetTipoCartaoByUserId(int userId)
     {
-        var TipoCartao = await _context.TipoCartao.Where(c => c.UserId == userId).OrderBy(c => c.NomeTipoCartao).ToListAsync();
+        var TipoCartao = await _context.TipoCartao.Where(c => c.UserId == userId || c.UserId == null).OrderBy(c => c.UserId != null).ThenBy(c => c.NomeTipoCartao).ToListAsync();
         return TipoCartao;
     }
 
     public async Task<TipoCartao?> GetTipoCartaoById(int id, int userId)
     {
         var TipoCartao = await _context.TipoCartao
-            .Where(c => c.UserId == userId && c.Id == id)
+            .Where(c => (c.UserId == userId || c.UserId == null) && c.Id == id)
             .FirstOrDefaultAsync();
 
         if (TipoCartao == null)
@@ -60,7 +60,8 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
     public async Task<bool> ExisteNomeAsync(int userId, string nome, int ignorarId)
     {
         var alvo = (nome ?? string.Empty).Trim().ToUpper();
-        return await _context.TipoCartao.AnyAsync(t => t.UserId == userId && t.Id != ignorarId
+        // Inclui os padrão do sistema: o usuário não cria outro "Cartão de crédito" (DB-P1-07).
+        return await _context.TipoCartao.AnyAsync(t => (t.UserId == userId || t.UserId == null) && t.Id != ignorarId
             && t.NomeTipoCartao.Trim().ToUpper() == alvo);
     }
 
@@ -82,6 +83,7 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
 
         existingTipoCartao.NomeTipoCartao = incomingTipoCartao.NomeTipoCartao;
         existingTipoCartao.Descricao = incomingTipoCartao.Descricao;
+        existingTipoCartao.EhCredito = incomingTipoCartao.EhCredito;
         
         await _context.SaveChangesAsync();
 
@@ -91,8 +93,9 @@ public class TipoCartaoRepository(ContextDB context) : ITipoCartaoRepository
     public async Task<List<TipoCartao>>? GetTipoCartao(int userId)
     {
         var movimentacoesDiarias = await _context.TipoCartao
-           .Where(a => a.UserId == userId)
-           .OrderBy(c => c.NomeTipoCartao)
+           .Where(a => a.UserId == userId || a.UserId == null)   // padrão do sistema primeiro (DB-P1-07)
+           .OrderBy(c => c.UserId != null)
+           .ThenBy(c => c.NomeTipoCartao)
            .ToListAsync();
 
         return movimentacoesDiarias;

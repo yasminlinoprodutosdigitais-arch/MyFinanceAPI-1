@@ -194,7 +194,7 @@ namespace MyFinanceAPI.Application.Services
         public async Task<IEnumerable<ExtratoBancarioItemDTO>> GetByMonthAsync(
             int userId,
             int year,
-            int month, int? bancoId = null, bool ehCredito = false)
+            int month, int? bancoId = null)
         {
             var inicio = new DateOnly(year, month, 1);
             var fimExclusive = inicio.AddMonths(1);

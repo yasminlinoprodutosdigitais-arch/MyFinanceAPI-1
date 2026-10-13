@@ -8,7 +8,11 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
 {
     public void Configure(EntityTypeBuilder<ExtratoBancarioItem> builder)
     {
-        builder.ToTable("ExtratoBancarioItem");
+        builder.ToTable("ExtratoBancarioItem", t =>
+        {
+            t.HasCheckConstraint("extratobancarioitem_tipolancamento_check", CheckSql.In("TipoLancamento", TipoLancamentoExtrato.Todos));
+            t.HasCheckConstraint("extratobancarioitem_parcelas_check", CheckSql.Parcelas(parcelaMinima: 1));
+        });
         builder.HasKey(e => e.Id).HasName("ExtratoBancarioItem_pkey");
         builder.Property(e => e.Id).UseSerialColumn();
 
@@ -20,6 +24,8 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
         // Colunas que só o banco tinha; nenhum código lê.
         builder.Property<string?>("GrupoParcelamento").HasMaxLength(60);
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
+        // Gravada uma vez, na criação; o DataAlteracaoInterceptor nunca a regrava (DB-P1-12).
+        builder.Property<DateTime>("DataCriacao").HasDefaultValueSql("now()");
 
         builder.HasIndex(e => e.ExtratoBancarioId).HasDatabaseName("idx_extratobancarioitem_extrato");
         builder.HasIndex(e => e.DataMovimentacao).HasDatabaseName("idx_extratobancarioitem_datamov");

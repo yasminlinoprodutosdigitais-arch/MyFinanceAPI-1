@@ -8,7 +8,12 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        builder.ToTable("Accounts");
+        builder.ToTable("Accounts", t =>
+        {
+            t.HasCheckConstraint("accounts_status_check", CheckSql.In("Status", StatusAtivo.Todos));
+            // Conta não parcelada usa 0/0; parcelada começa na parcela 0 (nenhuma paga) — DB-P1-05.
+            t.HasCheckConstraint("accounts_parcelas_check", "NOT \"EhParcelado\" OR (" + CheckSql.Parcelas(parcelaMinima: 0) + ")");
+        });
         builder.HasKey(e => e.Id).HasName("PK_Accounts");
 
         builder.Property(e => e.Value).HasPrecision(10, 2);

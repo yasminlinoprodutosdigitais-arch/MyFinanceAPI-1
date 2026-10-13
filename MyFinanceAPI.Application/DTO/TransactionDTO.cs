@@ -2,13 +2,17 @@ using System;
 using System.ComponentModel;
 using AutoMapper.Configuration.Annotations;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Application.Json;
+using System.Text.Json.Serialization;
 
 namespace MyFinanceAPI.Application.DTO;
 
 public class TransactionDTO
 {
     public int Id { get; set; }
-    public DateTime Date { get; set; }
+    /// <summary>"YYYY-MM-DD"; aceita também instante ISO de front antigo (ver DataCalendarioJsonConverter).</summary>
+    [JsonConverter(typeof(DataCalendarioJsonConverter))]
+    public DateOnly Date { get; set; }
     public string Name { get; set; }
     public decimal Value { get; set; }
     public int? IdAccount {get; set; }
@@ -33,7 +37,7 @@ public class TransactionDTO
         
     }
 
-    public TransactionDTO(DateTime date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    public TransactionDTO(DateOnly date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
     {
         Date = date;
         Name = name;
@@ -48,7 +52,7 @@ public class TransactionDTO
         TipoContaId = tipoContaId;
     }
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
+    public TransactionDTO(int id, DateOnly date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao, int? tipoContaId)
     {
         Id = id;
         Date = date;
@@ -65,7 +69,7 @@ public class TransactionDTO
     } 
     
 
-    public TransactionDTO(DateTime date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(DateOnly date, string name, decimal value,int? idAccount, int? categoryId, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Date = date;
         Name = name;
@@ -79,7 +83,7 @@ public class TransactionDTO
         Observacao = observacao;
     }
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(int id, DateOnly date, string name, int idAccount, int? categoryId, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Id = id;
         Date = date;
@@ -94,7 +98,7 @@ public class TransactionDTO
         Observacao = observacao;
     } 
 
-    public TransactionDTO(int id, DateTime date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
+    public TransactionDTO(int id, DateOnly date, string name, int idAccount, string? accountName, int? categoryId, string? categoryName, decimal value, string status, bool ehParcelado, int? parcelaAtual, int? quantidadeParcelas, string? observacao)
     {
         Id = id;
         Date = date;

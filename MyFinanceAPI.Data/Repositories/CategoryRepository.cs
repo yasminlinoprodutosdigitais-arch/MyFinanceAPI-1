@@ -11,7 +11,6 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<Category> Create(Category category)
     {
-        category.DataAlteracao = DateTime.UtcNow;
         await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
         return category;
@@ -25,7 +24,7 @@ public class CategoryRepository(ContextDB context) : ICategoryRepository
 
     public async Task<IEnumerable<Category>> GetCategoriesByUserIdAtiva(int userId)
     {
-        var categories = await _context.Categories.Where(c => c.UserId == userId && c.Status == 1).OrderBy(c => c.Name).ToListAsync();
+        var categories = await _context.Categories.Where(c => c.UserId == userId && c.Status == StatusAtivo.Ativo).OrderBy(c => c.Name).ToListAsync();
         return categories;
     }
 

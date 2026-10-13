@@ -175,7 +175,7 @@ namespace MyFinanceAPI.Application.Services
                 var valorSemSinal = Math.Abs(valor);
                 if (valorSemSinal != Math.Truncate(valorSemSinal)
                     && truncados.TryGetValue(
-                        ChaveLegado(identificadorStr, dataMov, valor < 0 ? "Saída" : "Entrada", descricaoStr),
+                        ChaveLegado(identificadorStr, dataMov, valor < 0 ? TipoLancamentoExtrato.Saida : TipoLancamentoExtrato.Entrada, descricaoStr),
                         out var candidatos))
                 {
                     var truncado = candidatos.FirstOrDefault(c => c.Valor == Math.Truncate(valorSemSinal));
@@ -192,7 +192,7 @@ namespace MyFinanceAPI.Application.Services
 
                 try
                 {
-                    var tipoLancamento = valor < 0 ? "Saída" : "Entrada";
+                    var tipoLancamento = valor < 0 ? TipoLancamentoExtrato.Saida : TipoLancamentoExtrato.Entrada;
                     // Sem cast para int: o (int) descartava os centavos (BE-P0-07).
                     var valorAbsoluto = Math.Abs(valor);
                     

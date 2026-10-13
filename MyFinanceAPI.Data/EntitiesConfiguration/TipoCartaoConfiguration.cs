@@ -16,6 +16,14 @@ public class TipoCartaoConfiguration : IEntityTypeConfiguration<TipoCartao>
             .IsUnique()
             .HasDatabaseName("UX_TipoCartao_UserId_NomeTipoCartao");
 
+        // Tipos padrão do sistema (UserId nulo): o índice acima não pega duplicatas, porque NULLs são distintos.
+        builder.HasIndex(e => e.NomeTipoCartao)
+            .IsUnique()
+            .HasFilter("\"UserId\" IS NULL")
+            .HasDatabaseName("UX_TipoCartao_Sistema_NomeTipoCartao");
+
+        builder.Ignore(e => e.EhSistema);
+
         builder.HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)

@@ -8,7 +8,8 @@ public class ListaConfiguration : IEntityTypeConfiguration<Lista>
 {
     public void Configure(EntityTypeBuilder<Lista> builder)
     {
-        builder.ToTable("Lista");
+        builder.ToTable("Lista", t =>
+            t.HasCheckConstraint("lista_tipolista_check", CheckSql.In("TipoLista", Enum.GetValues<TipoLista>().Select(v => (int)v))));
         builder.HasKey(e => e.Id).HasName("lista_pkey");
         builder.Property(e => e.Id).UseSerialColumn();
 

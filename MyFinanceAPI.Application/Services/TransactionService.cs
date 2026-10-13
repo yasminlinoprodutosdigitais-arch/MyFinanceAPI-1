@@ -40,7 +40,7 @@ public class TransactionService : ITransactionService
                 Name = transactionDTO.Name,
                 Value = transactionDTO.Value,
                 Categoryid = (int)transactionDTO.CategoryId,
-                Status = 1,
+                Status = StatusAtivo.Ativo,
                 DataOperacao = [mesAno.Day],
             };
             conta = await _accountService.Add(novaConta, userId);
@@ -63,7 +63,7 @@ public class TransactionService : ITransactionService
                 ParcelaAtual = parcela,
                 QuantidadeParcelas = conta.EhParcelado ? conta.QuantidadeParcelas : null,
                 CategoryId = conta.Categoryid,
-                Date = new DateTime(
+                Date = new DateOnly(
                     mesAno.Year,
                     mesAno.Month,
                     dia
@@ -172,12 +172,12 @@ public class TransactionService : ITransactionService
 
         if (mudouStatus || deleted)
         {
-            if ((statusAnterior == "PENDENTE" || statusAnterior == "AGUARDANDO") && (TransactionDTO.Status == "PAGO NO PRAZO" || TransactionDTO.Status == "PAGO ATRASADO"))
+            if (StatusTransacao.EhEmAberto(statusAnterior) && StatusTransacao.EhPago(TransactionDTO.Status))
             {
                 var proximaParcela = account.ParcelaAtual.GetValueOrDefault() + 1;
                 if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
                 {
-                    account.Status = 2; // Inativa
+                    account.Status = StatusAtivo.Inativo;
                 }
                 else
                 {
@@ -186,12 +186,12 @@ public class TransactionService : ITransactionService
                 await _accountService.UpdateParcela(account, userId);
             }
             // Excluir uma parcela não paga não mexe na conta: ParcelaAtual só anda quando se paga.
-            else if ((statusAnterior == "PAGO NO PRAZO" || statusAnterior == "PAGO ATRASADO") && (TransactionDTO.Status == "PENDENTE" || TransactionDTO.Status == "AGUARDANDO" || deleted))
+            else if (StatusTransacao.EhPago(statusAnterior) && (StatusTransacao.EhEmAberto(TransactionDTO.Status) || deleted))
             {
                 // A parcela estornada volta a ser a próxima a pagar e a conta fica ativa. Não dá para
                 // olhar só a conta: ela estar na última parcela não quer dizer que a estornada seja a última.
                 account.ParcelaAtual = transaction.ParcelaAtual;
-                account.Status = 1; // Ativa
+                account.Status = StatusAtivo.Ativo;
 
                 await _accountService.UpdateParcela(account, userId);
             }

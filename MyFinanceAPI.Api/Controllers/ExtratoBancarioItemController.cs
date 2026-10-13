@@ -150,7 +150,7 @@ namespace MyFinanceAPI.Api.Controllers
         // GET /GetExtratoBancarioItensByMonth?month=2025-11
         [HttpGet("/GetExtratoBancarioItensByMonth")]
         public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetByMonth(
-            [FromQuery] string month, [FromQuery] int? bancoId, [FromQuery] bool ehCredito = false)
+            [FromQuery] string month, [FromQuery] int? bancoId)
         {
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
@@ -169,7 +169,7 @@ namespace MyFinanceAPI.Api.Controllers
             {
                 return BadRequest("Formato de mês inválido. Use yyyy-MM (ex.: 2025-11).");
             }
-            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId ?? null, ehCredito);
+            var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId ?? null);
             return Ok(itens);
         }
 

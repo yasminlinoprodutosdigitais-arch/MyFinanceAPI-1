@@ -66,7 +66,6 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetTransactionByDate/{date}/{pesquisaDataCompleta}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta)
         {
-            date = pesquisaDataCompleta ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : date;
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
                 return Unauthorized("User not authorized");
@@ -81,7 +80,6 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpGet("/GetContaVencida/{date}")]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetContaVencida(DateTime date)
         {
-            date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
             var userId = _userContextService.GetUserIdFromClaims();
             if (userId == 0)
                 return Unauthorized("User not authorized");

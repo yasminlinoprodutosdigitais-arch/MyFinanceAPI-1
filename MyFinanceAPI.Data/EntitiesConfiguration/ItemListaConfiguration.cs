@@ -8,7 +8,11 @@ public class ItemListaConfiguration : IEntityTypeConfiguration<ItemLista>
 {
     public void Configure(EntityTypeBuilder<ItemLista> builder)
     {
-        builder.ToTable("ItemLista");
+        builder.ToTable("ItemLista", t =>
+        {
+            t.HasCheckConstraint("itemlista_status_check", CheckSql.In("Status", StatusItemLista.Todos));
+            t.HasCheckConstraint("itemlista_quantidade_check", "\"Quantidade\" >= 0");
+        });
         builder.HasKey(e => e.Id).HasName("itemlista_pkey");
         builder.Property(e => e.Id).UseSerialColumn();
 

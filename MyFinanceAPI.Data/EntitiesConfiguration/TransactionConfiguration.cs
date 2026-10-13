@@ -8,13 +8,19 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
     public void Configure(EntityTypeBuilder<Transaction> builder)
     {
-        builder.ToTable("Transactions");
+        builder.ToTable("Transactions", t =>
+        {
+            t.HasCheckConstraint("transactions_status_check", CheckSql.In("Status", StatusTransacao.Todos));
+            t.HasCheckConstraint("transactions_parcelas_check", CheckSql.Parcelas(parcelaMinima: 1));
+        });
         builder.HasKey(e => e.Id).HasName("PK_Transactions");
 
         builder.Property(e => e.Value).HasPrecision(10, 2);
         builder.Property(e => e.EhParcelado).HasDefaultValue(false);
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
+        // Gravada uma vez, na criação; o DataAlteracaoInterceptor nunca a regrava (DB-P1-12).
+        builder.Property<DateTime>("DataCriacao").HasDefaultValueSql("now()");
 
         builder.HasOne(e => e.User)
             .WithMany()

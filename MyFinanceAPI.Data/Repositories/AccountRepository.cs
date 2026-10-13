@@ -148,7 +148,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     public async Task<List<Account>>? GetContasAtivas(int userId)
     {
         var accounts = await _context.Accounts
-            .Where(a => a.UserId == userId && a.Status == 1)
+            .Where(a => a.UserId == userId && a.Status == StatusAtivo.Ativo)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
             .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas
             .OrderBy(c => c.Name)

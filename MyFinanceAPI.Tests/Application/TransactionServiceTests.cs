@@ -67,7 +67,7 @@ public class TransactionServiceTests
             ParcelaAtual = parcelaAtual,
             QuantidadeParcelas = 10,
             UserId = UserId,
-            Date = new DateTime(2026, 10, 10),
+            Date = new DateOnly(2026, 10, 10),
         });
     }
 
@@ -81,7 +81,7 @@ public class TransactionServiceTests
         EhParcelado = ehParcelado,
         ParcelaAtual = parcelaAtual,
         QuantidadeParcelas = 10,
-        Date = new DateTime(2026, 10, 10),
+        Date = new DateOnly(2026, 10, 10),
     };
 
     // ---------- Add ----------
@@ -112,7 +112,7 @@ public class TransactionServiceTests
             IdAccount = AccountId,
             Name = "Aluguel",
             Status = "PENDENTE",
-            Date = new DateTime(2026, 2, 1),
+            Date = new DateOnly(2026, 2, 1),
         }, UserId);
 
         Assert.NotNull(criadas);
@@ -124,8 +124,8 @@ public class TransactionServiceTests
             Assert.Equal(4, t.CategoryId);
             Assert.Equal(UserId, t.UserId);
         });
-        Assert.Equal(new DateTime(2026, 2, 5), criadas[0].Date);
-        Assert.Equal(new DateTime(2026, 2, 28), criadas[1].Date); // dia 31 em fevereiro → último dia
+        Assert.Equal(new DateOnly(2026, 2, 5), criadas[0].Date);
+        Assert.Equal(new DateOnly(2026, 2, 28), criadas[1].Date); // dia 31 em fevereiro → último dia
     }
 
     // ---------- Add: número da parcela ----------
@@ -162,7 +162,7 @@ public class TransactionServiceTests
         EhParcelado = false,
         ParcelaAtual = 99,
         QuantidadeParcelas = null,
-        Date = new DateTime(2026, 11, 1),
+        Date = new DateOnly(2026, 11, 1),
     };
 
     [Theory]
@@ -258,7 +258,7 @@ public class TransactionServiceTests
         await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 10), UserId);
 
         var conta = Assert.Single(_parcelasAtualizadas);
-        Assert.Equal(2, conta.Status);          // 2 = inativa
+        Assert.Equal(StatusAtivo.Inativo, conta.Status);   // inativa = 0, como o front grava (DB-P1-03)
         Assert.Equal(10, conta.ParcelaAtual);
     }
 
@@ -471,7 +471,7 @@ public class TransactionServiceTests
             Value = 80m,
             CategoryId = 4,
             Status = "PENDENTE",
-            Date = new DateTime(2026, 10, 15),
+            Date = new DateOnly(2026, 10, 15),
         }, UserId);
 
         _repo.Verify(r => r.Create(It.IsAny<List<Transaction>>()), Times.Once);

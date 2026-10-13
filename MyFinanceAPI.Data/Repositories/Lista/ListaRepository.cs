@@ -63,7 +63,7 @@ public class ListaRepository(ContextDB context) : IListaRepository
         }
 
         existingLista.Nome = incomingLista.Nome;
-        existingLista.TipoMovimentacao = incomingLista.TipoMovimentacao;
+        existingLista.TipoLista = incomingLista.TipoLista;
         existingLista.Status = incomingLista.Status;
 
         await _context.SaveChangesAsync();

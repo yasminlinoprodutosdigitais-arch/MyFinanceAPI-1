@@ -41,6 +41,8 @@ public class TipoCartaoService : ITipoCartaoService
 
     public async Task Remove(int id, int userId)
     {
+        await GarantirQueNaoEhDoSistema(id, userId);
+
         if (await _tipoCartaoRepository.EmUsoAsync(id, userId))
             throw new InvalidOperationException("Não é possível excluir este tipo de cartão, pois ele está em uso por bancos, extratos ou lançamentos.");
 
@@ -49,11 +51,20 @@ public class TipoCartaoService : ITipoCartaoService
 
     public async Task<bool> UpdateAsync(TipoCartaoDTO dto, int userId)
     {
+        await GarantirQueNaoEhDoSistema(dto.Id, userId);
         await GarantirNomeUnico(userId, dto.NomeTipoCartao, ignorarId: dto.Id);
 
         var tipoCartao = _mapper.Map<TipoCartao>(dto);
         await _tipoCartaoRepository.UpdateAsync(tipoCartao, userId);
         return true;
+    }
+
+    // Remove e UpdateAsync do repositório só acham tipos do próprio usuário; isto só dá a mensagem certa.
+    private async Task GarantirQueNaoEhDoSistema(int id, int userId)
+    {
+        var tipo = await _tipoCartaoRepository.GetTipoCartaoById(id, userId);
+        if (tipo?.EhSistema == true)
+            throw new InvalidOperationException("Os tipos padrão do sistema não podem ser alterados nem excluídos.");
     }
 
     // UX_TipoCartao_UserId_NomeTipoCartao é exata; aqui a regra também ignora maiúsculas e espaços.

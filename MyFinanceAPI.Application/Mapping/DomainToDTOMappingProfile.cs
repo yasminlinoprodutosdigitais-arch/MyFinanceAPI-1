@@ -17,7 +17,11 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<AccountGrouping, AccountGroupingDTO>().ReverseMap();
         CreateMap<Transaction, TransactionDTO>().ReverseMap();
         CreateMap<Banco, BancoDTO>().ReverseMap();
-        CreateMap<Lista, ListaDTO>().ReverseMap();
+        // O JSON mantém "tipoMovimentacao"; a entidade/coluna é TipoLista (DB-P1-06).
+        CreateMap<Lista, ListaDTO>()
+            .ForMember(d => d.TipoMovimentacao, o => o.MapFrom(s => (int)s.TipoLista))
+            .ReverseMap()
+            .ForMember(d => d.TipoLista, o => o.MapFrom(s => (TipoLista)s.TipoMovimentacao));
         CreateMap<ItemLista, ItemListaDTO>().ReverseMap();
         CreateMap<MovimentacaoDiaria, MovimentacaoDiariaDTO>().ReverseMap();
         CreateMap<ExtratoBancario, ExtratoBancarioDTO>().ReverseMap();

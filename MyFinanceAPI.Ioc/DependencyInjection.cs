@@ -20,8 +20,11 @@ namespace MyFinanceAPI.Ioc
         public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration, bool ambienteLocal)
         {
             // Configuração do Entity Framework Core com PostgreSQL
+            // DataAlteracaoInterceptor: DataAlteracao/DataCriacao em toda gravação (DB-P1-12). Sem estado: uma instância basta.
+            var auditoria = new DataAlteracaoInterceptor();
             services.AddDbContext<ContextDB>(opt =>
-            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+               .AddInterceptors(auditoria));
 
             // Transação sobre o mesmo ContextDB que os repositórios usam na requisição (BE-P1-05).
             services.AddScoped<IUnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<ContextDB>()));

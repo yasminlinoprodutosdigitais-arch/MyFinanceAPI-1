@@ -8,7 +8,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
-        builder.ToTable("Categories");
+        builder.ToTable("Categories", t =>
+        {
+            t.HasCheckConstraint("categories_status_check", CheckSql.In("Status", StatusAtivo.Todos));
+            // 0..5 = enum NaturezaOperacao do front (Rendimento/Entrada … Empresa).
+            t.HasCheckConstraint("categories_naturezaoperacao_check", "\"NaturezaOperacao\" BETWEEN 0 AND 5");
+        });
         builder.HasKey(e => e.Id).HasName("PK_Categories");
 
         builder.Property(e => e.DataAlteracao).HasDefaultValueSql("now()");
