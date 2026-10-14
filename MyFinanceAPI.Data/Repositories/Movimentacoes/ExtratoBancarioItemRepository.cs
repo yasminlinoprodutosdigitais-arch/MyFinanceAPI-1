@@ -117,7 +117,7 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<IEnumerable<ExtratoBancarioItem>> GetByExtratoAsync(int extratoBancarioId)
         {
-            return await _context.ExtratoBancarioItens
+            return await _context.ExtratoBancarioItens.AsNoTracking()
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.TipoMovimentacao)
@@ -132,7 +132,7 @@ namespace MyFinanceAPI.Data.Repositories
             DateOnly inicioInclusive,
             DateOnly fimExclusive, string numeroFatura = null, int? bancoId = null)
         {
-            return await _context.ExtratoBancarioItens
+            return await _context.ExtratoBancarioItens.AsNoTracking()
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)

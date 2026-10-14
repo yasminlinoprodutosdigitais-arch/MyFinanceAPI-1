@@ -14,7 +14,6 @@ public class DomainToDTOMappingProfile : Profile
             .ReverseMap()
             // 💡 SOLUÇÃO: Ignora a propriedade de navegação 'Category' ao mapear DTO -> Entidade
             .ForMember(dest => dest.Category, opt => opt.Ignore());
-        CreateMap<AccountGrouping, AccountGroupingDTO>().ReverseMap();
         CreateMap<Transaction, TransactionDTO>().ReverseMap();
         CreateMap<Banco, BancoDTO>().ReverseMap();
         // O JSON mantém "tipoMovimentacao"; a entidade/coluna é TipoLista (DB-P1-06).

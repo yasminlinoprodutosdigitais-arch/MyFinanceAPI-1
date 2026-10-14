@@ -22,6 +22,9 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         // Gravada uma vez, na criação; o DataAlteracaoInterceptor nunca a regrava (DB-P1-12).
         builder.Property<DateTime>("DataCriacao").HasDefaultValueSql("now()");
 
+        // Contas a Pagar, Home e vencidas filtram por usuário + data (DB-P2-02); também cobre a FK de UserId.
+        builder.HasIndex(e => new { e.UserId, e.Date }).HasDatabaseName("IX_Transactions_UserId_Date");
+
         builder.HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)

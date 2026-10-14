@@ -23,8 +23,8 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     public async Task<IEnumerable<Transaction>> GetTransactionByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
         var dia = DateOnly.FromDateTime(dateTime);
-        var a = await _context.Transactions
-            .Where(c => c.UserId == userId && (pesquisaDataCompleta ? c.Date == dia : c.Date.Month == dia.Month && c.Date.Year == dia.Year))
+        var a = await _context.Transactions.AsNoTracking()
+            .Where(TransactionFiltros.DoDiaOuDoMes(userId, dia, pesquisaDataCompleta))
             .ToListAsync();
         return a;
     }
@@ -32,7 +32,7 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
     public async Task<IEnumerable<Transaction>> GetContaVencida(DateTime hoje, int userId)
     {
         var dataHoje = DateOnly.FromDateTime(hoje);
-        var a = await _context.Transactions
+        var a = await _context.Transactions.AsNoTracking()
             .Where(c => c.UserId == userId
                 && c.Date < dataHoje
                 && c.Status != StatusTransacao.PagoNoPrazo
@@ -42,104 +42,13 @@ public class TransactionRepository(ContextDB context) : ITransactionRepository
         return a;
     }
 
-    public async Task<List<AccountGrouping>> GetTransactions(int userId)
-    {
-        var accounts = await _context.Accounts
-            .Where(a => a.UserId == userId)
-            .Include(a => a.Category)             // Inclui a Categoria
-            .Include(a => a.Transactions)       // Inclui os MonthlyUpdates associados
-            .OrderBy(a => a.Category.Name)        // Ordena pelas categorias
-            .ToListAsync();                       // Carrega todos os dados necessários
-
-        var groupedAccounts = accounts
-            .GroupBy(a => a.Category)  // Agrupar as contas por categoria
-            .Select(group => new AccountGrouping
-            (
-                group.Key.Id,          // ID da categoria
-                group.Key.Name,        // Nome da categoria
-                group.Key.SubCategory, // Subcategoria da categoria
-                group.Key.NaturezaOperacao, // Subcategoria da categoria
-                group.Select(a => new Account
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Value = a.Value,
-                    Transactions = a.Transactions.Select(m => new Transaction
-                    {
-                        Id = m.Id,
-                        Date = m.Date,
-                        Name = m.Name,
-                        IdAccount = m.IdAccount,
-                        Value = m.Value,
-                        Status = m.Status
-                    }).ToList() // Para cada conta, adicionar os detalhes de todos os MonthlyUpdates
-                }).ToList() // Lista de contas agrupadas por categoria
-            ))
-            .ToList();  // Realiza a execução e retorna a lista agrupada
-
-        return groupedAccounts;
-    }
-
-    public async Task<List<Transaction>> GetTransactionGroupingByDate(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
-    {
-        var month = dateTime.Month;
-        var year = dateTime.Year;
-        var dia = DateOnly.FromDateTime(dateTime);
-
-        // 1) Carrega transações do mês (com ou sem conta)
-        var transactions = await _context.Transactions
-            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dia : t.Date.Month == month && t.Date.Year == year))
-            .Select(t => new Transaction
-            {
-                Id = t.Id,
-                Date = t.Date,
-                Name = t.Name,
-                Value = t.Value,
-                Status = t.Status,
-                CategoryId = t.CategoryId,
-                IdAccount = t.IdAccount,
-                EhParcelado = t.EhParcelado,
-                ParcelaAtual = t.ParcelaAtual,
-                QuantidadeParcelas = t.QuantidadeParcelas,
-                Observacao = t.Observacao,
-
-                Account = t.IdAccount == null ? null : new Account
-                {
-                    Id = t.Account.Id,
-                    Name = t.Account.Name,
-                    Value = t.Account.Value,
-                    CategoryId = t.Account.CategoryId,
-                    Transactions = t.Account.Transactions.Select(m => new Transaction
-                    {
-                        Id = m.Id,
-                        Date = m.Date,
-                        Name = m.Name,
-                        Value = m.Value,
-                        Status = m.Status
-                    }).ToList()
-                },
-                Category = t.CategoryId == null ? null : new Category
-                {
-                    Id = t.Account.CategoryId,
-                    SubCategory = t.Account.Category.SubCategory,
-                    NaturezaOperacao = t.Account.Category.NaturezaOperacao,
-                    Status = t.Account.Category.Status
-                }
-            })
-            .ToListAsync();
-
-        return transactions;
-    }
-
     public async Task<List<Transaction>> BuscarContasMensais(DateTime dateTime, int userId, bool pesquisaDataCompleta = false)
     {
-        var month = dateTime.Month;
-        var year = dateTime.Year;
         var dia = DateOnly.FromDateTime(dateTime);
 
         // 1) Carrega transações do mês (com ou sem conta)
         var transactions = await _context.Transactions
-            .Where(t => t.UserId == userId && (pesquisaDataCompleta ? t.Date == dia : t.Date.Month == month && t.Date.Year == year))
+            .Where(TransactionFiltros.DoDiaOuDoMes(userId, dia, pesquisaDataCompleta))
             .Select(t => new Transaction
             {
                 Id = t.Id,

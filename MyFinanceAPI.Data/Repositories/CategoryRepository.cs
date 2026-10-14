@@ -26,7 +26,7 @@ public class CategoryRepository(ContextDB context) : RepositorioDoUsuario<Catego
 
     public async Task<IEnumerable<Category>> GetCategoriesByUserIdAtiva(int userId)
     {
-        var categories = await _context.Categories.Where(c => c.UserId == userId && c.Status == StatusAtivo.Ativo).OrderBy(c => c.Name).ToListAsync();
+        var categories = await _context.Categories.AsNoTracking().Where(c => c.UserId == userId && c.Status == StatusAtivo.Ativo).OrderBy(c => c.Name).ToListAsync();
         return categories;
     }
 

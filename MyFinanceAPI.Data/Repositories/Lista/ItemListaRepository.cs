@@ -29,7 +29,7 @@ public class ItemListaRepository(ContextDB context) : RepositorioDoUsuario<ItemL
 
     public async Task<List<ItemLista>> GetItemListaByListaId(int id, int userId)
     {
-        return await _context.ItemLista
+        return await _context.ItemLista.AsNoTracking()
             .Where(c => c.UserId == userId && c.ListaId == id)
             .OrderBy(c => c.Descricao)
             .ToListAsync();

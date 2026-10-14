@@ -33,10 +33,10 @@ public abstract class RepositorioDoUsuario<T>(DbContext context) : IRepositorioD
     protected abstract void CopiarAlteracoes(T existente, T entrada);
 
     public virtual async Task<List<T>> ListarAsync(int userId) =>
-        await Ordenar(ComDetalhes(Tabela.Where(Visiveis(userId)))).ToListAsync();
+        await Ordenar(ComDetalhes(Tabela.AsNoTracking().Where(Visiveis(userId)))).ToListAsync();
 
     public virtual async Task<T?> ObterPorIdAsync(int id, int userId) =>
-        await ComDetalhes(Tabela.Where(Visiveis(userId))).FirstOrDefaultAsync(e => e.Id == id);
+        await ComDetalhes(Tabela.AsNoTracking().Where(Visiveis(userId))).FirstOrDefaultAsync(e => e.Id == id);
 
     public virtual async Task<T> CriarAsync(T entidade)
     {

@@ -506,9 +506,6 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("CategoriaId");
 
-                    b.HasIndex("DataMovimentacao")
-                        .HasDatabaseName("idx_extratobancarioitem_datamov");
-
                     b.HasIndex("ExtratoBancarioId")
                         .HasDatabaseName("idx_extratobancarioitem_extrato");
 
@@ -518,8 +515,11 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("TipoMovimentacaoId");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_ExtratoBancarioItem_UserId");
+                    b.HasIndex("UserId", "DataMovimentacao")
+                        .HasDatabaseName("IX_ExtratoBancarioItem_UserId_DataMovimentacao");
+
+                    b.HasIndex("UserId", "NumeroFatura")
+                        .HasDatabaseName("IX_ExtratoBancarioItem_UserId_NumeroFatura");
 
                     b.HasIndex("UserId", "BancoId", "ChaveImportacao")
                         .IsUnique()
@@ -863,7 +863,8 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("IdAccount");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Date")
+                        .HasDatabaseName("IX_Transactions_UserId_Date");
 
                     b.ToTable("Transactions", null, t =>
                         {

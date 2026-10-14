@@ -30,7 +30,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<List<Account>>? GetAccountByCategory(int categoryId, int userId)
     {
-        var accounts = await _context.Accounts
+        var accounts = await _context.Accounts.AsNoTracking()
             .Where(c => c.UserId == userId && c.Category.Id == categoryId)
             .Include(a => a.Category)
             .OrderBy(c => c.Name)
@@ -106,7 +106,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
     }
     public async Task<IEnumerable<Account>> GetAccountsByCategory(int categoryId, int userId)
     {
-        return await _context.Accounts
+        return await _context.Accounts.AsNoTracking()
             .Where(a => a.UserId == userId && a.CategoryId == categoryId)
             .ToListAsync();
     }
@@ -122,7 +122,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<List<Account>>? GetAccounts(int userId)
     {
-        var accounts = await _context.Accounts
+        var accounts = await _context.Accounts.AsNoTracking()
             .Where(a => a.UserId == userId)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
             .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas
@@ -147,7 +147,7 @@ public class AccountRepository(ContextDB context) : IAccountRepository
 
     public async Task<List<Account>>? GetContasAtivas(int userId)
     {
-        var accounts = await _context.Accounts
+        var accounts = await _context.Accounts.AsNoTracking()
             .Where(a => a.UserId == userId && a.Status == StatusAtivo.Ativo)
             .Include(a => a.Category)  // Incluindo a categoria nas contas
             .Include(a => a.ContaVencimentos)  // Incluindo a categoria nas contas

@@ -19,19 +19,6 @@ namespace MyFinanceAPI.Api.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpGet("/GetTransactions")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
-        {
-            var userId = UsuarioId;
-
-            var update = await _transactionService.GetTransactions(userId);
-            if (update is null)
-                return NotFound("");
-            else
-                return Ok(update);
-
-        }
-
         [HttpGet("/GetTransactionById/{id}", Name = "GetUpdate")]
         public async Task<ActionResult<Transaction>> GetTransactionById(int id)
         {
@@ -66,18 +53,6 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             var transaction = await _transactionService.GetContaVencida(date, userId);
-            if (transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
-        }
-
-        [HttpGet("/GetTransactionGroupingByDate/{date}/{pesquisaDataCompleta}")]
-        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionGroupingByDate(DateTime date, bool pesquisaDataCompleta)
-        {
-            var userId = UsuarioId;
-
-            var transaction = await _transactionService.GetTransactionGroupingByDate(date, userId, pesquisaDataCompleta);
             if (transaction is null)
                 return NotFound();
             else

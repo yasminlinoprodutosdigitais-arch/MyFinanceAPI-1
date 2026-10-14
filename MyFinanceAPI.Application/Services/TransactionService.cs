@@ -107,12 +107,6 @@ public class TransactionService : ITransactionService
         await _transactionRepository.Remove(id, userId);
     }
 
-    public async Task<IEnumerable<AccountGroupingDTO>> GetTransactions(int userId)
-    {
-        var monthlyUpdate = await _transactionRepository.GetTransactions(userId);
-        return _mapper.Map<IEnumerable<AccountGroupingDTO>>(monthlyUpdate);
-    }
-
     public async Task<TransactionDTO> GetTransactionById(int id, int userId)
     {
         var update = await _transactionRepository.GetTransactionById(id, userId);
@@ -127,12 +121,6 @@ public class TransactionService : ITransactionService
     public async Task<IEnumerable<TransactionDTO>> GetContaVencida(DateTime hoje, int userId)
     {
         var Transaction = await _transactionRepository.GetContaVencida(hoje, userId);
-        return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
-    }
-
-    public async Task<IEnumerable<TransactionDTO>> GetTransactionGroupingByDate(DateTime date, int userId, bool pesquisaDataCompleta = false)
-    {
-        var Transaction = await _transactionRepository.GetTransactionGroupingByDate(date, userId, pesquisaDataCompleta);
         return _mapper.Map<IEnumerable<TransactionDTO>>(Transaction);
     }
 

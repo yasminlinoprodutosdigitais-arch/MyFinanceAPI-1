@@ -19,7 +19,7 @@ public class MovimentacaoDiariaRepository(ContextDB context) : RepositorioDoUsua
 
     // Só a listagem trazia as navegações; o ObterPorId continua sem includes, como antes.
     public override async Task<List<MovimentacaoDiaria>> ListarAsync(int userId) =>
-        await Ordenar(ComNavegacoes(Tabela.Where(Proprios(userId)))).ToListAsync();
+        await Ordenar(ComNavegacoes(Tabela.AsNoTracking().Where(Proprios(userId)))).ToListAsync();
 
     // Identificador fica de fora: é a chave da importação do extrato.
     protected override void CopiarAlteracoes(MovimentacaoDiaria existente, MovimentacaoDiaria entrada)
@@ -39,8 +39,10 @@ public class MovimentacaoDiariaRepository(ContextDB context) : RepositorioDoUsua
 
     public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoByDate(DateTime dateTime, int userId)
     {
-        return await ComNavegacoes(_context.MovimentacaoDiaria)
-            .Where(c => c.UserId == userId && c.DataMovimentacao.Month == dateTime.Month && c.DataMovimentacao.Year == dateTime.Year)
+        // Intervalo sobre a coluna, não Month/Year (DB-P2-03).
+        var (inicio, fimExclusivo) = TransactionFiltros.IntervaloDoMes(DateOnly.FromDateTime(dateTime));
+        return await ComNavegacoes(_context.MovimentacaoDiaria.AsNoTracking())
+            .Where(c => c.UserId == userId && c.DataMovimentacao >= inicio && c.DataMovimentacao < fimExclusivo)
             .ToListAsync();
     }
 }

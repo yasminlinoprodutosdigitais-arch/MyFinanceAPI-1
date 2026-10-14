@@ -28,7 +28,6 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
         builder.Property<DateTime>("DataCriacao").HasDefaultValueSql("now()");
 
         builder.HasIndex(e => e.ExtratoBancarioId).HasDatabaseName("idx_extratobancarioitem_extrato");
-        builder.HasIndex(e => e.DataMovimentacao).HasDatabaseName("idx_extratobancarioitem_datamov");
 
         // Idempotência da importação (DB-P0-04): a mesma linha do arquivo não entra duas vezes.
         builder.Property(e => e.ChaveImportacao).HasMaxLength(64);
@@ -36,9 +35,10 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
             .IsUnique()
             .HasFilter("\"ChaveImportacao\" IS NOT NULL")
             .HasDatabaseName("UX_ExtratoBancarioItem_ChaveImportacao");
-        // A unique acima é parcial (fora os itens manuais) e não serve às consultas por UserId:
-        // sem esta declaração o EF a trataria como cobertura da FK e removeria o índice simples.
-        builder.HasIndex(e => e.UserId).HasDatabaseName("IX_ExtratoBancarioItem_UserId");
+        // Filtros quentes do extrato (DB-P2-02): mês pela data e cartão de crédito pela fatura.
+        // Começam por UserId, então também cobrem a FK; substituem os índices simples de UserId e de DataMovimentacao.
+        builder.HasIndex(e => new { e.UserId, e.DataMovimentacao }).HasDatabaseName("IX_ExtratoBancarioItem_UserId_DataMovimentacao");
+        builder.HasIndex(e => new { e.UserId, e.NumeroFatura }).HasDatabaseName("IX_ExtratoBancarioItem_UserId_NumeroFatura");
 
         builder.HasOne(e => e.User)
             .WithMany()

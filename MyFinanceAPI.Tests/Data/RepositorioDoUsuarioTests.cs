@@ -111,6 +111,19 @@ public sealed class RepositorioDoUsuarioTests : IDisposable
     }
 
     [Fact]
+    public async Task Leitura_nao_fica_no_change_tracker()
+    {
+        var meu = await Semear(Eu, "Meu");
+        var repo = new CadastroRepository(_contexto);
+
+        await repo.ListarAsync(Eu);
+        await repo.ObterPorIdAsync(meu.Id, Eu);
+
+        // DB-P2-05: leitura de exibição não materializa entidades rastreadas.
+        Assert.Empty(_contexto.ChangeTracker.Entries());
+    }
+
+    [Fact]
     public async Task ObterPorId_de_outro_usuario_e_null()
     {
         var alheio = await Semear(Outro, "Alheio");

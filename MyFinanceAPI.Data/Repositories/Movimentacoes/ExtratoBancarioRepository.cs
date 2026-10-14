@@ -76,7 +76,7 @@ namespace MyFinanceAPI.Data.Repositories
             var start = new DateOnly(year, mon, 1);
             var end = start.AddMonths(1);
 
-            var extratos = await _context.ExtratoBancario
+            var extratos = await _context.ExtratoBancario.AsNoTracking()
                 .Where(e => e.UserId == userId
                     && e.DataInicioPeriodo.HasValue
                     && e.DataInicioPeriodo.Value >= start

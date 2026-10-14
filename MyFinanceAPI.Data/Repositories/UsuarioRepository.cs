@@ -14,11 +14,6 @@ namespace MyFinanceAPI.Data.Repositories
             _context = context;
         }
 
-        public IEnumerable<Usuario> BuscarTodos()
-        {
-            return _context.Usuarios.ToList();
-        }
-
         public async Task<Usuario> BuscarUsuario(string login, string senha)
         {
             var usuario = await _context.Usuarios

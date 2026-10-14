@@ -47,9 +47,6 @@ namespace MyFinanceAPI.Application.Services
         {
             try
             {
-                // Obtem o último código de ID cadastrado, agora usando a propriedade Id
-                int ultimoCodigoIdCadastrado = _usuarioRepository.BuscarTodos().Any() ? _usuarioRepository.BuscarTodos().Max(x => x.Id) : 0;
-
                 // Criação de um novo usuário
                 Usuario usuario = new Usuario(
                     request.Login,   // Login é atribuído ao UserName

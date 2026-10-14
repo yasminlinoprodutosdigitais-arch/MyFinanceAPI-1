@@ -97,7 +97,7 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         if (nome == null)
             return [];
 
-        return await ComDetalhes(_context.PessoaMovimentacao)
+        return await ComDetalhes(_context.PessoaMovimentacao.AsNoTracking())
             .Where(a => a.UserId == userId && a.NomePessoa == nome)
             .OrderBy(c => c.NomePessoa)
             .ToListAsync();
