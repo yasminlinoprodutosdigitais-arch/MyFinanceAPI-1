@@ -64,6 +64,11 @@ namespace MyFinanceAPI.Application.Services
 
             entity.UserId = userId;
 
+            // Escolhidos no formulário: prevalecem sobre o vínculo da pessoa; sem escolha, o item herda
+            // o vínculo (decisão de 14/10/2026 — antes a escolha era descartada quando havia pessoa).
+            var categoriaEscolhida = dto.CategoriaId;
+            var tipoEscolhido = dto.TipoMovimentacaoId;
+
             var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(entity.NomePessoaTransacao, userId);
             if(dto.PessoaMovimentacao != null)
             {
@@ -96,6 +101,10 @@ namespace MyFinanceAPI.Application.Services
                 entity.TipoMovimentacaoId = null;
                 entity.CategoriaId = null;
             }
+
+            entity.CategoriaId = categoriaEscolhida ?? entity.CategoriaId;
+            entity.TipoMovimentacaoId = tipoEscolhido ?? entity.TipoMovimentacaoId;
+
             var created = await _itemRepository.CreateAsync(entity);
             return _mapper.Map<ExtratoBancarioItemDTO>(created);
         }
