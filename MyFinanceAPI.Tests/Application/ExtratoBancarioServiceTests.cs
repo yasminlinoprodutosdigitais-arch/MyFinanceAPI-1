@@ -3,6 +3,7 @@ using Moq;
 using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Services;
+using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
 

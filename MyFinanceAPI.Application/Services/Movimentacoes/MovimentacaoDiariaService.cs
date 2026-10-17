@@ -23,10 +23,11 @@ public class MovimentacaoDiariaService(IMovimentacaoDiariaRepository movimentaca
     public async Task<IEnumerable<MovimentacaoDiariaDTO>> GetMovimentacaoByDate(DateTime date, int userId) =>
         Mapper.Map<IEnumerable<MovimentacaoDiariaDTO>>(await movimentacaoDiariaRepository.GetMovimentacaoByDate(date, userId));
 
-    public override async Task AdicionarAsync(MovimentacaoDiariaDTO dto, int userId)
+    public override async Task<MovimentacaoDiariaDTO> AdicionarAsync(MovimentacaoDiariaDTO dto, int userId)
     {
-        await base.AdicionarAsync(dto, userId);
+        var criada = await base.AdicionarAsync(dto, userId);
         await Aplicar(Do(dto), userId);
+        return criada;
     }
 
     public override async Task AtualizarAsync(MovimentacaoDiariaDTO dto, int userId)

@@ -14,13 +14,9 @@ namespace MyFinanceAPI.Data.Repositories
             _context = context;
         }
 
-        public async Task<Usuario> BuscarUsuario(string login, string senha)
-        {
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.UserName == login);
-
-            return usuario;
-        }
+        /// <summary>Só pelo login; a senha é conferida no UsuarioService, contra o hash (BE-P3-10).</summary>
+        public Task<Usuario?> BuscarUsuario(string login) =>
+            _context.Usuarios.FirstOrDefaultAsync(u => u.UserName == login);
 
         public void Cadastrar(Usuario entidade)
         {

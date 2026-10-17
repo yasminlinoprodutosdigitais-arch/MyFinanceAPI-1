@@ -3,14 +3,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Domain.Entities;
-using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Application.Services;
 
@@ -18,62 +16,44 @@ namespace MyFinanceAPI.Application.Services;
 // Se voltar a ser necessário, precisa de persistência (tabela + expiração + rotação).
 public class TokenService : ITokenService
 {
-    private readonly IUsuarioRepository _usuarioRepository;
     private readonly TokenSettings _tokenSettings;
-    private readonly ILogger<TokenService> _logger;
 
-    public TokenService(IUsuarioRepository usuarioRepository, IOptions<TokenSettings> tokenSettings, ILogger<TokenService> logger)
+    public TokenService(IOptions<TokenSettings> tokenSettings)
     {
-        _usuarioRepository = usuarioRepository;
         _tokenSettings = tokenSettings.Value;
-        _logger = logger;
     }
-    public async Task<TokenDto> CreateToken(UsuarioDto usuarioDto)
+
+    /// <summary>
+    /// Recebe o usuário já validado (BE-P3-10): antes buscava de novo pelo login, sem conferir a
+    /// senha. Sem catch: uma falha vai ao ErroHandler (500 com log) em vez de virar null e 422.
+    /// </summary>
+    public TokenDto CreateToken(Usuario usuario)
     {
-        try
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_tokenSettings.SecretKey);
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
+
+        var brasilTz = TimeZoneInfo.FindSystemTimeZoneById(
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "E. South America Standard Time"
+            : "America/Sao_Paulo"
+        );
+
+        var expiresUtc = DateTime.UtcNow.AddHours(3);
+        var expiresBrasil = TimeZoneInfo.ConvertTimeFromUtc(expiresUtc, brasilTz);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Usuario usuario = await _usuarioRepository.BuscarUsuario(usuarioDto.Login, usuarioDto.Senha);
+            Subject = GenerateClaims(usuario),
+            Expires = expiresUtc,
+            SigningCredentials = credentials
+        };
 
-            if (usuario == null)
-            {
-                return null;
-            }
+        // Gerar o token JWT
+        var objectToken = tokenHandler.CreateToken(tokenDescriptor);
+        string token = tokenHandler.WriteToken(objectToken);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            string str = _tokenSettings.SecretKey;
-            var key = Encoding.ASCII.GetBytes(str);
-            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
-
-            var brasilTz = TimeZoneInfo.FindSystemTimeZoneById(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? "E. South America Standard Time"
-                : "America/Sao_Paulo"
-            );
-
-            var expiresUtc = DateTime.UtcNow.AddHours(3);
-            var expiresBrasil = TimeZoneInfo.ConvertTimeFromUtc(expiresUtc, brasilTz);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = GenerateClaims(usuario),
-                Expires = expiresUtc,
-                SigningCredentials = credentials
-            };
-
-            // Gerar o token JWT
-            var objectToken = tokenHandler.CreateToken(tokenDescriptor);
-            string token = tokenHandler.WriteToken(objectToken);
-
-            TokenDto tokenDto = new TokenDto(token, DateTime.Now, expiresBrasil);
-
-            return tokenDto;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao gerar o token do usuário {Login}", usuarioDto.Login);
-            return null;
-        }
-
+        return new TokenDto(token, DateTime.Now, expiresBrasil);
     }
 
     private ClaimsIdentity GenerateClaims(Usuario user)

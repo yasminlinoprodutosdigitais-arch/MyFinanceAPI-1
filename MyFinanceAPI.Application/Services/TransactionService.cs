@@ -24,10 +24,11 @@ public class TransactionService : ITransactionService
     }
 
     // Conta nova, parcela da conta e transações valem juntas (BE-P1-05).
-    public Task Add(TransactionDTO transactionDTO, int userId) =>
+    public Task<IReadOnlyList<TransactionDTO>> Add(TransactionDTO transactionDTO, int userId) =>
         _unitOfWork.ExecuteAsync(() => AddNaOperacao(transactionDTO, userId));
 
-    private async Task AddNaOperacao(TransactionDTO transactionDTO, int userId)
+    /// <summary>Uma transação por vencimento da conta; devolve as criadas, já com id.</summary>
+    private async Task<IReadOnlyList<TransactionDTO>> AddNaOperacao(TransactionDTO transactionDTO, int userId)
     {
         var conta = await _accountService.GetAccountById(transactionDTO.IdAccount ?? 0, userId);
         var mesAno = transactionDTO.Date;
@@ -39,9 +40,9 @@ public class TransactionService : ITransactionService
             {
                 Name = transactionDTO.Name,
                 Value = transactionDTO.Value,
-                Categoryid = (int)transactionDTO.CategoryId,
+                CategoryId = (int)transactionDTO.CategoryId,
                 Status = StatusAtivo.Ativo,
-                DataOperacao = [mesAno.Day],
+                DataOperacao = DiasDaContaNova(transactionDTO),
             };
             conta = await _accountService.Add(novaConta, userId);
         }
@@ -62,7 +63,7 @@ public class TransactionService : ITransactionService
                 EhParcelado = conta.EhParcelado,
                 ParcelaAtual = parcela,
                 QuantidadeParcelas = conta.EhParcelado ? conta.QuantidadeParcelas : null,
-                CategoryId = conta.Categoryid,
+                CategoryId = conta.CategoryId,
                 Date = new DateOnly(
                     mesAno.Year,
                     mesAno.Month,
@@ -74,6 +75,30 @@ public class TransactionService : ITransactionService
         }
 
         await _transactionRepository.Create(transacoes);
+
+        // Na gravação o EF liga a conta rastreada às transações (Account.Transactions ↔ Transaction.Account):
+        // devolvida assim, a resposta entra em ciclo no JSON. A conta já vai em IdAccount.
+        var criadas = _mapper.Map<List<TransactionDTO>>(transacoes);
+        criadas.ForEach(t => t.Account = null);
+        return criadas;
+    }
+
+    /// <summary>
+    /// Vencimentos da conta criada no lançamento: os dias pedidos (mesmas regras do Cadastro de Contas —
+    /// 1 a 31, sem repetir), em ordem; sem dias, o dia da data.
+    /// </summary>
+    private static List<int> DiasDaContaNova(TransactionDTO transactionDTO)
+    {
+        var dias = transactionDTO.DiasVencimento;
+        if (dias is not { Count: > 0 })
+            return [transactionDTO.Date.Day];
+
+        if (dias.Any(d => d is < 1 or > 31))
+            throw new ArgumentException("Dia de vencimento deve estar entre 1 e 31.");
+        if (dias.Distinct().Count() != dias.Count)
+            throw new ArgumentException("Dia de vencimento repetido.");
+
+        return dias.Order().ToList();
     }
 
     // A ParcelaAtual da conta só anda quando se paga; por isso o número vem do que já foi lançado:

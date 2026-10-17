@@ -6,10 +6,8 @@ using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Api.Controllers.Authentication
 {
-    [ApiController]
-    [Route("[controller]")]
     [Produces("application/json")]
-    public class AuthenticationController : Controller
+    public class AuthenticationController : ApiControllerBase
     {
         private static readonly string[] RolesPermitidas = { "Admin", "Empresa" };
 
@@ -25,17 +23,12 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         [HttpPost("/Autenticar")]
         public async Task<IActionResult> Autenticar([FromBody] UsuarioDto command)
         {
-            // Verificando se o usuário existe
-            Usuario usuario = await _usuarioService.BuscarUsuario(command.Login, command.Senha);
+            // Login e senha conferidos aqui; o token é gerado para esse mesmo usuário (BE-P3-10).
+            var usuario = await _usuarioService.BuscarUsuario(command.Login, command.Senha);
             if (usuario == null)
-                return NotFound("Usuário não encontrado. Verifique o login e senha.");
+                return NaoEncontrado("Usuário não encontrado. Verifique o login e senha.");
 
-            var usuarioDto = new UsuarioDto(usuario.UserName, command.Senha);
-
-            // Criando o token para o usuário
-            TokenDto tokenDto = await _tokenService.CreateToken(usuarioDto);
-            if (tokenDto == null)
-                return UnprocessableEntity("Erro ao gerar token.");
+            var tokenDto = _tokenService.CreateToken(usuario);
 
             return Ok(new
             {
@@ -53,22 +46,23 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
 
         // Exige usuário autenticado (BE-P0-02): antes era anônimo e aceitava qualquer Role do body,
         // o que dava acesso total à API a quem se cadastrasse.
+        // Sem tela no front: é a forma de criar usuário (via Swagger, logado), por isso fica (BE-P3-02).
         [Authorize(Policy = "Admin")]
         [HttpPost("/CadastrarUsuario")]
         public IActionResult Cadastrar([FromBody] CadastrarUsuarioDto request)
         {
             if (!RolesPermitidas.Contains(request.Role))
-                return BadRequest($"Role inválida. Valores aceitos: {string.Join(", ", RolesPermitidas)}.");
+                return ErroRequisicao($"Role inválida. Valores aceitos: {string.Join(", ", RolesPermitidas)}.");
 
             if (_usuarioService.VerificaSeUsuarioExiste(request.Login, request.NomeUsuario))
-                return BadRequest("Usuário já cadastrado.");
+                return ErroRequisicao("Usuário já cadastrado.");
 
-            // Chamando o serviço para cadastrar o usuário
-            UsuarioDto usuario = _usuarioService.CadastrarUsuario(request);
-            if (usuario == null)
-                return UnprocessableEntity("Erro ao cadastrar usuário.");
+            // Falha ao gravar vai ao ErroHandler (500 com log). Não há GET de usuário, então o 201
+            // vai sem Location; o corpo é o criado, sem senha nem hash.
+            var usuario = _usuarioService.CadastrarUsuario(request);
 
-            return Ok("Usuário cadastrado com sucesso.");
+            return StatusCode(StatusCodes.Status201Created,
+                new UsuarioCadastradoDto(usuario.Id, usuario.UserName!, usuario.NomeUsuario, usuario.Role));
         }
     }
 }

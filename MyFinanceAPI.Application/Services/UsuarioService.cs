@@ -4,9 +4,6 @@ using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using System.Linq;
-using MyFinanceAPI.Application.Utils;
-using Microsoft.Extensions.Options;
 
 namespace MyFinanceAPI.Application.Services
 {
@@ -21,54 +18,35 @@ namespace MyFinanceAPI.Application.Services
             _passwordHasher = new PasswordHasher<Usuario>();
         }
 
-        public async Task<Usuario> BuscarUsuario(string login, string senha)
+        /// <summary>Busca pelo login e confere a senha contra o hash; null se um dos dois não bate.</summary>
+        public async Task<Usuario?> BuscarUsuario(string login, string senha)
         {
-            // Busca o usuário de forma assíncrona
-            Usuario usuario = await _usuarioRepository.BuscarUsuario(login, senha);
-
-            // Se o usuário não for encontrado, retorna null
+            var usuario = await _usuarioRepository.BuscarUsuario(login);
             if (usuario == null)
                 return null;
 
-            // Compara a senha fornecida com o hash armazenado
             var resultadoSenha = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, senha);
-
-            // Se a senha não for válida, retorna null
-            if (resultadoSenha != PasswordVerificationResult.Success)
-                return null;
-
-            // Caso o usuário exista e a senha seja válida, retorna um DTO com o UserName (login) e a senha
-            return usuario;
+            return resultadoSenha == PasswordVerificationResult.Success ? usuario : null;
         }
 
-
-
-        public UsuarioDto CadastrarUsuario(CadastrarUsuarioDto request)
+        /// <summary>
+        /// Grava o usuário (senha como hash) e devolve o criado. Sem catch (BE-P3-10): uma falha
+        /// vai ao ErroHandler, que registra o log — antes virava null e um 422 sem rastro.
+        /// </summary>
+        public Usuario CadastrarUsuario(CadastrarUsuarioDto request)
         {
-            try
-            {
-                // Criação de um novo usuário
-                Usuario usuario = new Usuario(
-                    request.Login,   // Login é atribuído ao UserName
-                    request.Senha,
-                    request.NomeUsuario,
-                    request.Role,
-                    true,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow
-                );
+            var usuario = new Usuario(
+                request.Login,   // Login é atribuído ao UserName
+                request.Senha,
+                request.NomeUsuario,
+                request.Role,
+                true,
+                DateTime.UtcNow,
+                DateTime.UtcNow
+            );
 
-                // Cadastra o novo usuário no repositório
-                _usuarioRepository.Cadastrar(usuario);
-
-                // Retorna o DTO com o UserName (login) e a senha do usuário cadastrado
-                return new UsuarioDto(request.Login, request.Senha);
-            }
-            catch
-            {
-                // Em caso de erro, retorna null (você pode querer lançar uma exceção aqui para tratar o erro de forma mais adequada)
-                return null;
-            }
+            _usuarioRepository.Cadastrar(usuario);
+            return usuario;
         }
 
         public bool VerificaSeUsuarioExiste(string login, string nomeUsuario)

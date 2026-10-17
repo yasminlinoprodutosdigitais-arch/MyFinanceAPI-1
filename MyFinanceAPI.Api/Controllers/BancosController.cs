@@ -9,9 +9,10 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class BancosController : ApiControllerBase
     {
+        public const string RotaPorId = "GetBanco";
+
         private readonly IBancoService _BancoService;
 
         public BancosController(IBancoService BancoService)
@@ -28,30 +29,25 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(Bancos);
         }
 
-        [HttpGet("/GetBancoById/{id}", Name = "GetBanco")]
+        [HttpGet("/GetBancoById/{id}", Name = RotaPorId)]
         public async Task<ActionResult<BancoDTO>> GetBancoById(int id)
         {
             var userId = UsuarioId;
 
             var Banco = await _BancoService.ObterPorIdAsync(id, userId);
             if (Banco is null)
-                return NotFound("Banco Bad Request");
-            else
-                return Ok(Banco);
+                return NaoEncontrado("Banco não encontrado.");
 
+            return Ok(Banco);
         }
 
         [HttpPost("/CreateBanco")]
-        public async Task<ActionResult> CreateBanco([FromBody] BancoDTO BancoDTO)
+        public async Task<ActionResult<BancoDTO>> CreateBanco([FromBody] BancoDTO BancoDTO)
         {
             var userId = UsuarioId;
 
-            if (BancoDTO is null)
-                return BadRequest("Dados inválidos.");
-
-            await _BancoService.AdicionarAsync(BancoDTO, userId);
-            
-            return StatusCode(StatusCodes.Status201Created, new { message = "Banco criado com sucesso!" });
+            var criado = await _BancoService.AdicionarAsync(BancoDTO, userId);
+            return Criado(RotaPorId, criado.Id, criado);
         }
 
         [HttpPut("/UpdateBanco")]
@@ -59,24 +55,21 @@ namespace MyFinanceAPI.Api.Controllers
         {
             var userId = UsuarioId;
 
-            if (BancoDTO is null)
-                return BadRequest("Dados inválidos.");
-
             await _BancoService.AtualizarAsync(BancoDTO, userId);
-            return BancoDTO;
+            return Ok(BancoDTO);
         }
 
         [HttpDelete("/DeleteBanco/{id}")]
-        public async Task<ActionResult<BancoDTO>> DeleteBanco(int id)
+        public async Task<IActionResult> DeleteBanco(int id)
         {
             var userId = UsuarioId;
 
             var Banco = await _BancoService.ObterPorIdAsync(id, userId);
             if (Banco == null)
-                return NotFound(new { message = "Banco não encontrado." });
+                return NaoEncontrado("Banco não encontrado.");
 
             await _BancoService.RemoverAsync(id, userId);
-            return Ok(Banco);
+            return NoContent();
         }
     }
 }

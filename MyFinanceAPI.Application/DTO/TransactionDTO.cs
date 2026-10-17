@@ -31,6 +31,12 @@ public class TransactionDTO
 
     public Account? Account { get; set; }
 
+    /// <summary>
+    /// Só na criação sem IdAccount (conta avulsa, modal "Adicionar nova conta"): dias de vencimento da
+    /// conta criada junto. Vazio: o dia de <see cref="Date"/>. Não vem do banco.
+    /// </summary>
+    public List<int>? DiasVencimento { get; set; }
+
     public TransactionDTO()
     {
     }

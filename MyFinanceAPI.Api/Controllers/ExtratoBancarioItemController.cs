@@ -11,9 +11,10 @@ using MyFinanceAPI.Application.Interfaces;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class ExtratoBancarioItemController : ApiControllerBase
     {
+        public const string RotaPorId = "GetExtratoBancarioItemById";
+
         private readonly IExtratoBancarioItemService _extratoBancarioItemService;
 
         public ExtratoBancarioItemController(
@@ -22,68 +23,54 @@ namespace MyFinanceAPI.Api.Controllers
             _extratoBancarioItemService = extratoBancarioItemService;
         }
 
-        // GET /GetExtratoBancarioItens/{extratoId}
-        [HttpGet("/GetExtratoBancarioItens/{extratoId:int}")]
-        public async Task<ActionResult<IEnumerable<ExtratoBancarioItemDTO>>> GetExtratoItens(int extratoId)
-        {
-            var userId = UsuarioId;
-
-            var itens = await _extratoBancarioItemService.GetByExtratoAsync(extratoId, userId);
-            return Ok(itens);
-        }
-
         // GET /GetExtratoBancarioItemById/{id}
-        [HttpGet("/GetExtratoBancarioItemById/{id:int}", Name = "GetExtratoBancarioItemById")]
+        [HttpGet("/GetExtratoBancarioItemById/{id:int}", Name = RotaPorId)]
         public async Task<ActionResult<ExtratoBancarioItemDTO>> GetExtratoItemById(int id)
         {
             var userId = UsuarioId;
 
             var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
             if (item == null)
-                return NotFound("Item de extrato não encontrado.");
+                return NaoEncontrado("Item de extrato não encontrado.");
 
             return Ok(item);
         }
 
         // POST /CreateExtratoBancarioItem
         [HttpPost("/CreateExtratoBancarioItem")]
-        public async Task<ActionResult> CreateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
+        public async Task<ActionResult<ExtratoBancarioItemDTO>> CreateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
         {
             var userId = UsuarioId;
 
-            if (dto == null)
-                return BadRequest("Dados inválidos.");
-
             var created = await _extratoBancarioItemService.AddAsync(dto, userId);
-            return CreatedAtRoute("GetExtratoBancarioItemById", new { id = created.Id }, created);
+            return Criado(RotaPorId, created.Id, created);
         }
 
         // PUT /UpdateExtratoBancarioItem
         [HttpPut("/UpdateExtratoBancarioItem")]
-        public async Task<ActionResult> UpdateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
+        public async Task<ActionResult<ExtratoBancarioItemDTO>> UpdateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
         {
             var userId = UsuarioId;
 
-            if (dto == null || dto.Id <= 0)
-                return BadRequest("Dados inválidos.");
+            if (dto.Id <= 0)
+                return ErroRequisicao("Dados inválidos.");
 
             await _extratoBancarioItemService.UpdateAsync(dto, userId);
-            
-            return Ok(new { message = "Item de extrato atualizado com sucesso." });
+            return Ok(dto);
         }
 
         // DELETE /DeleteExtratoBancarioItem/{id}
         [HttpDelete("/DeleteExtratoBancarioItem/{id:int}")]
-        public async Task<ActionResult> DeleteExtratoItem(int id)
+        public async Task<IActionResult> DeleteExtratoItem(int id)
         {
             var userId = UsuarioId;
 
             var item = await _extratoBancarioItemService.GetByIdAsync(id, userId);
-            if(item == null)
-                return NotFound(new {message = "Item de extrato não encontrado."});
+            if (item == null)
+                return NaoEncontrado("Item de extrato não encontrado.");
 
             await _extratoBancarioItemService.RemoveAsync(id, userId);
-            return Ok(item);
+            return NoContent();
         }
 
         /// <summary>
@@ -97,7 +84,7 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             if (string.IsNullOrWhiteSpace(month))
-                return BadRequest("Parâmetro 'month' é obrigatório no formato yyyy-MM.");
+                return ErroRequisicao("Parâmetro 'month' é obrigatório no formato yyyy-MM.");
 
             // Tenta montar um dia 01 desse mês
             if (!DateTime.TryParseExact(
@@ -107,7 +94,7 @@ namespace MyFinanceAPI.Api.Controllers
                     DateTimeStyles.None,
                     out var dt))
             {
-                return BadRequest("Formato de mês inválido. Use yyyy-MM (ex.: 2025-11).");
+                return ErroRequisicao("Formato de mês inválido. Use yyyy-MM (ex.: 2025-11).");
             }
             var itens = await _extratoBancarioItemService.GetByMonthAsync(userId, dt.Year, dt.Month, bancoId ?? null);
             return Ok(itens);

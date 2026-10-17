@@ -24,7 +24,7 @@ public sealed class ErroHandler(ILogger<ErroHandler> logger) : IExceptionHandler
             logger.LogError(excecao, "Erro não tratado em {Metodo} {Caminho}", contexto.Request.Method, contexto.Request.Path);
 
         contexto.Response.StatusCode = status;
-        await contexto.Response.WriteAsJsonAsync(new { message = mensagem }, cancellationToken);
+        await contexto.Response.WriteAsJsonAsync(new MensagemErro(mensagem), cancellationToken);
         return true;
     }
 

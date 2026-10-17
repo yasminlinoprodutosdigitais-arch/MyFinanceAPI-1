@@ -6,6 +6,7 @@ namespace MyFinanceAPI.Domain.Interfaces;
 public interface IUsuarioRepository
 {
     void Cadastrar(Usuario entidade);
-    public Task<Usuario> BuscarUsuario(string login, string senha);
+    /// <summary>Usuário pelo login (UserName), ou null. Não confere senha.</summary>
+    public Task<Usuario?> BuscarUsuario(string login);
     public bool ValidaSeUsuarioExiste(string login, string usuarioNome);
 }

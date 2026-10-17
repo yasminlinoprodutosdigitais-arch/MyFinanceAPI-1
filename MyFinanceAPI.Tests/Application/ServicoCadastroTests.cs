@@ -51,6 +51,18 @@ public class ServicoCadastroTests
     }
 
     [Fact]
+    public async Task Adicionar_devolve_o_criado_com_o_id_gerado()
+    {
+        // O banco gera o id na gravação; o 201 do controller leva esse id no Location (BE-P3-05).
+        _repo.Setup(r => r.CriarAsync(It.IsAny<Lista>())).ReturnsAsync((Lista l) => { l.Id = 42; return l; });
+
+        var criada = await CriarService().AdicionarAsync(new ListaDTO { Nome = "Mercado" }, UserId);
+
+        Assert.Equal(42, criada.Id);
+        Assert.Equal("Mercado", criada.Nome);
+    }
+
+    [Fact]
     public async Task Adicionar_recusado_nao_grava()
     {
         var service = CriarService();

@@ -6,7 +6,9 @@ namespace MyFinanceAPI.Application.Interfaces;
 
 public interface IUsuarioService
 {
-    Task<Usuario> BuscarUsuario(string login, string senha);
-    UsuarioDto CadastrarUsuario(CadastrarUsuarioDto request);
+    /// <summary>Usuário com login e senha válidos, ou null.</summary>
+    Task<Usuario?> BuscarUsuario(string login, string senha);
+    /// <summary>Devolve o usuário criado (com o id gerado).</summary>
+    Usuario CadastrarUsuario(CadastrarUsuarioDto request);
     bool VerificaSeUsuarioExiste(string login, string nomeUsuario);
 }

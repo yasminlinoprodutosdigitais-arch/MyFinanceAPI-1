@@ -10,7 +10,6 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class ExtratoBancarioController : ApiControllerBase
     {
         private readonly IExtratoBancarioService _extratoBancarioService;
@@ -39,21 +38,21 @@ namespace MyFinanceAPI.Api.Controllers
 
             var extrato = await _extratoBancarioService.GetExtratoBancarioById(id, userId);
             if (extrato is null)
-                return NotFound("Extrato bancário não encontrado!");
+                return NaoEncontrado("Extrato bancário não encontrado.");
 
             return Ok(extrato);
         }
 
-        // POST /ImportExtratoBancario
+        // POST /ImportExtratoBancario — ação de importação: 200 com o resumo (criados, ignorados…).
         [HttpPost("/ImportExtratoBancario")]
-        public async Task<IActionResult> ImportExtratoBancario(
+        public async Task<ActionResult<ExtratoImportacaoResultadoDTO>> ImportExtratoBancario(
             [FromForm] IFormFile arquivo,
             [FromForm] int bancoId)
         {
             var userId = UsuarioId;
 
             if (arquivo == null || arquivo.Length == 0)
-                return BadRequest("Nenhum arquivo foi enviado.");
+                return ErroRequisicao("Nenhum arquivo foi enviado.");
 
             using var stream = arquivo.OpenReadStream();
 
@@ -67,18 +66,14 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(resultadoImportacao);
         }
 
-        // DELETE /DeleteExtratoBancario/123
+        // DELETE /DeleteExtratoBancario/123 — inexistente: o serviço lança KeyNotFoundException → 404.
         [HttpDelete("/DeleteExtratoBancario/{id}")]
-        public async Task<ActionResult<ExtratoBancarioDTO>> DeleteExtratoBancario(int id)
+        public async Task<IActionResult> DeleteExtratoBancario(int id)
         {
             var userId = UsuarioId;
 
-            var extrato = await _extratoBancarioService.GetExtratoBancarioById(id, userId);
-            if (extrato == null)
-                return NotFound(new { message = "Extrato bancário não encontrado." });
-
             await _extratoBancarioService.Remove(id, userId);
-            return Ok(extrato);
+            return NoContent();
         }
     }
 }

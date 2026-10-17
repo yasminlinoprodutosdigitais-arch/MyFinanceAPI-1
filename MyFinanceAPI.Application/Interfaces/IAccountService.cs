@@ -13,5 +13,4 @@ public interface IAccountService
     Task<IEnumerable<AccountDTO>> GetAccounts(int userId);
     Task<IEnumerable<AccountDTO>> GetContasAtivas(int userId);
     Task<AccountDTO> GetAccountById(int id, int userId);
-    Task<IEnumerable<AccountDTO>> GetAccountByCategory(int categoryId, int userId);
 }

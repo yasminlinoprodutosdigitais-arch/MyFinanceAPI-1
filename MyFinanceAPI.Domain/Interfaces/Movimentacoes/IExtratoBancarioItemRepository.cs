@@ -19,7 +19,6 @@ namespace MyFinanceAPI.Domain.Interfaces
 
         // GET
         Task<ExtratoBancarioItem?> GetByIdAsync(int id);
-        Task<IEnumerable<ExtratoBancarioItem>> GetByExtratoAsync(int extratoBancarioId);
         Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndMonthAsync(int userId, DateOnly inicioInclusive, DateOnly fimExclusive, string numeroFatura = null, int? bancoId = null);
         Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndFaturaAsync(int userId, string numeroFatura, int? bancoId = null);
         Task<List<ExtratoBancarioItem>> GetByChaveDescricaoAsync(string chaveDescricao, int userId);

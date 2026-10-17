@@ -2,7 +2,9 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Domain.Entities;
+
+namespace MyFinanceAPI.Application.DTO;
 public class BancoDTO
 {
     public int Id { get; set; }

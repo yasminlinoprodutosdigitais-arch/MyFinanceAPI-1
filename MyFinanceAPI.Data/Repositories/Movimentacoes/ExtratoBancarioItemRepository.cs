@@ -115,18 +115,6 @@ namespace MyFinanceAPI.Data.Repositories
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task<IEnumerable<ExtratoBancarioItem>> GetByExtratoAsync(int extratoBancarioId)
-        {
-            return await _context.ExtratoBancarioItens.AsNoTracking()
-                .Include(i => i.Banco)
-                .Include(i => i.TipoCartao)
-                .Include(i => i.TipoMovimentacao)
-                .Where(i => i.ExtratoBancarioId == extratoBancarioId)
-                .OrderBy(i => i.DataMovimentacao)
-                .ThenBy(i => i.Id)
-                .ToListAsync();
-        }
-
         public async Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndMonthAsync(
             int userId,
             DateOnly inicioInclusive,

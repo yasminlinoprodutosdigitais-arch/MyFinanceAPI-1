@@ -9,14 +9,16 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class ItemListaController : ApiControllerBase
     {
+        /// <summary>Não há GET de um item só: a rota devolve os itens da lista (recebe o id da lista).</summary>
+        public const string RotaItensDaLista = "GetItemLista";
+
         private readonly IItemListaService _itemListaService;
 
-        public ItemListaController(IItemListaService ItemListaervice)
+        public ItemListaController(IItemListaService itemListaService)
         {
-            _itemListaService = ItemListaervice;
+            _itemListaService = itemListaService;
         }
 
         [HttpGet("/GetItemLista")]
@@ -28,29 +30,23 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(ItemLista);
         }
 
-        [HttpGet("/GetItemListaById/{id}", Name = "GetItemLista")]
+        [HttpGet("/GetItemListaById/{id}", Name = RotaItensDaLista)]
         public async Task<ActionResult<List<ItemListaDTO>>> GetItemListaById(int id)
         {
             var userId = UsuarioId;
 
             var ItemLista = await _itemListaService.GetItemListaByListaId(id, userId);
-            if (ItemLista is null)
-                return NotFound("ItemLista não encontrada!");
-            else
-                return Ok(ItemLista);
-
+            return Ok(ItemLista);
         }
 
+        /// <summary>201 com o item criado; o Location aponta para os itens da lista dele.</summary>
         [HttpPost("/CreateItemLista")]
-        public async Task<ActionResult> CreateItemLista([FromBody] ItemListaDTO ItemListaDTO)
+        public async Task<ActionResult<ItemListaDTO>> CreateItemLista([FromBody] ItemListaDTO ItemListaDTO)
         {
             var userId = UsuarioId;
 
-            if (ItemListaDTO is null)
-                return BadRequest("Dados inválidos.");
-
-            await _itemListaService.AdicionarAsync(ItemListaDTO, userId);
-            return Ok("ItemLista criada com sucesso!");
+            var criado = await _itemListaService.AdicionarAsync(ItemListaDTO, userId);
+            return Criado(RotaItensDaLista, criado.ListaId, criado);
         }
 
         [HttpPut("/UpdateItemLista")]
@@ -59,20 +55,20 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             await _itemListaService.AtualizarAsync(ItemListaDTO, userId);
-            return ItemListaDTO;
+            return Ok(ItemListaDTO);
         }
 
         [HttpDelete("/DeleteItemLista/{id}")]
-        public async Task<ActionResult<ItemListaDTO>> DeleteItemLista(int id)
+        public async Task<IActionResult> DeleteItemLista(int id)
         {
             var userId = UsuarioId;
 
             var ItemLista = await _itemListaService.ObterPorIdAsync(id, userId);
-            if(ItemLista == null)
-                return NotFound(new {message = "ItemLista não encontrada."});
+            if (ItemLista == null)
+                return NaoEncontrado("Item da lista não encontrado.");
 
             await _itemListaService.RemoverAsync(id, userId);
-            return Ok(ItemLista);
+            return NoContent();
         }
     }
 }

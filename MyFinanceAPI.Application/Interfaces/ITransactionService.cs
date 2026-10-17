@@ -13,7 +13,8 @@ public interface ITransactionService
     Task<IEnumerable<TransactionDTO>> BuscarContasMensais(DateTime date, int userId, bool pesquisaDataCompleta = false);    
     Task<IEnumerable<TransactionDTO>> GetContaVencida(DateTime hoje, int userId);
 
-    Task Add(TransactionDTO TransactionDTO, int userId);
+    /// <summary>Cria uma transação por vencimento da conta e devolve as criadas.</summary>
+    Task<IReadOnlyList<TransactionDTO>> Add(TransactionDTO TransactionDTO, int userId);
     Task Update(TransactionDTO TransactionDTO, int userId);
     Task Delete(int id, int userId);
 }

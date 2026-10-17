@@ -93,7 +93,7 @@ public class TransactionServiceTests
         {
             Id = AccountId,
             Value = 300m,
-            Categoryid = 4,
+            CategoryId = 4,
             DataOperacao = new List<int> { 5, 31 },
             ContaVencimentos = new List<ContaVencimento>
             {
@@ -128,6 +128,45 @@ public class TransactionServiceTests
         Assert.Equal(new DateOnly(2026, 2, 28), criadas[1].Date); // dia 31 em fevereiro → último dia
     }
 
+    [Fact]
+    public async Task Add_devolve_as_transacoes_criadas_uma_por_vencimento()
+    {
+        // Uma por vencimento da conta; o 201 leva todas, com o Location da primeira (BE-P3-05).
+        ContaParceladaParaLancar(parcelaAtual: 1, quantidadeParcelas: 10, [], vencimentos: 2);
+        var proximoId = 900;
+        _repo.Setup(r => r.Create(It.IsAny<List<Transaction>>()))
+            .Callback<List<Transaction>>(t => t.ForEach(x => x.Id = proximoId++))
+            .Returns(Task.CompletedTask);
+
+        var criadas = await CriarService().Add(Lancamento(), UserId);
+
+        Assert.Equal([900, 901], criadas.Select(t => t.Id));
+        Assert.All(criadas, t => Assert.Equal(AccountId, t.IdAccount));
+    }
+
+    [Fact]
+    public async Task Add_devolve_transacoes_que_viram_JSON_mesmo_com_a_conta_rastreada()
+    {
+        // Na gravação o EF liga a conta rastreada às transações novas (Account.Transactions ↔
+        // Transaction.Account). Devolvidas assim, o JSON do 201 entrava em ciclo — com a transação
+        // já gravada (achado na validação do BE-P3, 17/10/2026).
+        ContaParceladaParaLancar(parcelaAtual: 1, quantidadeParcelas: 10, []);
+        var contaRastreada = new Account { Id = AccountId, Name = "Notebook", Transactions = new List<Transaction>() };
+        _repo.Setup(r => r.Create(It.IsAny<List<Transaction>>()))
+            .Callback<List<Transaction>>(t => t.ForEach(x =>
+            {
+                x.Id = 900;
+                x.Account = contaRastreada;
+                contaRastreada.Transactions.Add(x);
+            }))
+            .Returns(Task.CompletedTask);
+
+        var criadas = await CriarService().Add(Lancamento(), UserId);
+
+        var json = System.Text.Json.JsonSerializer.Serialize(criadas, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        Assert.Contains("\"id\":900", json);
+    }
+
     // ---------- Add: número da parcela ----------
 
     private List<Transaction>? _criadas;
@@ -138,7 +177,7 @@ public class TransactionServiceTests
         {
             Id = AccountId,
             Value = 300m,
-            Categoryid = 4,
+            CategoryId = 4,
             EhParcelado = true,
             ParcelaAtual = parcelaAtual,
             QuantidadeParcelas = quantidadeParcelas,
@@ -460,7 +499,7 @@ public class TransactionServiceTests
             {
                 Id = AccountId,
                 Value = 80m,
-                Categoryid = 4,
+                CategoryId = 4,
                 ContaVencimentos = new List<ContaVencimento> { new() { ContaId = AccountId, Dia = 15 } },
             });
         RegistrarGravacoesDaTransacao();
@@ -476,5 +515,78 @@ public class TransactionServiceTests
 
         _repo.Verify(r => r.Create(It.IsAny<List<Transaction>>()), Times.Once);
         Assert.Empty(_uow.Fora);
+    }
+
+    // ---------- Add: conta nova com vários dias (modal "Adicionar nova conta", 17/10/2026) ----------
+
+    private AccountDTO? _contaNovaPedida;
+
+    /// <summary>Sem conta: devolve a conta "gravada" com os vencimentos pedidos, como o AccountService faz.</summary>
+    private void ContaNovaDevolveOsDiasPedidos()
+    {
+        _accountService.Setup(s => s.GetAccountById(It.IsAny<int>(), UserId)).ReturnsAsync((AccountDTO)null!);
+        _accountService.Setup(s => s.Add(It.IsAny<AccountDTO>(), UserId))
+            .ReturnsAsync((AccountDTO pedida, int _) =>
+            {
+                _contaNovaPedida = pedida;
+                return new AccountDTO
+                {
+                    Id = AccountId,
+                    Value = pedida.Value,
+                    CategoryId = pedida.CategoryId,
+                    ContaVencimentos = pedida.DataOperacao.Select(d => new ContaVencimento { ContaId = AccountId, Dia = d }).ToList(),
+                };
+            });
+        _repo.Setup(r => r.Create(It.IsAny<List<Transaction>>()))
+            .Callback<List<Transaction>>(t => _criadas = t)
+            .Returns(Task.CompletedTask);
+    }
+
+    private static TransactionDTO ContaAvulsa(List<int>? dias) => new()
+    {
+        Name = "Escola",
+        Value = 300m,
+        CategoryId = 4,
+        Status = "PENDENTE",
+        Date = new DateOnly(2026, 10, 1),
+        DiasVencimento = dias,
+    };
+
+    [Fact]
+    public async Task Add_com_conta_nova_e_varios_dias_cria_a_conta_com_os_dias_e_uma_transacao_por_dia()
+    {
+        ContaNovaDevolveOsDiasPedidos();
+
+        await CriarService().Add(ContaAvulsa([20, 5]), UserId);
+
+        Assert.Equal([5, 20], _contaNovaPedida!.DataOperacao);
+        Assert.Equal([new DateOnly(2026, 10, 5), new DateOnly(2026, 10, 20)], _criadas!.Select(t => t.Date));
+        Assert.All(_criadas!, t => Assert.Equal(150m, t.Value)); // valor da conta dividido entre os dias
+    }
+
+    [Fact]
+    public async Task Add_com_conta_nova_sem_dias_usa_o_dia_da_data()
+    {
+        ContaNovaDevolveOsDiasPedidos();
+
+        var avulsa = ContaAvulsa(null);
+        avulsa.Date = new DateOnly(2026, 10, 15);
+
+        await CriarService().Add(avulsa, UserId);
+
+        Assert.Equal([15], _contaNovaPedida!.DataOperacao);
+    }
+
+    [Theory]
+    [InlineData(new[] { 5, 5 })]
+    [InlineData(new[] { 0 })]
+    [InlineData(new[] { 32 })]
+    public async Task Add_com_conta_nova_e_dias_invalidos_e_recusado(int[] dias)
+    {
+        ContaNovaDevolveOsDiasPedidos();
+
+        await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(ContaAvulsa(dias.ToList()), UserId));
+
+        _accountService.Verify(s => s.Add(It.IsAny<AccountDTO>(), It.IsAny<int>()), Times.Never);
     }
 }

@@ -93,10 +93,4 @@ public class AccountService : IAccountService
         return _mapper.Map<AccountDTO>(account);
     }
 
-    public async Task<IEnumerable<AccountDTO>> GetAccountByCategory(int categoryId, int userId)
-    {
-        var accounts = await _accountRepository.GetAccountByCategory(categoryId, userId);
-        return _mapper.Map<IEnumerable<AccountDTO>>(accounts);
-    }
-
 }

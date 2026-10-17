@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class CategoriesController : ApiControllerBase
     {
+        public const string RotaPorId = "GetCategory";
+
         private readonly ICategoryService _categoryService;
 
         public CategoriesController(ICategoryService categoryService)
@@ -24,10 +25,7 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             var categories = await _categoryService.ListarAsync(userId);
-            if (categories is null)
-                return NotFound("");
-            else
-                return Ok(categories);
+            return Ok(categories);
         }
 
         [HttpGet("/GetCategoriasAtivas")]
@@ -36,22 +34,19 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             var categories = await _categoryService.GetCategoriasAtivas(userId);
-            if (categories is null)
-                return NotFound("");
-            else
-                return Ok(categories);
+            return Ok(categories);
         }
 
-        [HttpGet("/GetCategoryById/{id}", Name = "GetCategory")]
+        [HttpGet("/GetCategoryById/{id}", Name = RotaPorId)]
         public async Task<ActionResult<CategoryDTO>> GetCategorybyId(int id)
         {
             var userId = UsuarioId;
 
             var category = await _categoryService.ObterPorIdAsync(id, userId);
             if (category is null)
-                return NotFound("Category not found");
-            else
-                return Ok(category);
+                return NaoEncontrado("Categoria não encontrada.");
+
+            return Ok(category);
         }
 
         [HttpPost("/CreateCategory")]
@@ -59,34 +54,31 @@ namespace MyFinanceAPI.Api.Controllers
         {
             var userId = UsuarioId;
 
-            if (categoryDto is null)
-                return BadRequest("Invalid Data");
-
-            await _categoryService.AdicionarAsync(categoryDto, userId);
-            return new CreatedAtRouteResult("GetCategory", new { id = categoryDto.Id }, categoryDto);
+            var criada = await _categoryService.AdicionarAsync(categoryDto, userId);
+            return Criado(RotaPorId, criada.Id, criada);
         }
 
         [HttpPut("/UpdateCategory")]
-        public async Task<IActionResult> UpdateCategory([FromBody] CategoryDTO categoryDto)
+        public async Task<ActionResult<CategoryDTO>> UpdateCategory([FromBody] CategoryDTO categoryDto)
         {
             var userId = UsuarioId;
 
             // Categoria alheia ou inexistente: NaoEncontradoException → 404.
             await _categoryService.AtualizarAsync(categoryDto, userId);
-            return Ok(new { message = "Categoria atualizada com sucesso!" });
+            return Ok(categoryDto);
         }
 
         [HttpDelete("/DeleteCategory/{id}")]
-        public async Task<ActionResult<CategoryDTO>> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             var userId = UsuarioId;
 
             var category = await _categoryService.ObterPorIdAsync(id, userId);
             if (category is null)
-                return NotFound("Categoria não encontrada!");
+                return NaoEncontrado("Categoria não encontrada.");
 
             await _categoryService.RemoverAsync(id, userId);
-            return Ok(category);
+            return NoContent();
         }
     }
 }

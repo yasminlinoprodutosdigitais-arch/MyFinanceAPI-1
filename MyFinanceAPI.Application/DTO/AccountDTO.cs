@@ -10,7 +10,7 @@ public class AccountDTO
     public int Id { get; set; }
     public string? Name { get; set; }
     public decimal Value { get; set; }
-    public int Categoryid { get; set; }
+    public int CategoryId { get; set; }
     [NotMapped]
     public string? CategoryName { get; set; }
     public int Status { get; set; }

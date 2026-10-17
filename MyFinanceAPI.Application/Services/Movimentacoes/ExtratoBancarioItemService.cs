@@ -40,17 +40,6 @@ namespace MyFinanceAPI.Application.Services
             return _mapper.Map<ExtratoBancarioItemDTO>(entity);
         }
 
-        public async Task<IEnumerable<ExtratoBancarioItemDTO>> GetByExtratoAsync(int extratoId, int userId)
-        {
-            var entities = await _itemRepository.GetByExtratoAsync(extratoId);
-
-            var filtrados = entities
-                .Where(e => e.UserId == userId)
-                .ToList();
-
-            return _mapper.Map<IEnumerable<ExtratoBancarioItemDTO>>(filtrados);
-        }
-
         public async Task<ExtratoBancarioItemDTO> AddAsync(ExtratoBancarioItemDTO dto, int userId)
         {
             if (dto == null)

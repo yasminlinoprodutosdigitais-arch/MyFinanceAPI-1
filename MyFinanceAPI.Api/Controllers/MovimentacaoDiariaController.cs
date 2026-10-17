@@ -9,10 +9,16 @@ using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Api.Controllers
 {
+    /// <summary>
+    /// Lançamentos diários que mexem no saldo do banco (a regra está no MovimentacaoDiariaService).
+    /// Nenhuma tela usa este módulo hoje — a tela de movimentações usa ExtratoBancario —, mas ele fica
+    /// por decisão de 14/10/2026 (BE-P3-02): é onde vive a lógica de saldo bancário.
+    /// </summary>
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class MovimentacaoDiariaController : ApiControllerBase
     {
+        public const string RotaPorId = "GetMovimentacaoDiaria";
+
         private readonly IMovimentacaoDiariaService _movimentacaoDiariaService;
 
         public MovimentacaoDiariaController(IMovimentacaoDiariaService MovimentacaoDiariaService)
@@ -29,40 +35,34 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(MovimentacaoDiaria);
         }
 
-        [HttpGet("/GetMovimentacaoDiariaById/{id}", Name = "GetMovimentacaoDiaria")]
+        [HttpGet("/GetMovimentacaoDiariaById/{id}", Name = RotaPorId)]
         public async Task<ActionResult<MovimentacaoDiariaDTO>> GetMovimentacaoDiariaById(int id)
         {
             var userId = UsuarioId;
 
             var MovimentacaoDiaria = await _movimentacaoDiariaService.ObterPorIdAsync(id, userId);
             if (MovimentacaoDiaria is null)
-                return NotFound("MovimentacaoDiaria não encontrada!");
-            else
-                return Ok(MovimentacaoDiaria);
+                return NaoEncontrado("Movimentação diária não encontrada.");
+
+            return Ok(MovimentacaoDiaria);
         }
 
         [HttpGet("/GetMovimentacaoDiariaByDate/{date}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetMovimentacaoByDate(DateTime date)
+        public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoByDate(DateTime date)
         {
             var userId = UsuarioId;
 
-            var transaction = await _movimentacaoDiariaService.GetMovimentacaoByDate(date, userId);
-            if (transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
+            var movimentacoes = await _movimentacaoDiariaService.GetMovimentacaoByDate(date, userId);
+            return Ok(movimentacoes);
         }
 
         [HttpPost("/CreateMovimentacaoDiaria")]
-        public async Task<ActionResult> CreateMovimentacaoDiaria([FromBody] MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
+        public async Task<ActionResult<MovimentacaoDiariaDTO>> CreateMovimentacaoDiaria([FromBody] MovimentacaoDiariaDTO MovimentacaoDiariaDTO)
         {
             var userId = UsuarioId;
 
-            if (MovimentacaoDiariaDTO is null)
-                return BadRequest("Dados inválidos.");
-
-            await _movimentacaoDiariaService.AdicionarAsync(MovimentacaoDiariaDTO, userId);
-            return Ok("MovimentacaoDiaria criada com sucesso!");
+            var criada = await _movimentacaoDiariaService.AdicionarAsync(MovimentacaoDiariaDTO, userId);
+            return Criado(RotaPorId, criada.Id, criada);
         }
 
         [HttpPut("/UpdateMovimentacaoDiaria")]
@@ -71,20 +71,20 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             await _movimentacaoDiariaService.AtualizarAsync(MovimentacaoDiariaDTO, userId);
-            return MovimentacaoDiariaDTO;
+            return Ok(MovimentacaoDiariaDTO);
         }
 
         [HttpDelete("/DeleteMovimentacaoDiaria/{id}")]
-        public async Task<ActionResult<MovimentacaoDiariaDTO>> DeleteMovimentacaoDiaria(int id)
+        public async Task<IActionResult> DeleteMovimentacaoDiaria(int id)
         {
             var userId = UsuarioId;
 
             var MovimentacaoDiaria = await _movimentacaoDiariaService.ObterPorIdAsync(id, userId);
             if (MovimentacaoDiaria == null)
-                return NotFound(new { message = "MovimentacaoDiaria não encontrada." });
+                return NaoEncontrado("Movimentação diária não encontrada.");
 
             await _movimentacaoDiariaService.RemoverAsync(id, userId);
-            return Ok(MovimentacaoDiaria);
+            return NoContent();
         }
     }
 }

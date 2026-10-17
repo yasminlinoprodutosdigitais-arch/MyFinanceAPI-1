@@ -9,9 +9,10 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class TipoMovimentacaoController : ApiControllerBase
     {
+        public const string RotaPorId = "GetTipoMovimentacao";
+
         private readonly ITipoMovimentacaoService _TipoMovimentacaoService;
 
         public TipoMovimentacaoController(ITipoMovimentacaoService TipoMovimentacaoService)
@@ -28,29 +29,25 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(TipoMovimentacao);
         }
 
-        [HttpGet("/GetTipoMovimentacaoById/{id}", Name = "GetTipoMovimentacao")]
+        [HttpGet("/GetTipoMovimentacaoById/{id}", Name = RotaPorId)]
         public async Task<ActionResult<TipoMovimentacaoDTO>> GetTipoMovimentacaoById(int id)
         {
             var userId = UsuarioId;
 
             var TipoMovimentacao = await _TipoMovimentacaoService.ObterPorIdAsync(id, userId);
             if (TipoMovimentacao is null)
-                return NotFound("Tipo Movimentacao não encontrada!");
-            else
-                return Ok(TipoMovimentacao);
+                return NaoEncontrado("Tipo de movimentação não encontrado.");
 
+            return Ok(TipoMovimentacao);
         }
 
         [HttpPost("/CreateTipoMovimentacao")]
-        public async Task<ActionResult> CreateTipoMovimentacao([FromBody] TipoMovimentacaoDTO TipoMovimentacaoDTO)
+        public async Task<ActionResult<TipoMovimentacaoDTO>> CreateTipoMovimentacao([FromBody] TipoMovimentacaoDTO TipoMovimentacaoDTO)
         {
             var userId = UsuarioId;
 
-            if (TipoMovimentacaoDTO is null)
-                return BadRequest("Dados inválidos.");
-
-            await _TipoMovimentacaoService.AdicionarAsync(TipoMovimentacaoDTO, userId);
-            return Ok(new { success = true, message = "Tipo Movimentacao criada com sucesso!" });
+            var criado = await _TipoMovimentacaoService.AdicionarAsync(TipoMovimentacaoDTO, userId);
+            return Criado(RotaPorId, criado.Id, criado);
         }
 
         [HttpPut("/UpdateTipoMovimentacao")]
@@ -59,20 +56,20 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             await _TipoMovimentacaoService.AtualizarAsync(TipoMovimentacaoDTO, userId);
-            return TipoMovimentacaoDTO;
+            return Ok(TipoMovimentacaoDTO);
         }
 
         [HttpDelete("/DeleteTipoMovimentacao/{id}")]
-        public async Task<ActionResult<TipoMovimentacaoDTO>> DeleteTipoMovimentacao(int id)
+        public async Task<IActionResult> DeleteTipoMovimentacao(int id)
         {
             var userId = UsuarioId;
 
             var TipoMovimentacao = await _TipoMovimentacaoService.ObterPorIdAsync(id, userId);
-            if(TipoMovimentacao == null)
-                return NotFound(new {message = "Tipo Movimentacao não encontrada."});
+            if (TipoMovimentacao == null)
+                return NaoEncontrado("Tipo de movimentação não encontrado.");
 
             await _TipoMovimentacaoService.RemoverAsync(id, userId);
-            return Ok(TipoMovimentacao);
+            return NoContent();
         }
     }
 }

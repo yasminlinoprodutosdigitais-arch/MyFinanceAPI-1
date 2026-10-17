@@ -28,20 +28,6 @@ public class AccountRepository(ContextDB context) : IAccountRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Account>>? GetAccountByCategory(int categoryId, int userId)
-    {
-        var accounts = await _context.Accounts.AsNoTracking()
-            .Where(c => c.UserId == userId && c.Category.Id == categoryId)
-            .Include(a => a.Category)
-            .OrderBy(c => c.Name)
-            .ToListAsync();
-
-        if (accounts == null)
-            throw new KeyNotFoundException("Categoria não encontrada");
-
-        return accounts;
-    }
-
     // Local: MyFinanceAPI/MyFinanceAPI.Data/Repositories/AccountRepository.cs
     public async Task Remove(int id, int userId)
     {

@@ -75,7 +75,9 @@ builder.Services.AddHealthChecks();
 builder.Services.AddExceptionHandler<ErroHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddControllers();
+// Corpo inválido também sai como { message }, não como ProblemDetails (BE-P3-05).
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ModeloInvalido.Resposta);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

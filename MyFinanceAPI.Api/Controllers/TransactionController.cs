@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -9,9 +8,10 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class TransactionController : ApiControllerBase
     {
+        public const string RotaPorId = "GetTransaction";
+
         private readonly ITransactionService _transactionService;
 
         public TransactionController(ITransactionService transactionService)
@@ -19,44 +19,38 @@ namespace MyFinanceAPI.Api.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpGet("/GetTransactionById/{id}", Name = "GetUpdate")]
-        public async Task<ActionResult<Transaction>> GetTransactionById(int id)
+        [HttpGet("/GetTransactionById/{id}", Name = RotaPorId)]
+        public async Task<ActionResult<TransactionDTO>> GetTransactionById(int id)
         {
             var userId = UsuarioId;
 
             if (id <= 0)
-                return BadRequest(new { message = "Invalid transaction ID." });
+                return ErroRequisicao("Id de transação inválido.");
 
             var transaction = await _transactionService.GetTransactionById(id, userId);
 
             if (transaction == null)
-                return NotFound(new { message = "Transaction not found." });
+                return NaoEncontrado("Transação não encontrada.");
 
             return Ok(transaction);
         }
 
         [HttpGet("/GetTransactionByDate/{date}/{pesquisaDataCompleta}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta)
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta)
         {
             var userId = UsuarioId;
 
             var transaction = await _transactionService.GetTransactionByDate(date, userId, pesquisaDataCompleta);
-            if (transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
+            return Ok(transaction);
         }
 
         [HttpGet("/GetContaVencida/{date}")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetContaVencida(DateTime date)
+        public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetContaVencida(DateTime date)
         {
             var userId = UsuarioId;
 
             var transaction = await _transactionService.GetContaVencida(date, userId);
-            if (transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
+            return Ok(transaction);
         }
 
         [HttpGet("/BuscarContasMensais/{date}/{pesquisaDataCompleta}")]
@@ -65,19 +59,19 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             var transaction = await _transactionService.BuscarContasMensais(date, userId, pesquisaDataCompleta);
-            if (transaction is null)
-                return NotFound();
-            else
-                return Ok(transaction);
+            return Ok(transaction);
         }
 
+        /// <summary>
+        /// Cria uma transação por vencimento da conta: o 201 leva todas as criadas, com o Location da primeira.
+        /// </summary>
         [HttpPost("/CreateTransaction")]
-        public async Task<ActionResult<TransactionDTO>> CreateTransaction([FromBody] TransactionDTO transactionDTO)
+        public async Task<ActionResult<IReadOnlyList<TransactionDTO>>> CreateTransaction([FromBody] TransactionDTO transactionDTO)
         {
             var userId = UsuarioId;
 
-            await _transactionService.Add(transactionDTO, userId);
-            return new CreatedAtRouteResult("Getupdate", new { id = transactionDTO.Id }, transactionDTO);
+            var criadas = await _transactionService.Add(transactionDTO, userId);
+            return Criado(RotaPorId, criadas[0].Id, criadas);
         }
 
         [HttpPut("/UpdateTransaction")]
@@ -86,17 +80,17 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             await _transactionService.Update(transactionDTO, userId);
-            return transactionDTO;
+            return Ok(transactionDTO);
         }
 
+        // Inexistente: o serviço lança NaoEncontradoException → 404.
         [HttpDelete("/DeleteTransaction/{id}")]
-        public async Task<ActionResult<TransactionDTO>> DeleteAccountHistory(int id)
+        public async Task<IActionResult> DeleteAccountHistory(int id)
         {
             var userId = UsuarioId;
 
-            var transaction = await _transactionService.GetTransactionById(id, userId);
             await _transactionService.Delete(id, userId);
-            return transaction;
+            return NoContent();
         }
     }
 }

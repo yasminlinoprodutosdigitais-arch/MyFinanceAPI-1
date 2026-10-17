@@ -41,13 +41,13 @@ public abstract class ServicoCadastro<TEntidade, TDto>(IRepositorioDoUsuario<TEn
         return entidade == null ? null : mapper.Map<TDto>(entidade);
     }
 
-    public virtual async Task AdicionarAsync(TDto dto, int userId)
+    public virtual async Task<TDto> AdicionarAsync(TDto dto, int userId)
     {
         await ValidarGravacaoAsync(dto, userId, ignorarId: 0);
 
         var entidade = ParaEntidade(dto);
         DefinirDono(entidade, userId);
-        await repositorio.CriarAsync(entidade);
+        return mapper.Map<TDto>(await repositorio.CriarAsync(entidade));
     }
 
     public virtual async Task AtualizarAsync(TDto dto, int userId)

@@ -9,7 +9,8 @@ public interface IServicoCadastro<TDto> where TDto : class
     Task<IEnumerable<TDto>> ListarAsync(int userId);
     /// <summary>Null se não existe ou se o usuário não o enxerga.</summary>
     Task<TDto?> ObterPorIdAsync(int id, int userId);
-    Task AdicionarAsync(TDto dto, int userId);
+    /// <summary>Devolve o registro criado, já com o id gerado.</summary>
+    Task<TDto> AdicionarAsync(TDto dto, int userId);
     /// <summary>Registro alheio ou inexistente: NaoEncontradoException (404).</summary>
     Task AtualizarAsync(TDto dto, int userId);
     Task RemoverAsync(int id, int userId);

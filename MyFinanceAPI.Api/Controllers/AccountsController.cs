@@ -9,9 +9,10 @@ using MyFinanceAPI.Domain.Entities;
 namespace MyFinanceAPI.Api.Controllers
 {
     [Authorize(Policy = "Admin")]
-    [Route("api/[controller]")]
     public class AccountsController : ApiControllerBase
     {
+        public const string RotaPorId = "GetAccount";
+
         private readonly IAccountService _accountService;
 
         public AccountsController(IAccountService accountService)
@@ -37,33 +38,16 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(accounts);
         }
 
-        [HttpGet("/GetAccountById/{id}", Name = "GetAccount")]
+        [HttpGet("/GetAccountById/{id}", Name = RotaPorId)]
         public async Task<ActionResult<AccountDTO>> GetAccountById(int id)
         {
             var userId = UsuarioId;
 
             var account = await _accountService.GetAccountById(id, userId);
             if (account is null)
-                return NotFound("Account Bad Request");
-            else
-                return Ok(account);
+                return NaoEncontrado("Conta não encontrada.");
 
-        }
-
-        [HttpGet("/GetAccountsByCategory/{id}")]
-        public async Task<ActionResult<ActionResult<AccountDTO>>> GetAccountByCategory(int id)
-        {
-            var userId = UsuarioId;
-
-            if (id == 0 || id < 0)
-                return BadRequest("");
-
-            var Accounts = await _accountService.GetAccountByCategory(id, userId);
-
-            if (Accounts is null)
-                return NotFound();
-            else
-                return Ok(Accounts);
+            return Ok(account);
         }
 
         [HttpPost("/CreateAccount")]
@@ -71,11 +55,8 @@ namespace MyFinanceAPI.Api.Controllers
         {
             var userId = UsuarioId;
 
-            if (accountDTO is null)
-                return BadRequest("Dados inválidos.");
-
-            await _accountService.Add(accountDTO, userId);
-            return new CreatedAtRouteResult("GetCategory", new { id = accountDTO.Id }, accountDTO);
+            var criada = await _accountService.Add(accountDTO, userId);
+            return Criado(RotaPorId, criada.Id, criada);
         }
 
         [HttpPut("/UpdateAccount")]
@@ -84,21 +65,20 @@ namespace MyFinanceAPI.Api.Controllers
             var userId = UsuarioId;
 
             await _accountService.Update(accountDTO, userId);
-            return accountDTO;
-
+            return Ok(accountDTO);
         }
 
         [HttpDelete("/DeleteAccount/{id}")]
-        public async Task<ActionResult<AccountDTO>> DeleteAccount(int id)
+        public async Task<IActionResult> DeleteAccount(int id)
         {
             var userId = UsuarioId;
 
             var account = await _accountService.GetAccountById(id, userId);
-            if(account == null)
-                return NotFound(new {message = "Conta não encontrada"});
+            if (account == null)
+                return NaoEncontrado("Conta não encontrada.");
 
             await _accountService.Remove(id, userId);
-            return Ok(account);
+            return NoContent();
         }
     }
 }

@@ -45,7 +45,7 @@ public class AccountServiceTests
         Id = id,
         Name = "Internet",
         Value = 120m,
-        Categoryid = 4,
+        CategoryId = 4,
         Status = 1,
         DataOperacao = new List<int> { 5, 20 },
     };

@@ -1,5 +1,6 @@
 using Moq;
 using MyFinanceAPI.Application.Services;
+using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Domain.Entities;
 using MyFinanceAPI.Domain.Interfaces;
 
