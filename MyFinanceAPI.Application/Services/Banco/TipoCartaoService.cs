@@ -10,7 +10,7 @@ public class TipoCartaoService(ITipoCartaoRepository tipoCartaoRepository, IMapp
     : ServicoCadastro<TipoCartao, TipoCartaoDTO>(tipoCartaoRepository, mapper), ITipoCartaoService
 {
     // TipoCartao não herda BaseEntity: o dono é opcional (padrão do sistema).
-    protected override void DefinirDono(TipoCartao entidade, int userId) => entidade.UserId = userId;
+    protected override void DefinirDono(TipoCartao entidade, int userId) => entidade.UsuarioId = userId;
 
     protected override async Task ValidarGravacaoAsync(TipoCartaoDTO dto, int userId, int ignorarId)
     {

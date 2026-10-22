@@ -21,7 +21,7 @@ namespace MyFinanceAPI.Data.Repositories
         {
             try
             {
-                await _context.ExtratoBancarioItens.AddAsync(item);
+                await _context.ItensExtratoBancario.AddAsync(item);
                 await _context.SaveChangesAsync();
                 return item;
                 
@@ -35,7 +35,7 @@ namespace MyFinanceAPI.Data.Repositories
         public async Task CreateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
         {try
             {
-                await _context.ExtratoBancarioItens.AddRangeAsync(itens);
+                await _context.ItensExtratoBancario.AddRangeAsync(itens);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -47,8 +47,8 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<HashSet<string>> ObterChavesImportacaoAsync(int userId, int bancoId)
         {
-            var chaves = await _context.ExtratoBancarioItens
-                .Where(i => i.UserId == userId && i.BancoId == bancoId && i.ChaveImportacao != null)
+            var chaves = await _context.ItensExtratoBancario
+                .Where(i => i.UsuarioId == userId && i.BancoId == bancoId && i.ChaveImportacao != null)
                 .Select(i => i.ChaveImportacao!)
                 .ToListAsync();
             return chaves.ToHashSet();
@@ -56,8 +56,8 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<List<ExtratoBancarioItem>> ObterCandidatosTruncadosAsync(int userId, int bancoId)
         {
-            return await _context.ExtratoBancarioItens
-                .Where(i => i.UserId == userId && i.BancoId == bancoId
+            return await _context.ItensExtratoBancario
+                .Where(i => i.UsuarioId == userId && i.BancoId == bancoId
                             && i.ExtratoBancarioId != null && i.Identificador != null
                             && i.Valor == Math.Truncate(i.Valor))
                 .ToListAsync();
@@ -69,7 +69,7 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task UpdateAsync(ExtratoBancarioItem item)
         {
-            _context.ExtratoBancarioItens.Update(item);
+            _context.ItensExtratoBancario.Update(item);
             await _context.SaveChangesAsync();
         }
 
@@ -79,26 +79,26 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task RemoveAsync(int id)
         {
-            var item = await _context.ExtratoBancarioItens
+            var item = await _context.ItensExtratoBancario
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (item == null)
                 return;
 
-            _context.ExtratoBancarioItens.Remove(item);
+            _context.ItensExtratoBancario.Remove(item);
             await _context.SaveChangesAsync();
         }
 
         public async Task RemoveByExtratoIdAsync(int extratoId)
         {
-            var itens = await _context.ExtratoBancarioItens
+            var itens = await _context.ItensExtratoBancario
                 .Where(i => i.ExtratoBancarioId == extratoId)
                 .ToListAsync();
 
             if (!itens.Any())
                 return;
 
-            _context.ExtratoBancarioItens.RemoveRange(itens);
+            _context.ItensExtratoBancario.RemoveRange(itens);
             await _context.SaveChangesAsync();
         }
 
@@ -108,7 +108,7 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<ExtratoBancarioItem?> GetByIdAsync(int id)
         {
-            return await _context.ExtratoBancarioItens
+            return await _context.ItensExtratoBancario
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.TipoMovimentacao)
@@ -120,7 +120,7 @@ namespace MyFinanceAPI.Data.Repositories
             DateOnly inicioInclusive,
             DateOnly fimExclusive, string numeroFatura = null, int? bancoId = null)
         {
-            return await _context.ExtratoBancarioItens.AsNoTracking()
+            return await _context.ItensExtratoBancario.AsNoTracking()
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)
@@ -135,13 +135,13 @@ namespace MyFinanceAPI.Data.Repositories
             int userId,
             string numeroFatura, int? bancoId = null)
         {
-            return await _context.ExtratoBancarioItens
+            return await _context.ItensExtratoBancario
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)
                 .Include(i => i.TipoMovimentacao)
                 .Where(i =>
-                    i.UserId == userId &&
+                    i.UsuarioId == userId &&
                     i.NumeroFatura == numeroFatura &&
                     (bancoId == null || i.BancoId == bancoId))
                 .OrderBy(i => i.DataMovimentacao)
@@ -151,10 +151,10 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<List<ExtratoBancarioItem>> GetByChaveDescricaoAsync (string ChaveDescricao, int userId)
         {
-            var vinculo = await _context.ExtratoBancarioItens
+            var vinculo = await _context.ItensExtratoBancario
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
-                .Where(v => v.ChaveDescricao == ChaveDescricao && v.UserId == userId)
+                .Where(v => v.ChaveDescricao == ChaveDescricao && v.UsuarioId == userId)
                 .ToListAsync();
 
             if (vinculo == null)

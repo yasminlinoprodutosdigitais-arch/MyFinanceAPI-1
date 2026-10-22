@@ -24,16 +24,16 @@ namespace MyFinanceAPI.Data.Repositories
 
             extrato.Itens ??= new List<ExtratoBancarioItem>();
             foreach (var item in extrato.Itens)
-                item.UserId = extrato.UserId;
+                item.UsuarioId = extrato.UsuarioId;
 
-            await _context.ExtratoBancario.AddAsync(extrato);
+            await _context.ExtratosBancarios.AddAsync(extrato);
             await _context.SaveChangesAsync();
             return extrato;
         }
 
         public async Task UpdateAsync(ExtratoBancario extrato)
         {
-            _context.ExtratoBancario.Update(extrato);
+            _context.ExtratosBancarios.Update(extrato);
             await _context.SaveChangesAsync();
         }
 
@@ -44,13 +44,13 @@ namespace MyFinanceAPI.Data.Repositories
         // Versão com segurança por usuário
         public async Task DeleteAsync(int id, int userId)
         {
-            var extrato = await _context.ExtratoBancario
-                .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+            var extrato = await _context.ExtratosBancarios
+                .FirstOrDefaultAsync(e => e.Id == id && e.UsuarioId == userId);
 
             if (extrato == null)
                 return;
 
-            _context.ExtratoBancario.Remove(extrato);
+            _context.ExtratosBancarios.Remove(extrato);
             await _context.SaveChangesAsync();
         }
 
@@ -60,9 +60,9 @@ namespace MyFinanceAPI.Data.Repositories
 
         public async Task<ExtratoBancario?> GetByIdAsync(int id, int userId)
         {
-            return await _context.ExtratoBancario
+            return await _context.ExtratosBancarios
                 .Include(e => e.Itens)
-                .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+                .FirstOrDefaultAsync(e => e.Id == id && e.UsuarioId == userId);
         }
 
         // Service chama GetByUserIdAsync
@@ -76,8 +76,8 @@ namespace MyFinanceAPI.Data.Repositories
             var start = new DateOnly(year, mon, 1);
             var end = start.AddMonths(1);
 
-            var extratos = await _context.ExtratoBancario.AsNoTracking()
-                .Where(e => e.UserId == userId
+            var extratos = await _context.ExtratosBancarios.AsNoTracking()
+                .Where(e => e.UsuarioId == userId
                     && e.DataInicioPeriodo.HasValue
                     && e.DataInicioPeriodo.Value >= start
                     && e.DataInicioPeriodo.Value < end)
@@ -94,8 +94,8 @@ namespace MyFinanceAPI.Data.Repositories
             DateOnly? dataInicio,
             DateOnly? dataFim)
         {
-            var query = _context.ExtratoBancario
-                .Where(e => e.UserId == userId)
+            var query = _context.ExtratosBancarios
+                .Where(e => e.UsuarioId == userId)
                 .AsQueryable();
 
             if (dataInicio.HasValue)

@@ -8,35 +8,34 @@ public class MovimentacaoDiariaConfiguration : IEntityTypeConfiguration<Moviment
 {
     public void Configure(EntityTypeBuilder<MovimentacaoDiaria> builder)
     {
-        builder.ToTable("MovimentacaoDiaria");
-        builder.HasKey(e => e.Id).HasName("movimentacaodiaria_pkey");
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).UseSerialColumn();
 
         builder.Property(e => e.Valor).HasPrecision(10, 2);
+        builder.Property(e => e.TipoLancamento).HasMaxLength(20);
+        builder.Property(e => e.Descricao).HasMaxLength(200);
+        builder.Property(e => e.NomePessoaTransacao).HasMaxLength(120);
+        builder.Property(e => e.Identificador).HasMaxLength(100);
 
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("FK_MovimentacaoDiaria_AspNetUsers_UserId")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Banco com lançamentos não se apaga; inativa-se (D-2).
         builder.HasOne(e => e.Banco)
             .WithMany()
             .HasForeignKey(e => e.BancoId)
-            .HasConstraintName("movimentacaodiaria_bancoid_fkey")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.TipoCartao)
             .WithMany()
             .HasForeignKey(e => e.TipoCartaoId)
-            .HasConstraintName("movimentacaodiaria_tipocartaoid_fkey")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.TipoMovimentacao)
             .WithMany()
             .HasForeignKey(e => e.TipoMovimentacaoId)
-            .HasConstraintName("movimentacaodiaria_tipomovimentacaoid_fkey")
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

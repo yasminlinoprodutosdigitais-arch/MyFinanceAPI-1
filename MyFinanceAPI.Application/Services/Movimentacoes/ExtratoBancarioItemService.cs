@@ -34,7 +34,7 @@ namespace MyFinanceAPI.Application.Services
                 return null;
 
             // segurança básica por usuário
-            if (entity.UserId != userId)
+            if (entity.UsuarioId != userId)
                 throw new UnauthorizedAccessException("Usuário não autorizado para acessar este item.");
 
             return _mapper.Map<ExtratoBancarioItemDTO>(entity);
@@ -51,7 +51,7 @@ namespace MyFinanceAPI.Application.Services
             // Item manual nunca tem chave de importação (ela é a garantia de idempotência do import).
             entity.ChaveImportacao = null;
 
-            entity.UserId = userId;
+            entity.UsuarioId = userId;
 
             // Escolhidos no formulário: prevalecem sobre o vínculo da pessoa; sem escolha, o item herda
             // o vínculo (decisão de 14/10/2026 — antes a escolha era descartada quando havia pessoa).
@@ -123,7 +123,7 @@ namespace MyFinanceAPI.Application.Services
             if (existing == null)
                 throw new KeyNotFoundException("Item de extrato não encontrado.");
 
-            if (existing.UserId != userId)
+            if (existing.UsuarioId != userId)
                 throw new UnauthorizedAccessException("Usuário não autorizado para alterar este item.");
 
             // Atualiza campos permitidos
@@ -183,7 +183,7 @@ namespace MyFinanceAPI.Application.Services
             if (existing == null)
                 return;
 
-            if (existing.UserId != userId)
+            if (existing.UsuarioId != userId)
                 throw new UnauthorizedAccessException("Usuário não autorizado para excluir este item.");
 
             await _itemRepository.RemoveAsync(id);

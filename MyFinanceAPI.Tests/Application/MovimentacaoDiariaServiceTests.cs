@@ -21,14 +21,14 @@ public class MovimentacaoDiariaServiceTests
     private readonly Mock<IBancoRepository> _bancoRepo = new();
     private readonly Dictionary<int, Banco> _bancos = new()
     {
-        [BancoA] = new Banco { Id = BancoA, UserId = UserId, SaldoInicial = 90 },
-        [BancoB] = new Banco { Id = BancoB, UserId = UserId, SaldoInicial = 500 },
+        [BancoA] = new Banco { Id = BancoA, UsuarioId = UserId, SaldoInicial = 90 },
+        [BancoB] = new Banco { Id = BancoB, UsuarioId = UserId, SaldoInicial = 500 },
     };
 
     /// <summary>Como no EF: o repositório devolve a instância rastreada, que o Atualizar altera.</summary>
     private readonly MovimentacaoDiaria _gravada = new()
     {
-        Id = 10, UserId = UserId, BancoId = BancoA, TipoCartaoId = 2, Valor = 10, TipoLancamento = "Desconto"
+        Id = 10, UsuarioId = UserId, BancoId = BancoA, TipoCartaoId = 2, Valor = 10, TipoLancamento = "Desconto"
     };
 
     public MovimentacaoDiariaServiceTests()

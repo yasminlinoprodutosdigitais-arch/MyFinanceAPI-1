@@ -16,14 +16,14 @@ public class ExtratoBancarioItemFiltrosTests
     private const string Fatura = "2026-10";
 
     // IDs propositalmente diferentes de 1 e 13.
-    private static readonly TipoCartao Credito = new() { Id = 77, UserId = UserId, NomeTipoCartao = "Meu cartão", EhCredito = true };
-    private static readonly TipoCartao Corrente = new() { Id = 78, UserId = UserId, NomeTipoCartao = "Conta", EhCredito = false };
+    private static readonly TipoCartao Credito = new() { Id = 77, UsuarioId = UserId, NomeTipoCartao = "Meu cartão", EhCredito = true };
+    private static readonly TipoCartao Corrente = new() { Id = 78, UsuarioId = UserId, NomeTipoCartao = "Conta", EhCredito = false };
 
     private static ExtratoBancarioItem Item(int id, TipoCartao tipo, DateOnly data, string? fatura = null, int bancoId = 5, int userId = UserId) =>
         new()
         {
             Id = id,
-            UserId = userId,
+            UsuarioId = userId,
             BancoId = bancoId,
             TipoCartaoId = tipo.Id,
             TipoCartao = tipo,

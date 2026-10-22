@@ -12,7 +12,7 @@ public class MovimentacaoDiariaRepository(ContextDB context) : RepositorioDoUsua
 
     protected override string MensagemNaoEncontrado => "Movimentação diária não encontrada.";
 
-    protected override Expression<Func<MovimentacaoDiaria, bool>> Proprios(int userId) => m => m.UserId == userId;
+    protected override Expression<Func<MovimentacaoDiaria, bool>> Proprios(int userId) => m => m.UsuarioId == userId;
 
     protected override IOrderedQueryable<MovimentacaoDiaria> Ordenar(IQueryable<MovimentacaoDiaria> query) =>
         query.OrderBy(m => m.DataMovimentacao);
@@ -40,9 +40,9 @@ public class MovimentacaoDiariaRepository(ContextDB context) : RepositorioDoUsua
     public async Task<IEnumerable<MovimentacaoDiaria>> GetMovimentacaoByDate(DateTime dateTime, int userId)
     {
         // Intervalo sobre a coluna, não Month/Year (DB-P2-03).
-        var (inicio, fimExclusivo) = TransactionFiltros.IntervaloDoMes(DateOnly.FromDateTime(dateTime));
-        return await ComNavegacoes(_context.MovimentacaoDiaria.AsNoTracking())
-            .Where(c => c.UserId == userId && c.DataMovimentacao >= inicio && c.DataMovimentacao < fimExclusivo)
+        var (inicio, fimExclusivo) = TransacaoFiltros.IntervaloDoMes(DateOnly.FromDateTime(dateTime));
+        return await ComNavegacoes(_context.MovimentacoesDiarias.AsNoTracking())
+            .Where(c => c.UsuarioId == userId && c.DataMovimentacao >= inicio && c.DataMovimentacao < fimExclusivo)
             .ToListAsync();
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Application.Utils;
 
 namespace MyFinanceAPI.Application.DTO.Movimentacoes
 {
@@ -20,18 +21,18 @@ namespace MyFinanceAPI.Application.DTO.Movimentacoes
 
         public decimal Valor { get; set; }
 
-        public string? Descricao { get; set; }
+        [TextoAte(200)] public string? Descricao { get; set; }
 
-        public string TipoLancamento { get; set; } = string.Empty;
+        [TextoAte(20)] public string TipoLancamento { get; set; } = string.Empty;
 
-        public string? NomePessoaTransacao { get; set; }
+        [TextoAte(120)] public string? NomePessoaTransacao { get; set; }
 
         // Navegação (opcional)
         public Banco? Banco { get; set; }
         public TipoCartao? TipoCartao { get; set; }
         public TipoMovimentacao? TipoMovimentacao { get; set; }
 
-        public string? Identificador { get; set; }
+        [TextoAte(100)] public string? Identificador { get; set; }
 
         public MovimentacaoDiariaDTO() { }
     }

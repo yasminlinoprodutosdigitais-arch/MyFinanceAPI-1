@@ -8,23 +8,21 @@ public class ContaVencimentoConfiguration : IEntityTypeConfiguration<ContaVencim
 {
     public void Configure(EntityTypeBuilder<ContaVencimento> builder)
     {
-        builder.ToTable("ContaVencimento", t =>
-            t.HasCheckConstraint("contavencimento_dia_check", "\"Dia\" BETWEEN 1 AND 31"));
-        builder.HasKey(e => e.Id).HasName("ContaVencimento_pkey");
+        builder.ToTable(t =>
+            t.HasCheckConstraint("contas_vencimento_dia_check", "dia BETWEEN 1 AND 31"));
+        builder.HasKey(e => e.Id);
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
 
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("contavencimento_user_fkey")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Vencimento é parte da conta: some com ela (D-9).
-        builder.HasOne(e => e.Account)
-            .WithMany(a => a.ContaVencimentos)
+        builder.HasOne(e => e.Conta)
+            .WithMany(a => a.Vencimentos)
             .HasForeignKey(e => e.ContaId)
-            .HasConstraintName("ContaVencimento_ContaId_fkey")
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -29,7 +29,7 @@ public abstract class ServicoCadastro<TEntidade, TDto>(IRepositorioDoUsuario<TEn
     protected virtual void DefinirDono(TEntidade entidade, int userId)
     {
         if (entidade is BaseEntity doUsuario)
-            doUsuario.UserId = userId;
+            doUsuario.UsuarioId = userId;
     }
 
     public virtual async Task<IEnumerable<TDto>> ListarAsync(int userId) =>

@@ -242,7 +242,7 @@ namespace MyFinanceAPI.Application.Services
                         NomePessoaTransacao = nomePessoa,
                         Identificador = identificadorStr,
                         ChaveImportacao = chaveImportacao,
-                        UserId = userId
+                        UsuarioId = userId
                     };
 
                     listaItens.Add(item);
@@ -289,7 +289,7 @@ namespace MyFinanceAPI.Application.Services
                 Situacao = "Concluido",
                 NomeArquivoOrigem = fileName,
                 LoteImportacaoId = Guid.NewGuid(),
-                UserId = userId
+                UsuarioId = userId
             };
 
             await _extratoBancarioRepository.CreateAsync(extrato);
@@ -297,7 +297,7 @@ namespace MyFinanceAPI.Application.Services
             foreach (var item in listaItens)
             {
                 item.ExtratoBancarioId = extrato.Id;
-                item.UserId = userId;
+                item.UsuarioId = userId;
                 item.ChaveDescricao = GerarChaveDescricao(item.Descricao);
             }
 

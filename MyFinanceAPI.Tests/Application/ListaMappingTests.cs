@@ -17,7 +17,7 @@ public class ListaMappingTests
     [InlineData(3, TipoLista.Orcamento)]
     public void DTO_tipoMovimentacao_vira_TipoLista_da_entidade(int tipoNoDto, TipoLista esperado)
     {
-        var lista = _mapper.Map<Lista>(new ListaDTO { Id = 7, Nome = "Mercado", TipoMovimentacao = tipoNoDto, Status = true });
+        var lista = _mapper.Map<Lista>(new ListaDTO { Id = 7, Nome = "Mercado", TipoMovimentacao = tipoNoDto, Ativo = true });
 
         Assert.Equal(esperado, lista.TipoLista);
         Assert.Equal("Mercado", lista.Nome);
@@ -26,7 +26,7 @@ public class ListaMappingTests
     [Fact]
     public void Entidade_TipoLista_volta_como_tipoMovimentacao_no_DTO()
     {
-        var dto = _mapper.Map<ListaDTO>(new Lista { Id = 7, Nome = "Viagem", TipoLista = TipoLista.Orcamento, Status = true });
+        var dto = _mapper.Map<ListaDTO>(new Lista { Id = 7, Nome = "Viagem", TipoLista = TipoLista.Orcamento, Ativo = true });
 
         Assert.Equal(3, dto.TipoMovimentacao);
     }

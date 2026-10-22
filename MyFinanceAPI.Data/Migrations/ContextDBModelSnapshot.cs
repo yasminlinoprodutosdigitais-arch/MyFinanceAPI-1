@@ -26,511 +26,656 @@ namespace MyFinanceAPI.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_roles");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("role_name_index");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("asp_net_roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
 
                     b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_role_claims");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_asp_net_role_claims_role_id");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("asp_net_role_claims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_type");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("claim_value");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_user_claims");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_asp_net_user_claims_user_id");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("asp_net_user_claims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("provider_key");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("provider_display_name");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("LoginProvider", "ProviderKey");
+                    b.HasKey("LoginProvider", "ProviderKey")
+                        .HasName("pk_asp_net_user_logins");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_asp_net_user_logins_user_id");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("asp_net_user_logins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
 
                     b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("UserId", "RoleId")
+                        .HasName("pk_asp_net_user_roles");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_asp_net_user_roles_role_id");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("asp_net_user_roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("login_provider");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<string>("Value")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("value");
 
-                    b.HasKey("UserId", "LoginProvider", "Name");
+                    b.HasKey("UserId", "LoginProvider", "Name")
+                        .HasName("pk_asp_net_user_tokens");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Account", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("DataOperacao")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("EhParcelado")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ParcelaAtual")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("QuantidadeParcelas")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Value")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Accounts");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Accounts", null, t =>
-                        {
-                            t.HasCheckConstraint("accounts_parcelas_check", "NOT \"EhParcelado\" OR (\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 0 AND \"QuantidadeParcelas\")");
-
-                            t.HasCheckConstraint("accounts_status_check", "\"Status\" IN (0, 1)");
-                        });
+                    b.ToTable("asp_net_user_tokens", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Banco", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Agencia")
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("agencia");
 
                     b.Property<bool?>("Ativo")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(true)
+                        .HasColumnName("ativo");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("NomeBanco")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome_banco");
 
                     b.Property<string>("NumeroConta")
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("numero_conta");
 
                     b.Property<decimal>("SaldoInicial")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
-                        .HasDefaultValue(0m);
+                        .HasDefaultValue(0m)
+                        .HasColumnName("saldo_inicial");
 
                     b.Property<int>("TipoCartaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_cartao_id");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("banco_pkey");
+                        .HasName("pk_bancos");
 
-                    b.HasIndex("TipoCartaoId");
+                    b.HasIndex("TipoCartaoId")
+                        .HasDatabaseName("ix_bancos_tipo_cartao_id");
 
-                    b.HasIndex("UserId", "NomeBanco")
+                    b.HasIndex("UsuarioId", "NomeBanco")
                         .IsUnique()
-                        .HasDatabaseName("UX_Banco_UserId_NomeBanco");
+                        .HasDatabaseName("ix_bancos_usuario_id_nome_banco");
 
-                    b.ToTable("Banco", (string)null);
+                    b.ToTable("bancos", (string)null);
                 });
 
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Category", b =>
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Ativo")
+                        .HasColumnType("integer")
+                        .HasColumnName("ativo")
+                        .HasAnnotation("Relational:JsonPropertyName", "status");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("NaturezaOperacao")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("natureza_operacao");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SubCategory")
+                    b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome")
+                        .HasAnnotation("Relational:JsonPropertyName", "name");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Subcategoria")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("subcategoria")
+                        .HasAnnotation("Relational:JsonPropertyName", "subCategory");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("PK_Categories");
+                        .HasName("pk_categorias");
 
-                    b.HasIndex("UserId", "Name", "SubCategory")
+                    b.HasIndex("UsuarioId", "Nome", "Subcategoria")
                         .IsUnique()
-                        .HasDatabaseName("UX_Categories_UserId_Name_SubCategory");
+                        .HasDatabaseName("ix_categorias_usuario_id_nome_subcategoria");
 
-                    b.ToTable("Categories", null, t =>
+                    b.ToTable("categorias", null, t =>
                         {
-                            t.HasCheckConstraint("categories_naturezaoperacao_check", "\"NaturezaOperacao\" BETWEEN 0 AND 5");
+                            t.HasCheckConstraint("categorias_ativo_check", "ativo IN (0, 1)");
 
-                            t.HasCheckConstraint("categories_status_check", "\"Status\" IN (0, 1)");
+                            t.HasCheckConstraint("categorias_natureza_operacao_check", "natureza_operacao BETWEEN 0 AND 5");
                         });
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Conta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Ativo")
+                        .HasColumnType("integer")
+                        .HasColumnName("ativo")
+                        .HasAnnotation("Relational:JsonPropertyName", "status");
+
+                    b.Property<int>("CategoriaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "categoryId");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("DataOperacao")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("data_operacao");
+
+                    b.Property<bool>("EhParcelado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("eh_parcelado");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome")
+                        .HasAnnotation("Relational:JsonPropertyName", "name");
+
+                    b.Property<int?>("ParcelaAtual")
+                        .HasColumnType("integer")
+                        .HasColumnName("parcela_atual");
+
+                    b.Property<int?>("QuantidadeParcelas")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade_parcelas");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor")
+                        .HasAnnotation("Relational:JsonPropertyName", "value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_contas");
+
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_contas_categoria_id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_contas_usuario_id");
+
+                    b.ToTable("contas", null, t =>
+                        {
+                            t.HasCheckConstraint("contas_ativo_check", "ativo IN (0, 1)");
+
+                            t.HasCheckConstraint("contas_parcelas_check", "NOT eh_parcelado OR (quantidade_parcelas >= 1 AND parcela_atual BETWEEN 0 AND quantidade_parcelas)");
+                        });
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "account");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ContaVencimento", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ContaId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("conta_id");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<int>("Dia")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("dia");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("ContaVencimento_pkey");
+                        .HasName("pk_contas_vencimento");
 
-                    b.HasIndex("ContaId");
+                    b.HasIndex("ContaId")
+                        .HasDatabaseName("ix_contas_vencimento_conta_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_contas_vencimento_usuario_id");
 
-                    b.ToTable("ContaVencimento", null, t =>
+                    b.ToTable("contas_vencimento", null, t =>
                         {
-                            t.HasCheckConstraint("contavencimento_dia_check", "\"Dia\" BETWEEN 1 AND 31");
+                            t.HasCheckConstraint("contas_vencimento_dia_check", "dia BETWEEN 1 AND 31");
                         });
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "contaVencimentos");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BancoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("banco_id");
 
                     b.Property<DateOnly?>("DataFimPeriodo")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("data_fim_periodo");
 
                     b.Property<DateTime>("DataImportacao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_importacao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateOnly?>("DataInicioPeriodo")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("data_inicio_periodo");
 
                     b.Property<Guid>("LoteImportacaoId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("lote_importacao_id");
 
                     b.Property<string>("NomeArquivo")
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)")
+                        .HasColumnName("nome_arquivo");
 
                     b.Property<string>("NomeArquivoOrigem")
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)")
+                        .HasColumnName("nome_arquivo_origem");
 
                     b.Property<int>("QuantidadeLancamentos")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0);
+                        .HasDefaultValue(0)
+                        .HasColumnName("quantidade_lancamentos");
 
                     b.Property<string>("Situacao")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasDefaultValue("Concluido");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Concluido")
+                        .HasColumnName("situacao");
 
                     b.Property<int?>("TipoCartaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_cartao_id");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.Property<decimal>("ValorTotal")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasDefaultValue(0m)
+                        .HasColumnName("valor_total");
 
                     b.HasKey("Id")
-                        .HasName("ExtratoBancario_pkey");
+                        .HasName("pk_extratos_bancarios");
 
-                    b.HasIndex("BancoId");
+                    b.HasIndex("BancoId")
+                        .HasDatabaseName("ix_extratos_bancarios_banco_id");
 
-                    b.HasIndex("TipoCartaoId");
+                    b.HasIndex("TipoCartaoId")
+                        .HasDatabaseName("ix_extratos_bancarios_tipo_cartao_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_extratos_bancarios_usuario_id");
 
-                    b.ToTable("ExtratoBancario", (string)null);
+                    b.ToTable("extratos_bancarios", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BancoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("banco_id");
 
                     b.Property<int?>("CategoriaId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
 
                     b.Property<string>("ChaveDescricao")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("chave_descricao");
 
                     b.Property<string>("ChaveImportacao")
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("chave_importacao");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateTime>("DataCriacao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateOnly>("DataMovimentacao")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("data_movimentacao");
 
                     b.Property<string>("Descricao")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
 
                     b.Property<bool?>("EhParcelado")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasDefaultValue(false)
+                        .HasColumnName("eh_parcelado");
 
                     b.Property<int?>("ExtratoBancarioId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("extrato_bancario_id");
 
                     b.Property<string>("GrupoParcelamento")
                         .HasMaxLength(60)
-                        .HasColumnType("character varying(60)");
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("grupo_parcelamento");
 
                     b.Property<string>("Identificador")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("identificador");
 
                     b.Property<string>("NomePessoaTransacao")
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome_pessoa_transacao");
 
                     b.Property<string>("NumeroFatura")
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("numero_fatura");
 
                     b.Property<string>("Observacao")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
 
                     b.Property<int?>("ParcelaAtual")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("parcela_atual");
 
                     b.Property<int?>("PessoaMovimentacaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("pessoa_movimentacao_id");
 
                     b.Property<int?>("QuantidadeParcelas")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade_parcelas");
 
                     b.Property<int?>("TipoCartaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_cartao_id");
 
                     b.Property<string>("TipoLancamento")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_lancamento");
 
                     b.Property<int?>("TipoMovimentacaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_movimentacao_id");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor");
 
                     b.HasKey("Id")
-                        .HasName("ExtratoBancarioItem_pkey");
+                        .HasName("pk_itens_extrato_bancario");
 
-                    b.HasIndex("BancoId");
+                    b.HasIndex("BancoId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_banco_id");
 
-                    b.HasIndex("CategoriaId");
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_categoria_id");
 
                     b.HasIndex("ExtratoBancarioId")
-                        .HasDatabaseName("idx_extratobancarioitem_extrato");
+                        .HasDatabaseName("ix_itens_extrato_bancario_extrato_bancario_id");
 
-                    b.HasIndex("PessoaMovimentacaoId");
+                    b.HasIndex("PessoaMovimentacaoId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_pessoa_movimentacao_id");
 
-                    b.HasIndex("TipoCartaoId");
+                    b.HasIndex("TipoCartaoId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_tipo_cartao_id");
 
-                    b.HasIndex("TipoMovimentacaoId");
+                    b.HasIndex("TipoMovimentacaoId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_tipo_movimentacao_id");
 
-                    b.HasIndex("UserId", "DataMovimentacao")
-                        .HasDatabaseName("IX_ExtratoBancarioItem_UserId_DataMovimentacao");
+                    b.HasIndex("UsuarioId", "DataMovimentacao")
+                        .HasDatabaseName("ix_itens_extrato_bancario_usuario_id_data_movimentacao");
 
-                    b.HasIndex("UserId", "NumeroFatura")
-                        .HasDatabaseName("IX_ExtratoBancarioItem_UserId_NumeroFatura");
+                    b.HasIndex("UsuarioId", "NumeroFatura")
+                        .HasDatabaseName("ix_itens_extrato_bancario_usuario_id_numero_fatura");
 
-                    b.HasIndex("UserId", "BancoId", "ChaveImportacao")
+                    b.HasIndex("UsuarioId", "BancoId", "ChaveImportacao")
                         .IsUnique()
-                        .HasDatabaseName("UX_ExtratoBancarioItem_ChaveImportacao")
-                        .HasFilter("\"ChaveImportacao\" IS NOT NULL");
+                        .HasDatabaseName("ux_itens_extrato_bancario_chave_importacao")
+                        .HasFilter("\"chave_importacao\" IS NOT NULL");
 
-                    b.ToTable("ExtratoBancarioItem", null, t =>
+                    b.ToTable("itens_extrato_bancario", null, t =>
                         {
-                            t.HasCheckConstraint("extratobancarioitem_parcelas_check", "\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 1 AND \"QuantidadeParcelas\"");
+                            t.HasCheckConstraint("itens_extrato_bancario_parcelas_check", "quantidade_parcelas >= 1 AND parcela_atual BETWEEN 1 AND quantidade_parcelas");
 
-                            t.HasCheckConstraint("extratobancarioitem_tipolancamento_check", "\"TipoLancamento\" IN ('Entrada', 'Saída')");
+                            t.HasCheckConstraint("itens_extrato_bancario_tipo_lancamento_check", "tipo_lancamento IN ('Entrada', 'Saída')");
                         });
                 });
 
@@ -538,57 +683,74 @@ namespace MyFinanceAPI.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateOnly?>("DataTarefa")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("data_tarefa");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
 
                     b.Property<TimeOnly?>("HorarioTarefa")
-                        .HasColumnType("time without time zone");
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("horario_tarefa");
 
                     b.Property<int>("ListaId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("lista_id");
 
                     b.Property<string>("Observacao")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
 
                     b.Property<int?>("Quantidade")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
+                    b.Property<string>("Situacao")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("situacao")
+                        .HasAnnotation("Relational:JsonPropertyName", "status");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.Property<decimal?>("Valor")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor");
 
                     b.HasKey("Id")
-                        .HasName("itemlista_pkey");
+                        .HasName("pk_itens_lista");
 
-                    b.HasIndex("ListaId");
+                    b.HasIndex("ListaId")
+                        .HasDatabaseName("ix_itens_lista_lista_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_itens_lista_usuario_id");
 
-                    b.ToTable("ItemLista", null, t =>
+                    b.ToTable("itens_lista", null, t =>
                         {
-                            t.HasCheckConstraint("itemlista_quantidade_check", "\"Quantidade\" >= 0");
+                            t.HasCheckConstraint("itens_lista_quantidade_check", "quantidade >= 0");
 
-                            t.HasCheckConstraint("itemlista_status_check", "\"Status\" IN ('PENDENTE', 'AGUARDANDO', 'OK')");
+                            t.HasCheckConstraint("itens_lista_situacao_check", "situacao IN ('PENDENTE', 'AGUARDANDO', 'OK')");
                         });
                 });
 
@@ -596,36 +758,46 @@ namespace MyFinanceAPI.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo")
+                        .HasAnnotation("Relational:JsonPropertyName", "status");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome");
 
                     b.Property<int>("TipoLista")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_lista");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("lista_pkey");
+                        .HasName("pk_listas");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_listas_usuario_id");
 
-                    b.ToTable("Lista", null, t =>
+                    b.ToTable("listas", null, t =>
                         {
-                            t.HasCheckConstraint("lista_tipolista_check", "\"TipoLista\" IN (1, 2, 3)");
+                            t.HasCheckConstraint("listas_tipo_lista_check", "tipo_lista IN (1, 2, 3)");
                         });
                 });
 
@@ -633,329 +805,435 @@ namespace MyFinanceAPI.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BancoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("banco_id");
 
                     b.Property<DateOnly>("DataMovimentacao")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("data_movimentacao");
 
                     b.Property<string>("Descricao")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
 
                     b.Property<string>("Identificador")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("identificador");
 
                     b.Property<string>("NomePessoaTransacao")
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome_pessoa_transacao");
 
                     b.Property<int?>("TipoCartaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_cartao_id");
 
                     b.Property<string>("TipoLancamento")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_lancamento");
 
                     b.Property<int?>("TipoMovimentacaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_movimentacao_id");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor");
 
                     b.HasKey("Id")
-                        .HasName("movimentacaodiaria_pkey");
+                        .HasName("pk_movimentacoes_diarias");
 
-                    b.HasIndex("BancoId");
+                    b.HasIndex("BancoId")
+                        .HasDatabaseName("ix_movimentacoes_diarias_banco_id");
 
-                    b.HasIndex("TipoCartaoId");
+                    b.HasIndex("TipoCartaoId")
+                        .HasDatabaseName("ix_movimentacoes_diarias_tipo_cartao_id");
 
-                    b.HasIndex("TipoMovimentacaoId");
+                    b.HasIndex("TipoMovimentacaoId")
+                        .HasDatabaseName("ix_movimentacoes_diarias_tipo_movimentacao_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_movimentacoes_diarias_usuario_id");
 
-                    b.ToTable("MovimentacaoDiaria", (string)null);
+                    b.ToTable("movimentacoes_diarias", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CategoriaId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("NomePessoa")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome_pessoa");
 
                     b.Property<int?>("TipoMovimentacaoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_movimentacao_id");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("PessoaMovimentacao_pkey");
+                        .HasName("pk_pessoas_movimentacao");
 
-                    b.HasIndex("CategoriaId");
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_pessoas_movimentacao_categoria_id");
 
-                    b.HasIndex("TipoMovimentacaoId");
+                    b.HasIndex("TipoMovimentacaoId")
+                        .HasDatabaseName("ix_pessoas_movimentacao_tipo_movimentacao_id");
 
-                    b.HasIndex("UserId", "NomePessoa")
+                    b.HasIndex("UsuarioId", "NomePessoa")
                         .IsUnique()
-                        .HasDatabaseName("UX_PessoaMovimentacao_UserId_NomePessoa");
+                        .HasDatabaseName("ix_pessoas_movimentacao_usuario_id_nome_pessoa");
 
-                    b.ToTable("PessoaMovimentacao", (string)null);
+                    b.ToTable("pessoas_movimentacao", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoCartao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Descricao")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
 
                     b.Property<bool>("EhCredito")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("eh_credito");
 
                     b.Property<string>("NomeTipoCartao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("nome_tipo_cartao");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id")
-                        .HasName("tipocartao_pkey");
+                        .HasName("pk_tipos_cartao");
 
                     b.HasIndex("NomeTipoCartao")
                         .IsUnique()
-                        .HasDatabaseName("UX_TipoCartao_Sistema_NomeTipoCartao")
-                        .HasFilter("\"UserId\" IS NULL");
+                        .HasDatabaseName("ux_tipos_cartao_sistema_nome_tipo_cartao")
+                        .HasFilter("\"usuario_id\" IS NULL");
 
-                    b.HasIndex("UserId", "NomeTipoCartao")
+                    b.HasIndex("UsuarioId", "NomeTipoCartao")
                         .IsUnique()
-                        .HasDatabaseName("UX_TipoCartao_UserId_NomeTipoCartao");
+                        .HasDatabaseName("ix_tipos_cartao_usuario_id_nome_tipo_cartao");
 
-                    b.ToTable("TipoCartao", (string)null);
+                    b.ToTable("tipos_cartao", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoMovimentacao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
 
                     b.Property<string>("NomeTipoMovimentacao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("nome_tipo_movimentacao");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.Property<decimal>("ValorMeta")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasDefaultValue(0m);
+                        .HasDefaultValue(0m)
+                        .HasColumnName("valor_meta");
 
                     b.HasKey("Id")
-                        .HasName("tipomovimentacao_pkey");
+                        .HasName("pk_tipos_movimentacao");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_tipos_movimentacao_usuario_id");
 
-                    b.ToTable("TipoMovimentacao", null, t =>
+                    b.ToTable("tipos_movimentacao", null, t =>
                         {
-                            t.HasCheckConstraint("tipomovimentacao_valormeta_check", "\"ValorMeta\" >= 0");
+                            t.HasCheckConstraint("tipos_movimentacao_valor_meta_check", "valor_meta >= 0");
                         });
                 });
 
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transaction", b =>
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transacao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<int?>("CategoriaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "categoryId");
+
+                    b.Property<int?>("ContaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("conta_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "idAccount");
+
+                    b.Property<DateOnly>("Data")
+                        .HasColumnType("date")
+                        .HasColumnName("data")
+                        .HasAnnotation("Relational:JsonPropertyName", "date");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateTime>("DataCriacao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
                         .HasDefaultValueSql("now()");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
 
                     b.Property<bool>("EhParcelado")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasDefaultValue(false)
+                        .HasColumnName("eh_parcelado");
 
-                    b.Property<int?>("IdAccount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome")
+                        .HasAnnotation("Relational:JsonPropertyName", "name");
 
                     b.Property<string>("Observacao")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
 
                     b.Property<int?>("ParcelaAtual")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("parcela_atual");
 
                     b.Property<int?>("QuantidadeParcelas")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade_parcelas");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("Situacao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("situacao")
+                        .HasAnnotation("Relational:JsonPropertyName", "status");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
-                    b.Property<decimal?>("Value")
+                    b.Property<decimal?>("Valor")
                         .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor")
+                        .HasAnnotation("Relational:JsonPropertyName", "value");
 
                     b.HasKey("Id")
-                        .HasName("PK_Transactions");
+                        .HasName("pk_transacoes");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_transacoes_categoria_id");
 
-                    b.HasIndex("IdAccount");
+                    b.HasIndex("ContaId")
+                        .HasDatabaseName("ix_transacoes_conta_id");
 
-                    b.HasIndex("UserId", "Date")
-                        .HasDatabaseName("IX_Transactions_UserId_Date");
+                    b.HasIndex("UsuarioId", "Data")
+                        .HasDatabaseName("ix_transacoes_usuario_id_data");
 
-                    b.ToTable("Transactions", null, t =>
+                    b.ToTable("transacoes", null, t =>
                         {
-                            t.HasCheckConstraint("transactions_parcelas_check", "\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN 1 AND \"QuantidadeParcelas\"");
+                            t.HasCheckConstraint("transacoes_parcelas_check", "quantidade_parcelas >= 1 AND parcela_atual BETWEEN 1 AND quantidade_parcelas");
 
-                            t.HasCheckConstraint("transactions_status_check", "\"Status\" IN ('PENDENTE', 'AGUARDANDO', 'PAGO NO PRAZO', 'PAGO ATRASADO')");
+                            t.HasCheckConstraint("transacoes_situacao_check", "situacao IN ('PENDENTE', 'AGUARDANDO', 'PAGO NO PRAZO', 'PAGO ATRASADO')");
                         });
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "transactions");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("access_failed_count");
 
-                    b.Property<DateTime>("AtualizadoEm")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo")
+                        .HasAnnotation("Relational:JsonPropertyName", "statusAtivo");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("concurrency_stamp");
 
-                    b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("DataAlteracao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasAnnotation("Relational:JsonPropertyName", "atualizadoEm");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasAnnotation("Relational:JsonPropertyName", "criadoEm");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_confirmed");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("lockout_enabled");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockout_end");
 
                     b.Property<string>("NomeUsuario")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nome_usuario");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_email");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("normalized_user_name");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Perfil")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("perfil")
+                        .HasAnnotation("Relational:JsonPropertyName", "role");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone_number");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("boolean")
+                        .HasColumnName("phone_number_confirmed");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("StatusAtivo")
-                        .HasColumnType("boolean");
+                        .HasColumnType("text")
+                        .HasColumnName("security_stamp");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("two_factor_enabled");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_asp_net_users");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                        .HasDatabaseName("email_index");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("user_name_index");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("asp_net_users", (string)null);
+
+                    b.HasAnnotation("Relational:JsonPropertyName", "user");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -964,7 +1242,8 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_role_claims_asp_net_roles_role_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -973,7 +1252,8 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_claims_asp_net_users_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
@@ -982,7 +1262,8 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_logins_asp_net_users_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
@@ -991,13 +1272,15 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_roles_asp_net_roles_role_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_asp_net_user_roles_asp_net_users_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
@@ -1006,28 +1289,8 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Account", b =>
-                {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("FK_Accounts_Categories_CategoryId");
-
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Accounts_AspNetUsers_UserId");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("User");
+                        .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Banco", b =>
@@ -1037,51 +1300,72 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasForeignKey("TipoCartaoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_banco_tipocartao");
+                        .HasConstraintName("fk_bancos_tipos_cartao_tipo_cartao_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Banco_AspNetUsers_UerId");
+                        .HasConstraintName("fk_bancos_asp_net_users_usuario_id");
 
                     b.Navigation("TipoCartao");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Category", b =>
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Categoria", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Categories_AspNetUsers_UserId");
+                        .HasConstraintName("fk_categorias_asp_net_users_usuario_id");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Conta", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_contas_categorias_categoria_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_contas_asp_net_users_usuario_id");
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ContaVencimento", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Account", "Account")
-                        .WithMany("ContaVencimentos")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Conta", "Conta")
+                        .WithMany("Vencimentos")
                         .HasForeignKey("ContaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("ContaVencimento_ContaId_fkey");
+                        .HasConstraintName("fk_contas_vencimento_contas_conta_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("contavencimento_user_fkey");
+                        .HasConstraintName("fk_contas_vencimento_asp_net_users_usuario_id");
 
-                    b.Navigation("Account");
+                    b.Navigation("Conta");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>
@@ -1091,22 +1375,22 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasForeignKey("BancoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("extratobancario_bancoid_fkey");
+                        .HasConstraintName("fk_extratos_bancarios_bancos_banco_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoCartao", null)
                         .WithMany()
                         .HasForeignKey("TipoCartaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_ExtratoBancario_TipoCartao_TipoCartaoId");
+                        .HasConstraintName("fk_extratos_bancarios_tipos_cartao_tipo_cartao_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("extratobancario_user_fkey");
+                        .HasConstraintName("fk_extratos_bancarios_asp_net_users_usuario_id");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", b =>
@@ -1115,44 +1399,44 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("BancoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("extratobancarioitem_bancoid_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_bancos_banco_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Category", "Categoria")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
                         .WithMany()
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("extratoBancarioItem_bancoId_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_categorias_categoria_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.ExtratoBancario", "ExtratoBancario")
                         .WithMany("Itens")
                         .HasForeignKey("ExtratoBancarioId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("extratobancarioitem_extrato_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_extrato_bancario_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", "PessoaMovimentacao")
                         .WithMany()
                         .HasForeignKey("PessoaMovimentacaoId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("extratobancarioitem_pessoamovimentacaoid_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_pessoa_movimentacao_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoCartao", "TipoCartao")
                         .WithMany()
                         .HasForeignKey("TipoCartaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("extratobancarioitem_tipocartaoid_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_tipos_cartao_tipo_cartao_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoMovimentacao", "TipoMovimentacao")
                         .WithMany("ExtratoBancarioItem")
                         .HasForeignKey("TipoMovimentacaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("extratobancarioitem_tipomovimentacaoid_fkey");
+                        .HasConstraintName("fk_itens_extrato_bancario_tipo_movimentacao_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_ExtratoBancarioItem_AspNetUsers_UserId");
+                        .HasConstraintName("fk_itens_extrato_bancario_asp_net_users_usuario_id");
 
                     b.Navigation("Banco");
 
@@ -1166,7 +1450,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Navigation("TipoMovimentacao");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ItemLista", b =>
@@ -1176,30 +1460,30 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasForeignKey("ListaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("itemlista_listaid_fkey");
+                        .HasConstraintName("fk_itens_lista_listas_lista_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_ItemLista_AspNetUsers_UserId");
+                        .HasConstraintName("fk_itens_lista_asp_net_users_usuario_id");
 
                     b.Navigation("Lista");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Lista", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Lista_AspNetUsers_UserId");
+                        .HasConstraintName("fk_listas_asp_net_users_usuario_id");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.MovimentacaoDiaria", b =>
@@ -1208,26 +1492,26 @@ namespace MyFinanceAPI.Data.Migrations
                         .WithMany()
                         .HasForeignKey("BancoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("movimentacaodiaria_bancoid_fkey");
+                        .HasConstraintName("fk_movimentacoes_diarias_bancos_banco_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoCartao", "TipoCartao")
                         .WithMany()
                         .HasForeignKey("TipoCartaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("movimentacaodiaria_tipocartaoid_fkey");
+                        .HasConstraintName("fk_movimentacoes_diarias_tipos_cartao_tipo_cartao_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoMovimentacao", "TipoMovimentacao")
                         .WithMany()
                         .HasForeignKey("TipoMovimentacaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("movimentacaodiaria_tipomovimentacaoid_fkey");
+                        .HasConstraintName("fk_movimentacoes_diarias_tipo_movimentacao_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_MovimentacaoDiaria_AspNetUsers_UserId");
+                        .HasConstraintName("fk_movimentacoes_diarias_asp_net_users_usuario_id");
 
                     b.Navigation("Banco");
 
@@ -1235,93 +1519,93 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Navigation("TipoMovimentacao");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Category", "Categoria")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
                         .WithMany()
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_PessoaMovimentacao_Categories_CategoriaId");
+                        .HasConstraintName("fk_pessoas_movimentacao_categorias_categoria_id");
 
                     b.HasOne("MyFinanceAPI.Domain.Entities.TipoMovimentacao", "TipoMovimentacao")
                         .WithMany()
                         .HasForeignKey("TipoMovimentacaoId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_PessoaMovimentacao_TipoMovimentacao_TipoMovimentacaoId");
+                        .HasConstraintName("fk_pessoas_movimentacao_tipos_movimentacao_tipo_movimentacao_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_PessoaMovimentacao_AspNetUsers_UserId");
+                        .HasConstraintName("fk_pessoas_movimentacao_asp_net_users_usuario_id");
 
                     b.Navigation("Categoria");
 
                     b.Navigation("TipoMovimentacao");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoCartao", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("fk_tipocartao_aspnetusers");
+                        .HasConstraintName("fk_tipos_cartao_asp_net_users_usuario_id");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoMovimentacao", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_tipomovimentacao_aspnetusers");
+                        .HasConstraintName("fk_tipos_movimentacao_asp_net_users_usuario_id");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transaction", b =>
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transacao", b =>
                 {
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Category", "Category")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_Transactions_Categories_CategoryId");
+                        .HasConstraintName("fk_transacoes_categorias_categoria_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Account", "Account")
-                        .WithMany("Transactions")
-                        .HasForeignKey("IdAccount")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Conta", "Conta")
+                        .WithMany("Transacoes")
+                        .HasForeignKey("ContaId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("FK_Transactions_Accounts_IdAccount");
+                        .HasConstraintName("fk_transacoes_contas_conta_id");
 
-                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "User")
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Transactions_AspNetUsers_UserId");
+                        .HasConstraintName("fk_transacoes_asp_net_users_usuario_id");
 
-                    b.Navigation("Account");
+                    b.Navigation("Categoria");
 
-                    b.Navigation("Category");
+                    b.Navigation("Conta");
 
-                    b.Navigation("User");
+                    b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Account", b =>
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Conta", b =>
                 {
-                    b.Navigation("ContaVencimentos");
+                    b.Navigation("Transacoes");
 
-                    b.Navigation("Transactions");
+                    b.Navigation("Vencimentos");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>

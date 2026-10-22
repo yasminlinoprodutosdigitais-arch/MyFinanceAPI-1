@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MyFinanceAPI.Application.Utils;
 
 namespace MyFinanceAPI.Application.DTO.Extrato
 {
@@ -21,9 +22,9 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public decimal ValorTotal { get; set; }
 
         public Guid LoteImportacaoId { get; set; }
-        public string Situacao { get; set; }
+        [TextoAte(20)] public string Situacao { get; set; }
 
-        public string? NomeArquivoOrigem { get; set; }
+        [TextoAte(260)] public string? NomeArquivoOrigem { get; set; }
 
         public List<ExtratoBancarioItemDTO> Itens { get; set; }
     }

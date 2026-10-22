@@ -103,7 +103,7 @@ public class ExtratoBancarioServiceTests
         Assert.All(_itensCriados, i =>
         {
             Assert.Equal(ExtratoIdGerado, i.ExtratoBancarioId);
-            Assert.Equal(UserId, i.UserId);
+            Assert.Equal(UserId, i.UsuarioId);
             Assert.Equal(BancoId, i.BancoId);
             Assert.Equal(TipoCartaoId, i.TipoCartaoId);
             Assert.False(string.IsNullOrEmpty(i.ChaveImportacao));
@@ -127,7 +127,7 @@ public class ExtratoBancarioServiceTests
         Assert.Equal(34.75m, _extratoCriado.ValorTotal);
         Assert.Equal(BancoId, _extratoCriado.BancoId);
         Assert.Equal("NU_2026-10.csv", _extratoCriado.NomeArquivoOrigem);
-        Assert.Equal(UserId, _extratoCriado.UserId);
+        Assert.Equal(UserId, _extratoCriado.UsuarioId);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class ExtratoBancarioServiceTests
             TipoLancamento = "Saída",
             Descricao = "Compra - LOJA",
             Valor = 1234m,
-            UserId = UserId,
+            UsuarioId = UserId,
         };
         _candidatosTruncados.Add(truncado);
 
@@ -257,7 +257,7 @@ public class ExtratoBancarioServiceTests
     {
         _pessoasCadastradas.Add(new PessoaMovimentacao
         {
-            Id = 15, NomePessoa = "PADARIA", CategoriaId = 4, TipoMovimentacaoId = 9, UserId = UserId,
+            Id = 15, NomePessoa = "PADARIA", CategoriaId = 4, TipoMovimentacaoId = 9, UsuarioId = UserId,
         });
 
         await Importar(Cabecalho, "01/10/2026,-12.50,a,Compra no débito - Padaria");
@@ -362,7 +362,7 @@ public class ExtratoBancarioServiceTests
     public async Task Remove_apaga_itens_e_cabecalho_na_mesma_operacao()
     {
         _extratoRepo.Setup(r => r.GetByIdAsync(ExtratoIdGerado, UserId))
-            .ReturnsAsync(new ExtratoBancario { Id = ExtratoIdGerado, UserId = UserId });
+            .ReturnsAsync(new ExtratoBancario { Id = ExtratoIdGerado, UsuarioId = UserId });
         _itemRepo.Setup(r => r.RemoveByExtratoIdAsync(ExtratoIdGerado))
             .Callback(() => _uow.Registrar("Itens.Remove"))
             .Returns(Task.CompletedTask);

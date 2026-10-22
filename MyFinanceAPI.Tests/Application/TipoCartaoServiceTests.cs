@@ -17,8 +17,8 @@ public class TipoCartaoServiceTests
 
     private readonly Mock<ITipoCartaoRepository> _repo = new();
 
-    private static readonly TipoCartao DoSistema = new() { Id = 1, UserId = null, NomeTipoCartao = "Cartão de crédito", EhCredito = true };
-    private static readonly TipoCartao DoUsuario = new() { Id = 50, UserId = UserId, NomeTipoCartao = "Vale-refeição" };
+    private static readonly TipoCartao DoSistema = new() { Id = 1, UsuarioId = null, NomeTipoCartao = "Cartão de crédito", EhCredito = true };
+    private static readonly TipoCartao DoUsuario = new() { Id = 50, UsuarioId = UserId, NomeTipoCartao = "Vale-refeição" };
 
     private TipoCartaoService CriarService() => new(_repo.Object, MapperFactory.Create());
 

@@ -106,13 +106,13 @@ public class ContratoHttpTests
     [Fact]
     public async Task Lista_vazia_responde_200_com_lista_vazia()
     {
-        var categorias = new Mock<ICategoryService>();
+        var categorias = new Mock<ICategoriaService>();
         categorias.Setup(s => s.ListarAsync(UserId)).ReturnsAsync([]);
 
-        var resposta = await Com(new CategoriesController(categorias.Object)).GetCategories();
+        var resposta = await Com(new CategoriasController(categorias.Object)).GetCategories();
 
         var corpo = Assert.IsType<OkObjectResult>(resposta.Result).Value;
-        Assert.Empty(Assert.IsAssignableFrom<IEnumerable<CategoryDTO>>(corpo));
+        Assert.Empty(Assert.IsAssignableFrom<IEnumerable<CategoriaDTO>>(corpo));
     }
 
     // ---------- Os que tinham Create fora do contrato ----------
@@ -121,35 +121,35 @@ public class ContratoHttpTests
     public async Task Create_de_conta_aponta_para_o_GET_de_conta()
     {
         // Antes: CreatedAtRoute("GetCategory", ...) com o id do payload (0) — BE-P3-04.
-        var contas = new Mock<IAccountService>();
-        contas.Setup(s => s.Add(It.IsAny<AccountDTO>(), UserId)).ReturnsAsync(new AccountDTO { Id = 15, Name = "Internet" });
+        var contas = new Mock<IContaService>();
+        contas.Setup(s => s.Add(It.IsAny<ContaDTO>(), UserId)).ReturnsAsync(new ContaDTO { Id = 15, Nome = "Internet" });
 
-        var resposta = await Com(new AccountsController(contas.Object)).CreateAccount(new AccountDTO { Name = "Internet" });
+        var resposta = await Com(new ContasController(contas.Object)).CreateAccount(new ContaDTO { Nome = "Internet" });
 
-        Criado<AccountsController, AccountDTO>(resposta.Result!, idEsperado: 15);
-        Assert.Equal(AccountsController.RotaPorId, ((CreatedAtRouteResult)resposta.Result!).RouteName);
+        Criado<ContasController, ContaDTO>(resposta.Result!, idEsperado: 15);
+        Assert.Equal(ContasController.RotaPorId, ((CreatedAtRouteResult)resposta.Result!).RouteName);
     }
 
     [Fact]
     public async Task Create_de_transacao_devolve_todas_as_criadas_com_o_Location_da_primeira()
     {
         // Antes: "Getupdate" para a rota "GetUpdate" — 500 ao criar (BE-P3-04).
-        var transacoes = new Mock<ITransactionService>();
-        transacoes.Setup(s => s.Add(It.IsAny<TransactionDTO>(), UserId))
-            .ReturnsAsync([new TransactionDTO { Id = 900 }, new TransactionDTO { Id = 901 }]);
+        var transacoes = new Mock<ITransacaoService>();
+        transacoes.Setup(s => s.Add(It.IsAny<TransacaoDTO>(), UserId))
+            .ReturnsAsync([new TransacaoDTO { Id = 900 }, new TransacaoDTO { Id = 901 }]);
 
-        var resposta = await Com(new TransactionController(transacoes.Object)).CreateTransaction(new TransactionDTO());
+        var resposta = await Com(new TransacoesController(transacoes.Object)).CreateTransaction(new TransacaoDTO());
 
-        var corpo = Criado<TransactionController, IReadOnlyList<TransactionDTO>>(resposta.Result!, idEsperado: 900);
+        var corpo = Criado<TransacoesController, IReadOnlyList<TransacaoDTO>>(resposta.Result!, idEsperado: 900);
         Assert.Equal([900, 901], corpo.Select(t => t.Id));
     }
 
     [Fact]
     public async Task Delete_de_transacao_responde_204()
     {
-        var transacoes = new Mock<ITransactionService>();
+        var transacoes = new Mock<ITransacaoService>();
 
-        var resposta = await Com(new TransactionController(transacoes.Object)).DeleteAccountHistory(5);
+        var resposta = await Com(new TransacoesController(transacoes.Object)).DeleteAccountHistory(5);
 
         Assert.IsType<NoContentResult>(resposta);
         transacoes.Verify(s => s.Delete(5, UserId), Times.Once);

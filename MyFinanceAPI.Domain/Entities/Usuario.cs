@@ -8,10 +8,10 @@ namespace MyFinanceAPI.Domain.Entities
     {
         // Propriedades adicionais para o usuário
         public string NomeUsuario { get; set; }
-        public bool StatusAtivo { get; set; }
-        public string Role { get; set; }
-        public DateTime CriadoEm { get; set; }
-        public DateTime AtualizadoEm { get; set; }
+        public bool Ativo { get; set; }
+        public string Perfil { get; set; }
+        public DateTime DataCriacao { get; set; }
+        public DateTime DataAlteracao { get; set; }
         public Usuario()
         {
         }
@@ -20,18 +20,18 @@ namespace MyFinanceAPI.Domain.Entities
         public Usuario(string userName,
                string senha,
                string nomeUsuario,
-               string role,
-               bool statusAtivo,
-               DateTime criadoEm,
-               DateTime atualizadoEm)
+               string perfil,
+               bool ativo,
+               DateTime dataCriacao,
+               DateTime dataAlteracao)
         {
             this.UserName = userName;
             this.Email = userName;
             this.NomeUsuario = nomeUsuario;
-            this.Role = role;
-            this.StatusAtivo = statusAtivo;
-            this.CriadoEm = criadoEm;
-            this.AtualizadoEm = atualizadoEm;
+            this.Perfil = perfil;
+            this.Ativo = ativo;
+            this.DataCriacao = dataCriacao;
+            this.DataAlteracao = dataAlteracao;
 
             SetSenhaHash(senha);
         }

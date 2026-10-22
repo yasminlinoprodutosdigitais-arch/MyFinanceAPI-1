@@ -13,7 +13,7 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
 
     protected override string MensagemNaoEncontrado => "Pessoa não encontrada.";
 
-    protected override Expression<Func<PessoaMovimentacao, bool>> Proprios(int userId) => p => p.UserId == userId;
+    protected override Expression<Func<PessoaMovimentacao, bool>> Proprios(int userId) => p => p.UsuarioId == userId;
 
     protected override IQueryable<PessoaMovimentacao> ComDetalhes(IQueryable<PessoaMovimentacao> query) =>
         query.Include(p => p.Categoria).Include(p => p.TipoMovimentacao);
@@ -40,7 +40,7 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     public override Task<PessoaMovimentacao> CriarAsync(PessoaMovimentacao entidade) =>
-        ObterOuCriarAsync(entidade, entidade.UserId);
+        ObterOuCriarAsync(entidade, entidade.UsuarioId);
 
     /// <summary>
     /// Busca-ou-cria: se outra gravação já criou a mesma pessoa (unique), devolve a existente.
@@ -50,9 +50,9 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         var nome = Normalizar(pessoa.NomePessoa)
             ?? throw new RegraNegocioException("O nome da pessoa é obrigatório.");
 
-        pessoa.UserId = userId;
+        pessoa.UsuarioId = userId;
         pessoa.NomePessoa = nome;
-        await _context.PessoaMovimentacao.AddAsync(pessoa);
+        await _context.PessoasMovimentacao.AddAsync(pessoa);
         try
         {
             await _context.SaveChangesAsync();
@@ -62,7 +62,7 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         {
             // Sem o detach, a entidade com erro ficaria no contexto e derrubaria o próximo SaveChanges.
             _context.Entry(pessoa).State = EntityState.Detached;
-            return await _context.PessoaMovimentacao.FirstAsync(p => p.UserId == userId && p.NomePessoa == nome);
+            return await _context.PessoasMovimentacao.FirstAsync(p => p.UsuarioId == userId && p.NomePessoa == nome);
         }
     }
 
@@ -85,10 +85,10 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
 
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
-        if (!await _context.PessoaMovimentacao.AnyAsync(p => p.Id == id && p.UserId == userId))
+        if (!await _context.PessoasMovimentacao.AnyAsync(p => p.Id == id && p.UsuarioId == userId))
             return false;
 
-        return await _context.ExtratoBancarioItens.AnyAsync(i => i.PessoaMovimentacaoId == id);
+        return await _context.ItensExtratoBancario.AnyAsync(i => i.PessoaMovimentacaoId == id);
     }
 
     public async Task<IEnumerable<PessoaMovimentacao>> VerificaPossuiPessoa(string? nomePessoa, int userId)
@@ -97,8 +97,8 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         if (nome == null)
             return [];
 
-        return await ComDetalhes(_context.PessoaMovimentacao.AsNoTracking())
-            .Where(a => a.UserId == userId && a.NomePessoa == nome)
+        return await ComDetalhes(_context.PessoasMovimentacao.AsNoTracking())
+            .Where(a => a.UsuarioId == userId && a.NomePessoa == nome)
             .OrderBy(c => c.NomePessoa)
             .ToListAsync();
     }

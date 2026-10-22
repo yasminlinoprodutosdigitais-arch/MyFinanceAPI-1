@@ -115,6 +115,16 @@ public class ErroHandlerTests
     }
 
     [Fact]
+    public async Task Texto_acima_do_limite_da_coluna_e_400()
+    {
+        // DB-P3-04: com varchar(n) nas colunas, estourar o limite é erro de entrada, não falha interna.
+        var (status, message, corpo) = await Tratar(Postgres(PostgresErrorCodes.StringDataRightTruncation));
+        Assert.Equal(400, status);
+        Assert.Equal("Texto maior que o limite permitido para o campo.", message);
+        Assert.DoesNotContain("detalhe interno", corpo);
+    }
+
+    [Fact]
     public async Task Erro_inesperado_e_500_sem_detalhes_internos()
     {
         var (status, message, corpo) = await Tratar(new NullReferenceException("Object reference not set to an instance of an object."));

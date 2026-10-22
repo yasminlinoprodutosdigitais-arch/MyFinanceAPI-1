@@ -43,9 +43,9 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IValidadorToken, ValidadorToken>();
             services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<ITransactionService, TransactionService>();
-            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICategoriaService, CategoriaService>();
+            services.AddScoped<ITransacaoService, TransacaoService>();
+            services.AddScoped<IContaService, ContaService>();
             services.AddHttpContextAccessor();
             services.AddScoped<IUserContextService, UserContextService>();
 
@@ -64,9 +64,9 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
             // Repositórios adicionais
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<ITransactionRepository, TransactionRepository>();
-            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+            services.AddScoped<ITransacaoRepository, TransacaoRepository>();
+            services.AddScoped<IContaRepository, ContaRepository>();
             
             services.AddScoped<IBancoRepository, BancoRepository>();
             services.AddScoped<ITipoCartaoRepository, TipoCartaoRepository>();

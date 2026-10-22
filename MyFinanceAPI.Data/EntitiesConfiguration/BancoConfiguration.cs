@@ -8,29 +8,28 @@ public class BancoConfiguration : IEntityTypeConfiguration<Banco>
 {
     public void Configure(EntityTypeBuilder<Banco> builder)
     {
-        builder.ToTable("Banco");
-        builder.HasKey(e => e.Id).HasName("banco_pkey");
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).UseSerialColumn();
+
+        builder.Property(e => e.NomeBanco).HasMaxLength(120);
+        builder.Property(e => e.Agencia).HasMaxLength(10);
+        builder.Property(e => e.NumeroConta).HasMaxLength(20);
 
         builder.Property(e => e.SaldoInicial).HasPrecision(12, 2).HasDefaultValue(0m);
         builder.Property(e => e.Ativo).HasDefaultValue(true);
         builder.Property(e => e.DataAlteracao).HasDefaultValueSql("now()");
 
-        builder.HasIndex(e => new { e.UserId, e.NomeBanco })
-            .IsUnique()
-            .HasDatabaseName("UX_Banco_UserId_NomeBanco");
+        builder.HasIndex(e => new { e.UsuarioId, e.NomeBanco })
+            .IsUnique();
 
-        // "UerId": grafia legada do nome da constraint no banco.
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("FK_Banco_AspNetUsers_UerId")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.TipoCartao)
             .WithMany()
             .HasForeignKey(e => e.TipoCartaoId)
-            .HasConstraintName("fk_banco_tipocartao")
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

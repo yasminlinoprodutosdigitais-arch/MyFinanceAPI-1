@@ -1,6 +1,7 @@
 using System;
 using System.Reflection.Metadata;
 using MyFinanceAPI.Domain.Entities;
+using MyFinanceAPI.Application.Utils;
 
 namespace MyFinanceAPI.Application.DTO.Extrato
 {
@@ -11,19 +12,19 @@ namespace MyFinanceAPI.Application.DTO.Extrato
 
         public DateOnly DataMovimentacao { get; set; }
         public decimal Valor { get; set; }
-        public string TipoLancamento { get; set; }
+        [TextoAte(20)] public string TipoLancamento { get; set; }
 
-        public string? Descricao { get; set; }
-        public string? Observacao { get; set; }
+        [TextoAte(200)] public string? Descricao { get; set; }
+        [TextoAte(500)] public string? Observacao { get; set; }
         public int? PessoaMovimentacaoId { get; set; }
-        public string? NomePessoaTransacao { get; set; }
-        public string? Identificador { get; set; }
+        [TextoAte(120)] public string? NomePessoaTransacao { get; set; }
+        [TextoAte(100)] public string? Identificador { get; set; }
 
         public int? BancoId { get; set; }
         public string? BancoNome { get; set; }
 
         public int? CategoriaId { get; set; }
-        public string? NumeroFatura { get; set; }
+        [TextoAte(20)] public string? NumeroFatura { get; set; }
         public string? CategoriaNome { get; set; }
 
         public bool? EhParcelado { get; set; } 
@@ -35,9 +36,9 @@ namespace MyFinanceAPI.Application.DTO.Extrato
 
         public int? TipoMovimentacaoId { get; set; }
         public string? TipoMovimentacaoNome { get; set; }
-        public int UserId { get; set; }
-        public string? ChaveDescricao { get; set; }
-        public string? ChaveImportacao { get; set; }
+        public int UsuarioId { get; set; }
+        [TextoAte(200)] public string? ChaveDescricao { get; set; }
+        [TextoAte(64)] public string? ChaveImportacao { get; set; }
 
         public bool AlteraVinculoPessoa { get; set; }
 
@@ -45,7 +46,7 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public BancoDTO? Banco { get; set; }
         public TipoCartaoDTO? TipoCartao { get; set; }
         public TipoMovimentacaoDTO? TipoMovimentacao { get; set; }
-        public CategoryDTO? Categoria { get; set; }
+        public CategoriaDTO? Categoria { get; set; }
         public PessoaMovimentacaoDTO? PessoaMovimentacao { get; set; }
         
     }

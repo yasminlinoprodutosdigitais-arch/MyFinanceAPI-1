@@ -12,7 +12,7 @@ public class TipoMovimentacaoRepository(ContextDB context) : RepositorioDoUsuari
 
     protected override string MensagemNaoEncontrado => "Tipo de movimentação não encontrado.";
 
-    protected override Expression<Func<TipoMovimentacao, bool>> Proprios(int userId) => t => t.UserId == userId;
+    protected override Expression<Func<TipoMovimentacao, bool>> Proprios(int userId) => t => t.UsuarioId == userId;
 
     protected override IOrderedQueryable<TipoMovimentacao> Ordenar(IQueryable<TipoMovimentacao> query) =>
         query.OrderBy(t => t.NomeTipoMovimentacao);
@@ -26,11 +26,11 @@ public class TipoMovimentacaoRepository(ContextDB context) : RepositorioDoUsuari
 
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
-        if (!await _context.TipoMovimentacao.AnyAsync(t => t.Id == id && t.UserId == userId))
+        if (!await _context.TiposMovimentacao.AnyAsync(t => t.Id == id && t.UsuarioId == userId))
             return false;
 
-        return await _context.MovimentacaoDiaria.AnyAsync(m => m.TipoMovimentacaoId == id)
-            || await _context.ExtratoBancarioItens.AnyAsync(i => i.TipoMovimentacaoId == id)
-            || await _context.PessoaMovimentacao.AnyAsync(p => p.TipoMovimentacaoId == id);
+        return await _context.MovimentacoesDiarias.AnyAsync(m => m.TipoMovimentacaoId == id)
+            || await _context.ItensExtratoBancario.AnyAsync(i => i.TipoMovimentacaoId == id)
+            || await _context.PessoasMovimentacao.AnyAsync(p => p.TipoMovimentacaoId == id);
     }
 }

@@ -61,6 +61,9 @@ public sealed class ErroHandler(ILogger<ErroHandler> logger) : IExceptionHandler
             => (StatusCodes.Status409Conflict, "Já existe um registro com esses dados."),
         PostgresErrorCodes.ForeignKeyViolation
             => (StatusCodes.Status409Conflict, "Operação não permitida: o registro está ligado a outros dados."),
+        // As colunas de texto têm limite desde DB-P3-04; passar do tamanho é erro de entrada.
+        PostgresErrorCodes.StringDataRightTruncation
+            => (StatusCodes.Status400BadRequest, "Texto maior que o limite permitido para o campo."),
         _ => (StatusCodes.Status500InternalServerError, MensagemInesperada)
     };
 }

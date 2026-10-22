@@ -7,12 +7,12 @@ namespace MyFinanceAPI.Data.EntitiesConfiguration;
 internal static class CheckSql
 {
     public static string In(string coluna, IEnumerable<string> valores) =>
-        $"\"{coluna}\" IN ({string.Join(", ", valores.Select(v => $"'{v.Replace("'", "''")}'"))})";
+        $"{coluna} IN ({string.Join(", ", valores.Select(v => $"'{v.Replace("'", "''")}'"))})";
 
     public static string In(string coluna, IEnumerable<int> valores) =>
-        $"\"{coluna}\" IN ({string.Join(", ", valores)})";
+        $"{coluna} IN ({string.Join(", ", valores)})";
 
     /// <summary>Parcela atual dentro do total. Nulos passam (lançamento não parcelado).</summary>
     public static string Parcelas(int parcelaMinima) =>
-        $"\"QuantidadeParcelas\" >= 1 AND \"ParcelaAtual\" BETWEEN {parcelaMinima} AND \"QuantidadeParcelas\"";
+        $"quantidade_parcelas >= 1 AND parcela_atual BETWEEN {parcelaMinima} AND quantidade_parcelas";
 }

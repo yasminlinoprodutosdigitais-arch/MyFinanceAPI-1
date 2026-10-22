@@ -34,7 +34,7 @@ namespace MyFinanceAPI.Domain.Entities
 
         public int? CategoriaId { get; set; }
         public string? NumeroFatura { get; set; }
-        public Category? Categoria { get; set; }
+        public Categoria? Categoria { get; set; }
 
         public int? TipoMovimentacaoId { get; set; }
         public TipoMovimentacao? TipoMovimentacao { get; set; }

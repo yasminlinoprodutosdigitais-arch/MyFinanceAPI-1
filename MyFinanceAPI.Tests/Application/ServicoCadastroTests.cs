@@ -47,7 +47,7 @@ public class ServicoCadastroTests
         await service.AdicionarAsync(new ListaDTO { Nome = "Mercado" }, UserId);
 
         Assert.Equal(["gravar Mercado ignorando 0"], service.Validacoes);
-        _repo.Verify(r => r.CriarAsync(It.Is<Lista>(l => l.Nome == "Mercado" && l.UserId == UserId)), Times.Once);
+        _repo.Verify(r => r.CriarAsync(It.Is<Lista>(l => l.Nome == "Mercado" && l.UsuarioId == UserId)), Times.Once);
     }
 
     [Fact]

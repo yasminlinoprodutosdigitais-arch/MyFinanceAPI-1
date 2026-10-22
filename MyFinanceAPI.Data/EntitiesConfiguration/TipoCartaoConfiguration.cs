@@ -8,26 +8,26 @@ public class TipoCartaoConfiguration : IEntityTypeConfiguration<TipoCartao>
 {
     public void Configure(EntityTypeBuilder<TipoCartao> builder)
     {
-        builder.ToTable("TipoCartao");
-        builder.HasKey(e => e.Id).HasName("tipocartao_pkey");
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).UseSerialColumn();
 
-        builder.HasIndex(e => new { e.UserId, e.NomeTipoCartao })
-            .IsUnique()
-            .HasDatabaseName("UX_TipoCartao_UserId_NomeTipoCartao");
+        builder.Property(e => e.NomeTipoCartao).HasMaxLength(60);
+        builder.Property(e => e.Descricao).HasMaxLength(200);
 
-        // Tipos padrão do sistema (UserId nulo): o índice acima não pega duplicatas, porque NULLs são distintos.
+        builder.HasIndex(e => new { e.UsuarioId, e.NomeTipoCartao })
+            .IsUnique();
+
+        // Tipos padrão do sistema (UsuarioId nulo): o índice acima não pega duplicatas, porque NULLs são distintos.
         builder.HasIndex(e => e.NomeTipoCartao)
             .IsUnique()
-            .HasFilter("\"UserId\" IS NULL")
-            .HasDatabaseName("UX_TipoCartao_Sistema_NomeTipoCartao");
+            .HasFilter("\"usuario_id\" IS NULL")
+            .HasDatabaseName("ux_tipos_cartao_sistema_nome_tipo_cartao");
 
         builder.Ignore(e => e.EhSistema);
 
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("fk_tipocartao_aspnetusers")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -37,7 +37,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
                 {
                     NomeUsuario = usuario.NomeUsuario,
                     Email = usuario.Email,
-                    Role = usuario.Role,
+                    Perfil = usuario.Perfil,
 
                 }
             });
@@ -51,7 +51,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         [HttpPost("/CadastrarUsuario")]
         public IActionResult Cadastrar([FromBody] CadastrarUsuarioDto request)
         {
-            if (!RolesPermitidas.Contains(request.Role))
+            if (!RolesPermitidas.Contains(request.Perfil))
                 return ErroRequisicao($"Role inválida. Valores aceitos: {string.Join(", ", RolesPermitidas)}.");
 
             if (_usuarioService.VerificaSeUsuarioExiste(request.Login, request.NomeUsuario))
@@ -62,7 +62,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
             var usuario = _usuarioService.CadastrarUsuario(request);
 
             return StatusCode(StatusCodes.Status201Created,
-                new UsuarioCadastradoDto(usuario.Id, usuario.UserName!, usuario.NomeUsuario, usuario.Role));
+                new UsuarioCadastradoDto(usuario.Id, usuario.UserName!, usuario.NomeUsuario, usuario.Perfil));
         }
     }
 }

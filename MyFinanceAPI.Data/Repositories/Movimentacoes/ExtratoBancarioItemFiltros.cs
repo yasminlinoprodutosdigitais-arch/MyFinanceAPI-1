@@ -14,7 +14,7 @@ namespace MyFinanceAPI.Data.Repositories
         /// </summary>
         public static Expression<Func<ExtratoBancarioItem, bool>> DoMesOuDaFatura(
             int userId, DateOnly inicioInclusive, DateOnly fimExclusive, string? numeroFatura, int? bancoId) =>
-            i => i.UserId == userId
+            i => i.UsuarioId == userId
                  && (bancoId == null || i.BancoId == bancoId)
                  && (i.TipoCartao != null && i.TipoCartao.EhCredito
                      ? i.NumeroFatura == numeroFatura

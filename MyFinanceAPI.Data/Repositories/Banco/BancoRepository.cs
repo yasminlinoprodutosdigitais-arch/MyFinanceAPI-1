@@ -12,7 +12,7 @@ public class BancoRepository(ContextDB context) : RepositorioDoUsuario<Banco>(co
 
     protected override string MensagemNaoEncontrado => "Banco não encontrado.";
 
-    protected override Expression<Func<Banco, bool>> Proprios(int userId) => b => b.UserId == userId;
+    protected override Expression<Func<Banco, bool>> Proprios(int userId) => b => b.UsuarioId == userId;
 
     protected override IQueryable<Banco> ComDetalhes(IQueryable<Banco> query) => query.Include(b => b.TipoCartao);
 
@@ -31,18 +31,18 @@ public class BancoRepository(ContextDB context) : RepositorioDoUsuario<Banco>(co
     public async Task<bool> ExisteNomeAsync(int userId, string nome, int ignorarId)
     {
         var alvo = (nome ?? string.Empty).Trim().ToUpper();
-        return await _context.Banco.AnyAsync(b => b.UserId == userId && b.Id != ignorarId
+        return await _context.Bancos.AnyAsync(b => b.UsuarioId == userId && b.Id != ignorarId
             && b.NomeBanco.Trim().ToUpper() == alvo);
     }
 
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
-        if (!await _context.Banco.AnyAsync(b => b.Id == id && b.UserId == userId))
+        if (!await _context.Bancos.AnyAsync(b => b.Id == id && b.UsuarioId == userId))
             return false;
 
-        return await _context.MovimentacaoDiaria.AnyAsync(m => m.BancoId == id)
-            || await _context.ExtratoBancario.AnyAsync(e => e.BancoId == id)
-            || await _context.ExtratoBancarioItens.AnyAsync(i => i.BancoId == id);
+        return await _context.MovimentacoesDiarias.AnyAsync(m => m.BancoId == id)
+            || await _context.ExtratosBancarios.AnyAsync(e => e.BancoId == id)
+            || await _context.ItensExtratoBancario.AnyAsync(i => i.BancoId == id);
     }
 
     public async Task<bool> UpdateSaldo(int bancoId, decimal SaldoAtual, int userId)

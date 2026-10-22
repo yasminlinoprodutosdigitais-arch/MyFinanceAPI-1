@@ -39,7 +39,7 @@ namespace MyFinanceAPI.Application.Services
                 request.Login,   // Login é atribuído ao UserName
                 request.Senha,
                 request.NomeUsuario,
-                request.Role,
+                request.Perfil,
                 true,
                 DateTime.UtcNow,
                 DateTime.UtcNow

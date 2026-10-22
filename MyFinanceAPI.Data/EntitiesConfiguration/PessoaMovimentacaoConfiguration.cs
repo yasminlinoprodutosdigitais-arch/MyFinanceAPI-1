@@ -8,32 +8,29 @@ public class PessoaMovimentacaoConfiguration : IEntityTypeConfiguration<PessoaMo
 {
     public void Configure(EntityTypeBuilder<PessoaMovimentacao> builder)
     {
-        builder.ToTable("PessoaMovimentacao");
-        builder.HasKey(e => e.Id).HasName("PessoaMovimentacao_pkey");
+        builder.HasKey(e => e.Id);
+
+        builder.Property(e => e.NomePessoa).HasMaxLength(120);
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
 
         // DB-P0-04: o nome é gravado normalizado (trim + maiúsculas) pelo repositório.
-        builder.HasIndex(e => new { e.UserId, e.NomePessoa })
-            .IsUnique()
-            .HasDatabaseName("UX_PessoaMovimentacao_UserId_NomePessoa");
+        builder.HasIndex(e => new { e.UsuarioId, e.NomePessoa })
+            .IsUnique();
 
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("FK_PessoaMovimentacao_AspNetUsers_UserId")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.TipoMovimentacao)
             .WithMany()
             .HasForeignKey(e => e.TipoMovimentacaoId)
-            .HasConstraintName("FK_PessoaMovimentacao_TipoMovimentacao_TipoMovimentacaoId")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Categoria)
             .WithMany()
             .HasForeignKey(e => e.CategoriaId)
-            .HasConstraintName("FK_PessoaMovimentacao_Categories_CategoriaId")
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

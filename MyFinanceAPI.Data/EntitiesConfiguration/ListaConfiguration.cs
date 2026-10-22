@@ -8,17 +8,18 @@ public class ListaConfiguration : IEntityTypeConfiguration<Lista>
 {
     public void Configure(EntityTypeBuilder<Lista> builder)
     {
-        builder.ToTable("Lista", t =>
-            t.HasCheckConstraint("lista_tipolista_check", CheckSql.In("TipoLista", Enum.GetValues<TipoLista>().Select(v => (int)v))));
-        builder.HasKey(e => e.Id).HasName("lista_pkey");
+        builder.ToTable(t =>
+            t.HasCheckConstraint("listas_tipo_lista_check", CheckSql.In("tipo_lista", Enum.GetValues<TipoLista>().Select(v => (int)v))));
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).UseSerialColumn();
+
+        builder.Property(e => e.Nome).HasMaxLength(120);
 
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");
 
-        builder.HasOne(e => e.User)
+        builder.HasOne(e => e.Usuario)
             .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .HasConstraintName("FK_Lista_AspNetUsers_UserId")
+            .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -444,3 +444,12 @@ D-1, D-2, D-3, D-4, D-5, D-6, D-7, D-8, D-9. Todas mudam o que o baseline regist
 ## 6. Pendências
 
 - **Rotação da senha do Neon (BE-P0-01):** não feita. Risco aceito em 03/10/2026 pela dona do projeto (repositório privado, acesso único). A senha continua no histórico do git.
+
+## 7. Atualização — [DB] P3 Convenções (21/10/2026)
+
+Os nomes físicos citados neste relatório (PascalCase com aspas, `*_pkey`, `FK_*`, `IX_*`) foram substituídos pela convenção do card [DB] P3: português, `snake_case`, tabelas no plural, `pk_`/`fk_`/`ix_` e CHECK `{tabela}_{coluna}_check`. Exemplos: `"Transactions"` → `transacoes`, `"IdAccount"` → `conta_id`, `"ExtratoBancarioItem"` → `itens_extrato_bancario`, `"AspNetUsers"` → `asp_net_users`.
+
+- Migrations: `LimitesDeTexto`, `ConvencoesDeNomes`, `AjusteLimitesDeTexto`, `ConvencoesDaSpec`, `NomesDeForeignKeys` (a partir de `IndicesConsulta`, a última em produção em 17/10).
+- Produção: `aplicar-producao-convencoes.sql` / `reverter-producao-convencoes.sql` (uma transação só). `model-schema.sql` regenerado com os nomes novos.
+- `prod-schema-2026-10-03.sql` e `prod-catalog-2026-10-03.tsv` ficam como registro histórico: descrevem o banco antes deste card.
+- Query manual no banco agora dispensa aspas: `select nome, valor from transacoes`.

@@ -9,6 +9,6 @@ public class ContaVencimento : BaseEntity
     public int Dia { get; set; }
 
     [JsonIgnore]
-    public Account? Account { get; set; }  // Relacionamento com Category
+    public Conta? Conta { get; set; }  // Relacionamento com Category
     public ContaVencimento() { } // Construtor padrão
 }

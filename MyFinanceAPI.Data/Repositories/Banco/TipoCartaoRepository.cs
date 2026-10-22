@@ -15,13 +15,13 @@ public class TipoCartaoRepository(ContextDB context) : RepositorioDoUsuario<Tipo
 
     protected override string MensagemNaoEncontrado => "Tipo de cartão não encontrado.";
 
-    protected override Expression<Func<TipoCartao, bool>> Proprios(int userId) => t => t.UserId == userId;
+    protected override Expression<Func<TipoCartao, bool>> Proprios(int userId) => t => t.UsuarioId == userId;
 
-    protected override Expression<Func<TipoCartao, bool>> Visiveis(int userId) => t => t.UserId == userId || t.UserId == null;
+    protected override Expression<Func<TipoCartao, bool>> Visiveis(int userId) => t => t.UsuarioId == userId || t.UsuarioId == null;
 
     // Padrão do sistema primeiro.
     protected override IOrderedQueryable<TipoCartao> Ordenar(IQueryable<TipoCartao> query) =>
-        query.OrderBy(t => t.UserId != null).ThenBy(t => t.NomeTipoCartao);
+        query.OrderBy(t => t.UsuarioId != null).ThenBy(t => t.NomeTipoCartao);
 
     protected override void CopiarAlteracoes(TipoCartao existente, TipoCartao entrada)
     {
@@ -32,20 +32,20 @@ public class TipoCartaoRepository(ContextDB context) : RepositorioDoUsuario<Tipo
 
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
-        if (!await _context.TipoCartao.AnyAsync(t => t.Id == id && t.UserId == userId))
+        if (!await _context.TiposCartao.AnyAsync(t => t.Id == id && t.UsuarioId == userId))
             return false;
 
-        return await _context.Banco.AnyAsync(b => b.TipoCartaoId == id)
-            || await _context.MovimentacaoDiaria.AnyAsync(m => m.TipoCartaoId == id)
-            || await _context.ExtratoBancario.AnyAsync(e => e.TipoCartaoId == id)
-            || await _context.ExtratoBancarioItens.AnyAsync(i => i.TipoCartaoId == id);
+        return await _context.Bancos.AnyAsync(b => b.TipoCartaoId == id)
+            || await _context.MovimentacoesDiarias.AnyAsync(m => m.TipoCartaoId == id)
+            || await _context.ExtratosBancarios.AnyAsync(e => e.TipoCartaoId == id)
+            || await _context.ItensExtratoBancario.AnyAsync(i => i.TipoCartaoId == id);
     }
 
     public async Task<bool> ExisteNomeAsync(int userId, string nome, int ignorarId)
     {
         var alvo = (nome ?? string.Empty).Trim().ToUpper();
         // Inclui os padrão do sistema: o usuário não cria outro "Cartão de crédito" (DB-P1-07).
-        return await _context.TipoCartao.AnyAsync(t => (t.UserId == userId || t.UserId == null) && t.Id != ignorarId
+        return await _context.TiposCartao.AnyAsync(t => (t.UsuarioId == userId || t.UsuarioId == null) && t.Id != ignorarId
             && t.NomeTipoCartao.Trim().ToUpper() == alvo);
     }
 }

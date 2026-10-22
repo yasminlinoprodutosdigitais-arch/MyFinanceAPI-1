@@ -9,7 +9,7 @@ public class ListaRepository(ContextDB context) : RepositorioDoUsuario<Lista>(co
 {
     protected override string MensagemNaoEncontrado => "Lista não encontrada.";
 
-    protected override Expression<Func<Lista, bool>> Proprios(int userId) => l => l.UserId == userId;
+    protected override Expression<Func<Lista, bool>> Proprios(int userId) => l => l.UsuarioId == userId;
 
     protected override IOrderedQueryable<Lista> Ordenar(IQueryable<Lista> query) => query.OrderBy(l => l.Nome);
 
@@ -17,6 +17,6 @@ public class ListaRepository(ContextDB context) : RepositorioDoUsuario<Lista>(co
     {
         existente.Nome = entrada.Nome;
         existente.TipoLista = entrada.TipoLista;
-        existente.Status = entrada.Status;
+        existente.Ativo = entrada.Ativo;
     }
 }

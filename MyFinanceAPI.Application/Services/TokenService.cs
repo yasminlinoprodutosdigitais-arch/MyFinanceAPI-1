@@ -63,7 +63,7 @@ public class TokenService : ITokenService
         // Adicionando claims essenciais
         ci.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
         ci.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));  // Adiciona o ID do usuário
-        ci.AddClaim(new Claim(ClaimTypes.Role, user.Role));  // Exemplo de uma role (permissão) que o usuário possui
+        ci.AddClaim(new Claim(ClaimTypes.Role, user.Perfil));  // Exemplo de uma role (permissão) que o usuário possui
 
         // Adicionar mais claims conforme necessárioc
         // ci.AddClaim(new Claim("Email", user.Email));
