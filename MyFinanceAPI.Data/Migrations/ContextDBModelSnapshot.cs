@@ -326,11 +326,6 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("DataOperacao")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("data_operacao");
-
                     b.Property<bool>("EhParcelado")
                         .HasColumnType("boolean")
                         .HasColumnName("eh_parcelado");

@@ -54,7 +54,6 @@ public class LimitesDeTextoTests
     [InlineData("itens_lista", "situacao", 20)]
     [InlineData("extratos_bancarios", "situacao", 20)]
     [InlineData("asp_net_users", "perfil", 30)]
-    [InlineData("contas", "data_operacao", 30)]
     [InlineData("tipos_cartao", "nome_tipo_cartao", 60)]
     [InlineData("tipos_movimentacao", "nome_tipo_movimentacao", 60)]
     [InlineData("movimentacoes_diarias", "identificador", 100)]
