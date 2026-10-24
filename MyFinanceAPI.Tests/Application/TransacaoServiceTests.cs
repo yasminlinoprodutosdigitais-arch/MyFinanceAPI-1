@@ -484,6 +484,54 @@ public class TransacaoServiceTests
         _repo.Verify(r => r.Update(It.IsAny<Transacao>(), UserId), Times.Once);
     }
 
+    // ---------- Update: número da parcela repetido (card [DB] Transações duplicadas, 24/10/2026) ----------
+
+    private void ParcelasLancadas(params int[] parcelas) =>
+        _repo.Setup(r => r.GetParcelasLancadas(AccountId, UserId)).ReturnsAsync(parcelas.ToList());
+
+    [Fact]
+    public async Task Update_trocando_para_parcela_ja_lancada_e_recusado_sem_gravar()
+    {
+        ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 4);
+        ParcelasLancadas(1, 2, 3, 4);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Update(Edicao("PENDENTE", parcelaAtual: 2), UserId));
+
+        Assert.Equal("A parcela 2 já está lançada nesta conta.", ex.Message);
+        _repo.Verify(r => r.Update(It.IsAny<Transacao>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Update_trocando_para_parcela_livre_grava()
+    {
+        ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 4);
+        ParcelasLancadas(1, 2, 3, 4);
+
+        await CriarService().Update(Edicao("PENDENTE", parcelaAtual: 5), UserId);
+
+        _repo.Verify(r => r.Update(It.Is<Transacao>(t => t.ParcelaAtual == 5), UserId), Times.Once);
+    }
+
+    /// <summary>
+    /// As duplicatas antigas (de antes do número calculado no backend) ficam como estão, por decisão dela:
+    /// editar ou pagar uma delas sem mexer no número continua possível.
+    /// </summary>
+    [Fact]
+    public async Task Update_sem_mudar_o_numero_de_uma_duplicata_antiga_grava()
+    {
+        ContaParcelada(parcelaAtual: 5, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 5);
+        ParcelasLancadas(1, 2, 3, 4, 5, 5, 6);
+        ParcelasPagas(1, 2, 3, 4, 5, 6);
+
+        await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 5), UserId);
+
+        _repo.Verify(r => r.Update(It.Is<Transacao>(t => t.Situacao == "PAGO NO PRAZO"), UserId), Times.Once);
+        _repo.Verify(r => r.GetParcelasLancadas(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
     // ---------- Delete ----------
 
     [Fact]

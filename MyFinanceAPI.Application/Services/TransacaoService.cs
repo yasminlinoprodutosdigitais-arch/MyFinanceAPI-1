@@ -171,11 +171,28 @@ public class TransacaoService : ITransacaoService
     {
         if (transactionDTO.EhParcelado)
         {
+            await RecusarParcelaRepetida(transactionDTO, userId);
             await UpdateParcelaAtual(transactionDTO, userId);
         }
 
         var update = _mapper.Map<Domain.Entities.Transacao>(transactionDTO);
         await _transactionRepository.Update(update, userId);
+    }
+
+    /// <summary>
+    /// O número da parcela é editável na tela; trocar para um já lançado na mesma conta é recusado.
+    /// Só vale quando o número muda: as duplicatas antigas ficam como estão e continuam editáveis
+    /// (decisão de 24/10/2026). A conta vem da transação gravada, não do corpo.
+    /// </summary>
+    private async Task RecusarParcelaRepetida(TransacaoDTO transactionDTO, int userId)
+    {
+        var gravada = await _transactionRepository.GetTransactionById(transactionDTO.Id, userId);
+        if (transactionDTO.ParcelaAtual is not int nova || nova == gravada.ParcelaAtual || gravada.ContaId is not int contaId)
+            return;
+
+        var lancadas = await _transactionRepository.GetParcelasLancadas(contaId, userId);
+        if (lancadas.Contains(nova))
+            throw new ArgumentException($"A parcela {nova} já está lançada nesta conta.");
     }
 
     /// <summary>
