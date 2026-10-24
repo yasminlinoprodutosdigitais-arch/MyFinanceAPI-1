@@ -46,7 +46,7 @@ public class ContaServiceTests
         Nome = "Internet",
         Valor = 120m,
         CategoriaId = 4,
-        Ativo = 1,
+        Ativo = true,
         DataOperacao = new List<int> { 5, 20 },
     };
 

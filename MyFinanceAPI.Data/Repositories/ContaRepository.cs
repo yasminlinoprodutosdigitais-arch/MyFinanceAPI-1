@@ -134,7 +134,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
     public async Task<List<Conta>> GetContasAtivas(int userId)
     {
         var accounts = await _context.Contas.AsNoTracking()
-            .Where(a => a.UsuarioId == userId && a.Ativo == StatusAtivo.Ativo)
+            .Where(a => a.UsuarioId == userId && a.Ativo)
             .Include(a => a.Categoria)  // Incluindo a categoria nas contas
             .Include(a => a.Vencimentos)  // Incluindo a categoria nas contas
             .OrderBy(c => c.Nome)

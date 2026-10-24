@@ -49,7 +49,7 @@ public class ValidacaoDeEntradaTests
     {
         // Sem o atributo, o [Required] implícito do ASP.NET (referência não anulável) respondia em inglês.
         Assert.Equal("Dados inválidos. DataOperacao é obrigatório.",
-            Erro(new ContaDTO { Nome = "Aluguel", Ativo = StatusAtivo.Ativo, DataOperacao = null! }));
+            Erro(new ContaDTO { Nome = "Aluguel", Ativo = true, DataOperacao = null! }));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class ValidacaoDeEntradaTests
         transacao.DiasVencimento = [10, 32];
         Assert.Equal("Dados inválidos. DiasVencimento: cada dia deve estar entre 1 e 31.", Erro(transacao));
 
-        var conta = new ContaDTO { Nome = "Aluguel", Ativo = StatusAtivo.Ativo, DataOperacao = [0] };
+        var conta = new ContaDTO { Nome = "Aluguel", Ativo = true, DataOperacao = [0] };
         Assert.Equal("Dados inválidos. DataOperacao: cada dia deve estar entre 1 e 31.", Erro(conta));
 
         conta.DataOperacao = [1, 31];
@@ -67,20 +67,11 @@ public class ValidacaoDeEntradaTests
     }
 
     [Fact]
-    public void Ativo_aceita_so_0_e_1()
-    {
-        Assert.Equal("Dados inválidos. Ativo aceita só: 0, 1.",
-            Erro(new ContaDTO { Nome = "Aluguel", Ativo = 2, DataOperacao = [5] }));
-        Assert.Equal("Dados inválidos. Ativo aceita só: 0, 1.",
-            Erro(new CategoriaDTO { Nome = "Casa", Subcategoria = "Luz", Ativo = 3 }));
-    }
-
-    [Fact]
     public void Natureza_da_categoria_vai_de_0_a_5()
     {
         Assert.Equal("Dados inválidos. NaturezaOperacao deve estar entre 0 e 5.",
-            Erro(new CategoriaDTO { Nome = "Casa", Subcategoria = "Luz", Ativo = 1, NaturezaOperacao = 6 }));
-        Assert.Null(Erro(new CategoriaDTO { Nome = "Casa", Subcategoria = "Luz", Ativo = 1, NaturezaOperacao = 5 }));
+            Erro(new CategoriaDTO { Nome = "Casa", Subcategoria = "Luz", Ativo = true, NaturezaOperacao = 6 }));
+        Assert.Null(Erro(new CategoriaDTO { Nome = "Casa", Subcategoria = "Luz", Ativo = true, NaturezaOperacao = 5 }));
     }
 
     [Fact]

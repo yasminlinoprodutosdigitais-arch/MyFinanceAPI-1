@@ -37,7 +37,7 @@ public class TransacaoServiceTests
         return new TransacaoService(_repo.Object, MapperFactory.Create(), _accountService.Object, _uow);
     }
 
-    private ContaDTO ContaParcelada(int parcelaAtual, int quantidadeParcelas, int status = 1)
+    private ContaDTO ContaParcelada(int parcelaAtual, int quantidadeParcelas, bool ativo = true)
     {
         var conta = new ContaDTO
         {
@@ -47,7 +47,7 @@ public class TransacaoServiceTests
             EhParcelado = true,
             ParcelaAtual = parcelaAtual,
             QuantidadeParcelas = quantidadeParcelas,
-            Ativo = status,
+            Ativo = ativo,
             DataOperacao = new List<int> { 10 },
         };
         _accountService.Setup(s => s.GetAccountById(AccountId, UserId)).ReturnsAsync(conta);
@@ -327,7 +327,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(4, conta.ParcelaAtual);
-        Assert.Equal(1, conta.Ativo);
+        Assert.True(conta.Ativo);
         _repo.Verify(r => r.Update(It.Is<Transacao>(t => t.Id == TransactionId && t.Situacao == novoStatus), UserId), Times.Once);
     }
 
@@ -341,7 +341,7 @@ public class TransacaoServiceTests
         await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 10), UserId);
 
         var conta = Assert.Single(_parcelasAtualizadas);
-        Assert.Equal(StatusAtivo.Inativo, conta.Ativo);   // inativa = 0, como o front grava (DB-P1-03)
+        Assert.False(conta.Ativo);
         Assert.Equal(10, conta.ParcelaAtual);
     }
 
@@ -360,7 +360,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(3, conta.ParcelaAtual);
-        Assert.Equal(1, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     /// <summary>
@@ -379,7 +379,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(9, conta.ParcelaAtual);
-        Assert.Equal(1, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     [Fact]
@@ -393,20 +393,20 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(9, conta.ParcelaAtual);
-        Assert.Equal(1, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     [Fact]
     public async Task Update_desfazer_pagamento_da_ultima_parcela_reativa_a_conta()
     {
-        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, status: 2);
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, ativo: false);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 10);
         ParcelasPagas(Ate(9));
 
         await CriarService().Update(Edicao("PENDENTE", parcelaAtual: 10), UserId);
 
         var conta = Assert.Single(_parcelasAtualizadas);
-        Assert.Equal(1, conta.Ativo);          // 1 = ativa
+        Assert.True(conta.Ativo);
         Assert.Equal(10, conta.ParcelaAtual);
     }
 
@@ -424,7 +424,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(10, conta.ParcelaAtual);
-        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     /// <summary>Antes: pagar a 5 adiantada levava a conta para 4 (ponteiro + 1) com a 3 em aberto.</summary>
@@ -439,7 +439,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(3, conta.ParcelaAtual);
-        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     /// <summary>Antes: pagar a última inativava a conta mesmo com a 8 e a 9 em aberto.</summary>
@@ -454,7 +454,7 @@ public class TransacaoServiceTests
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(8, conta.ParcelaAtual);
-        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
+        Assert.True(conta.Ativo);
     }
 
     // ---------- Update: sem efeito na conta ----------
@@ -570,14 +570,14 @@ public class TransacaoServiceTests
     [Fact]
     public async Task Delete_da_ultima_parcela_paga_reativa_a_conta()
     {
-        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, status: 2);
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, ativo: false);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 10);
         ParcelasPagas(Ate(9));
 
         await CriarService().Delete(TransactionId, UserId);
 
         var conta = Assert.Single(_parcelasAtualizadas);
-        Assert.Equal(1, conta.Ativo);
+        Assert.True(conta.Ativo);
         Assert.Equal(10, conta.ParcelaAtual);
     }
 

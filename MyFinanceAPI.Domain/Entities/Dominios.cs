@@ -3,15 +3,6 @@ namespace MyFinanceAPI.Domain.Entities;
 // Domínios fechados das colunas de status/tipo (DB-P1-03, DB-P1-04, DB-P1-06).
 // Os mesmos valores viram CHECK no banco (EntitiesConfiguration): mudar aqui exige migration.
 
-/// <summary>Status de Accounts e Categories (coluna integer).</summary>
-public static class StatusAtivo
-{
-    public const int Inativo = 0;
-    public const int Ativo = 1;
-
-    public static readonly int[] Todos = [Inativo, Ativo];
-}
-
 /// <summary>Status de Transactions (coluna text).</summary>
 public static class StatusTransacao
 {

@@ -8,7 +8,7 @@ public class Conta : BaseEntity
 {
     public string Nome { get; set; } = null!;
     public decimal Valor { get; set; }
-    public int Ativo { get; set; }
+    public bool Ativo { get; set; }
     public bool EhParcelado { get; set; }
     public int? QuantidadeParcelas { get; set; }
     public int? ParcelaAtual { get; set; }

@@ -45,7 +45,7 @@ public class TransacaoService : ITransacaoService
                 Nome = transactionDTO.Nome,
                 Valor = transactionDTO.Valor,
                 CategoriaId = categoriaId,
-                Ativo = StatusAtivo.Ativo,
+                Ativo = true,
                 DataOperacao = DiasDaContaNova(transactionDTO),
             };
             conta = await _accountService.Add(novaConta, userId);
@@ -222,7 +222,7 @@ public class TransacaoService : ITransacaoService
 
         var emAberto = Enumerable.Range(1, total).Where(p => !pagas.Contains(p)).ToList();
         account.ParcelaAtual = emAberto.Count > 0 ? emAberto[0] : total;
-        account.Ativo = emAberto.Count > 0 ? StatusAtivo.Ativo : StatusAtivo.Inativo;
+        account.Ativo = emAberto.Count > 0;
 
         await _accountService.UpdateParcela(account, userId);
     }

@@ -54,7 +54,7 @@ public class ConvencaoDeNomesTests
     [InlineData("fk_transacoes_contas_conta_id")]
     [InlineData("ix_transacoes_usuario_id_data")]
     [InlineData("transacoes_situacao_check")]
-    [InlineData("contas_ativo_check")]
+    [InlineData("contas_parcelas_check")]
     [InlineData("itens_extrato_bancario_tipo_lancamento_check")]
     [InlineData("pk_asp_net_users")]
     [InlineData("fk_transacoes_asp_net_users_usuario_id")]

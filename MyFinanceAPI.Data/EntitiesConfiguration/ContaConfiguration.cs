@@ -10,7 +10,6 @@ public class ContaConfiguration : IEntityTypeConfiguration<Conta>
     {
         builder.ToTable(t =>
         {
-            t.HasCheckConstraint("contas_ativo_check", CheckSql.In("ativo", StatusAtivo.Todos));
             // Conta não parcelada usa 0/0; parcelada começa na parcela 0 (nenhuma paga) — DB-P1-05.
             t.HasCheckConstraint("contas_parcelas_check", "NOT eh_parcelado OR (" + CheckSql.Parcelas(parcelaMinima: 0) + ")");
         });

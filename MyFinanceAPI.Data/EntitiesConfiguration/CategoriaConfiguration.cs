@@ -10,7 +10,6 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
     {
         builder.ToTable(t =>
         {
-            t.HasCheckConstraint("categorias_ativo_check", CheckSql.In("ativo", StatusAtivo.Todos));
             // 0..5 = enum NaturezaOperacao do front (Rendimento/Entrada … Empresa).
             t.HasCheckConstraint("categorias_natureza_operacao_check", "natureza_operacao BETWEEN 0 AND 5");
         });

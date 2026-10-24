@@ -236,8 +236,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_bancos");
@@ -261,10 +260,9 @@ namespace MyFinanceAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Ativo")
-                        .HasColumnType("integer")
-                        .HasColumnName("ativo")
-                        .HasAnnotation("Relational:JsonPropertyName", "status");
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
@@ -280,20 +278,17 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
-                        .HasColumnName("nome")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
+                        .HasColumnName("nome");
 
                     b.Property<string>("Subcategoria")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
-                        .HasColumnName("subcategoria")
-                        .HasAnnotation("Relational:JsonPropertyName", "subCategory");
+                        .HasColumnName("subcategoria");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_categorias");
@@ -304,8 +299,6 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.ToTable("categorias", null, t =>
                         {
-                            t.HasCheckConstraint("categorias_ativo_check", "ativo IN (0, 1)");
-
                             t.HasCheckConstraint("categorias_natureza_operacao_check", "natureza_operacao BETWEEN 0 AND 5");
                         });
                 });
@@ -319,15 +312,13 @@ namespace MyFinanceAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Ativo")
-                        .HasColumnType("integer")
-                        .HasColumnName("ativo")
-                        .HasAnnotation("Relational:JsonPropertyName", "status");
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ativo");
 
                     b.Property<int>("CategoriaId")
                         .HasColumnType("integer")
-                        .HasColumnName("categoria_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "categoryId");
+                        .HasColumnName("categoria_id");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
@@ -348,8 +339,7 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
-                        .HasColumnName("nome")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
+                        .HasColumnName("nome");
 
                     b.Property<int?>("ParcelaAtual")
                         .HasColumnType("integer")
@@ -361,14 +351,12 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasColumnName("valor")
-                        .HasAnnotation("Relational:JsonPropertyName", "value");
+                        .HasColumnName("valor");
 
                     b.HasKey("Id")
                         .HasName("pk_contas");
@@ -381,12 +369,8 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.ToTable("contas", null, t =>
                         {
-                            t.HasCheckConstraint("contas_ativo_check", "ativo IN (0, 1)");
-
                             t.HasCheckConstraint("contas_parcelas_check", "NOT eh_parcelado OR (quantidade_parcelas >= 1 AND parcela_atual BETWEEN 0 AND quantidade_parcelas)");
                         });
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "account");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ContaVencimento", b =>
@@ -414,8 +398,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_contas_vencimento");
@@ -430,8 +413,6 @@ namespace MyFinanceAPI.Data.Migrations
                         {
                             t.HasCheckConstraint("contas_vencimento_dia_check", "dia BETWEEN 1 AND 31");
                         });
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "contaVencimentos");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>
@@ -495,8 +476,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal>("ValorTotal")
                         .ValueGeneratedOnAdd()
@@ -631,8 +611,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
@@ -724,13 +703,11 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Property<string>("Situacao")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("situacao")
-                        .HasAnnotation("Relational:JsonPropertyName", "status");
+                        .HasColumnName("situacao");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal?>("Valor")
                         .HasPrecision(10, 2)
@@ -765,8 +742,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean")
-                        .HasColumnName("ativo")
-                        .HasAnnotation("Relational:JsonPropertyName", "status");
+                        .HasColumnName("ativo");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
@@ -786,8 +762,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_listas");
@@ -849,8 +824,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(10, 2)
@@ -906,8 +880,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_pessoas_movimentacao");
@@ -951,8 +924,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int?>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.HasKey("Id")
                         .HasName("pk_tipos_cartao");
@@ -998,8 +970,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal>("ValorMeta")
                         .ValueGeneratedOnAdd()
@@ -1031,18 +1002,15 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<int?>("CategoriaId")
                         .HasColumnType("integer")
-                        .HasColumnName("categoria_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "categoryId");
+                        .HasColumnName("categoria_id");
 
                     b.Property<int?>("ContaId")
                         .HasColumnType("integer")
-                        .HasColumnName("conta_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "idAccount");
+                        .HasColumnName("conta_id");
 
                     b.Property<DateOnly>("Data")
                         .HasColumnType("date")
-                        .HasColumnName("data")
-                        .HasAnnotation("Relational:JsonPropertyName", "date");
+                        .HasColumnName("data");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
@@ -1066,8 +1034,7 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
-                        .HasColumnName("nome")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
+                        .HasColumnName("nome");
 
                     b.Property<string>("Observacao")
                         .HasMaxLength(500)
@@ -1086,19 +1053,16 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("situacao")
-                        .HasAnnotation("Relational:JsonPropertyName", "status");
+                        .HasColumnName("situacao");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
-                        .HasColumnName("usuario_id")
-                        .HasAnnotation("Relational:JsonPropertyName", "userId");
+                        .HasColumnName("usuario_id");
 
                     b.Property<decimal?>("Valor")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasColumnName("valor")
-                        .HasAnnotation("Relational:JsonPropertyName", "value");
+                        .HasColumnName("valor");
 
                     b.HasKey("Id")
                         .HasName("pk_transacoes");
@@ -1118,8 +1082,6 @@ namespace MyFinanceAPI.Data.Migrations
 
                             t.HasCheckConstraint("transacoes_situacao_check", "situacao IN ('PENDENTE', 'AGUARDANDO', 'PAGO NO PRAZO', 'PAGO ATRASADO')");
                         });
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "transactions");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Usuario", b =>
@@ -1137,8 +1099,7 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean")
-                        .HasColumnName("ativo")
-                        .HasAnnotation("Relational:JsonPropertyName", "statusAtivo");
+                        .HasColumnName("ativo");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -1147,13 +1108,11 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.Property<DateTime>("DataAlteracao")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_alteracao")
-                        .HasAnnotation("Relational:JsonPropertyName", "atualizadoEm");
+                        .HasColumnName("data_alteracao");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_criacao")
-                        .HasAnnotation("Relational:JsonPropertyName", "criadoEm");
+                        .HasColumnName("data_criacao");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -1196,8 +1155,7 @@ namespace MyFinanceAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
-                        .HasColumnName("perfil")
-                        .HasAnnotation("Relational:JsonPropertyName", "role");
+                        .HasColumnName("perfil");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
@@ -1232,8 +1190,6 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasDatabaseName("user_name_index");
 
                     b.ToTable("asp_net_users", (string)null);
-
-                    b.HasAnnotation("Relational:JsonPropertyName", "user");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
