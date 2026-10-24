@@ -22,12 +22,12 @@ namespace MyFinanceAPI.Api.Controllers
 
         // GET /GetExtratoBancario
         [HttpGet("/GetExtratoBancario")]
-        public async Task<ActionResult<IEnumerable<ExtratoBancarioDTO>>> GetExtratoBancario([FromQuery] string month)
+        public async Task<ActionResult<IEnumerable<ExtratoBancarioDTO>>> GetExtratoBancario([FromQuery] string month, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var extratos = await _extratoBancarioService.GetExtratoBancario(userId, month);
-            return Ok(extratos);
+            return Lista(extratos, paginacao);
         }
 
         // GET /GetExtratoBancarioById/123

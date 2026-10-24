@@ -6,7 +6,7 @@ namespace MyFinanceAPI.Domain.Entities;
 public class ItemLista : BaseEntity
 {
     public int ListaId { get; set; }
-    public string Descricao { get; set; }
+    public string Descricao { get; set; } = null!;
     public int? Quantidade { get; set; }
     public string? Observacao { get; set; }
     public string? Situacao { get; set; }

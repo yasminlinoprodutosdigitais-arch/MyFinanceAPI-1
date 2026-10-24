@@ -8,7 +8,7 @@ public class Transacao : BaseEntity
 {
     /// <summary>Vencimento: data de calendário, sem fuso (coluna date — DB-P1-02).</summary>
     public DateOnly Data { get; set; }
-    public string Nome { get; set; }
+    public string Nome { get; set; } = null!;
     public decimal? Valor { get; set; }
     public int? ContaId { get; set; }  // Nome correto da coluna no banco de dados
     [NotMapped]
@@ -18,7 +18,7 @@ public class Transacao : BaseEntity
     public string? CategoriaNome { get; set; }  // Nome correto da coluna no banco de dados
     [NotMapped]
     public string? SubcategoriaNome { get; set; }  // Nome correto da coluna no banco de dados
-    public string Situacao { get; set; }
+    public string Situacao { get; set; } = null!;
     public bool EhParcelado { get; set; }
     public int? ParcelaAtual { get; set; }
     public int? QuantidadeParcelas { get; set; }

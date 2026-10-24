@@ -7,9 +7,9 @@ namespace MyFinanceAPI.Domain.Entities
     public class Usuario : IdentityUser<int> // 'int' é o tipo da chave primária
     {
         // Propriedades adicionais para o usuário
-        public string NomeUsuario { get; set; }
+        public string NomeUsuario { get; set; } = null!;
         public bool Ativo { get; set; }
-        public string Perfil { get; set; }
+        public string Perfil { get; set; } = null!;
         public DateTime DataCriacao { get; set; }
         public DateTime DataAlteracao { get; set; }
         public Usuario()

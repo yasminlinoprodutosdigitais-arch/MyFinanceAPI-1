@@ -25,6 +25,6 @@ namespace MyFinanceAPI.Domain.Entities
         public string Situacao { get; set; } = "Concluido";
 
         // Relação reversa
-        public ICollection<ExtratoBancarioItem> Itens { get; set; }
+        public ICollection<ExtratoBancarioItem> Itens { get; set; } = null!;
     }
 }

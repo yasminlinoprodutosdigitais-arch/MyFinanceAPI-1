@@ -21,12 +21,12 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetPessoaMovimentacao")]
-        public async Task<ActionResult<IEnumerable<PessoaMovimentacaoDTO>>> GetPessoaMovimentacao()
+        public async Task<ActionResult<IEnumerable<PessoaMovimentacaoDTO>>> GetPessoaMovimentacao([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var PessoaMovimentacao = await _PessoaMovimentacaoService.ListarAsync(userId);
-            return Ok(PessoaMovimentacao);
+            return Lista(PessoaMovimentacao, paginacao);
         }
 
         [HttpGet("/GetPessoaMovimentacaoById/{id}", Name = RotaPorId)]

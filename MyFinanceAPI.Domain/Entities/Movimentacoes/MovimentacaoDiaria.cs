@@ -11,7 +11,7 @@ public class MovimentacaoDiaria : BaseEntity
     public int? TipoMovimentacaoId { get; set; }
 
     public decimal Valor { get; set; }
-    public string TipoLancamento { get; set; }
+    public string TipoLancamento { get; set; } = null!;
     public string? Descricao { get; set; }
     public string? NomePessoaTransacao { get; set; }
     public string? Identificador { get; set; }

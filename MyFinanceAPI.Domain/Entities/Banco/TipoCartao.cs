@@ -14,7 +14,7 @@ public class TipoCartao : IEntidade
     public int? UsuarioId { get; set; }
     public Usuario? Usuario { get; set; }
 
-    public string NomeTipoCartao { get; set; }
+    public string NomeTipoCartao { get; set; } = null!;
     public string? Descricao { get; set; }
     /// <summary>Lançamentos deste tipo são agrupados por fatura, não por data (DB-P1-07).</summary>
     public bool EhCredito { get; set; }

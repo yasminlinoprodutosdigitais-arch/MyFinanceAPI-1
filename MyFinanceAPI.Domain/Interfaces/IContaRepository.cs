@@ -5,9 +5,9 @@ namespace MyFinanceAPI.Domain.Interfaces;
 
 public interface IContaRepository
 {
-    Task<List<Conta>>? GetAccounts(int userId);
-    Task<List<Conta>>? GetContasAtivas(int userId);
-    Task<Conta> GetAccountById(int id, int userId);
+    Task<List<Conta>> GetAccounts(int userId);
+    Task<List<Conta>> GetContasAtivas(int userId);
+    Task<Conta?> GetAccountById(int id, int userId);
     Task<Conta> Create(Conta account);
     Task CreateContaVencimento (List<ContaVencimento> contaVencimento);
     Task<Conta> Update(Conta account, int userId);

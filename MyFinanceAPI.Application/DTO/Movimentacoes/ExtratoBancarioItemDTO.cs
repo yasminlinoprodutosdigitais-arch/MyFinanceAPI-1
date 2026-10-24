@@ -12,7 +12,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
 
         public DateOnly DataMovimentacao { get; set; }
         public decimal Valor { get; set; }
-        [TextoAte(20)] public string TipoLancamento { get; set; }
+        [Obrigatorio, TextoAte(20), UmDe(TipoLancamentoExtrato.Entrada, TipoLancamentoExtrato.Saida)]
+        public string TipoLancamento { get; set; } = null!;
 
         [TextoAte(200)] public string? Descricao { get; set; }
         [TextoAte(500)] public string? Observacao { get; set; }
@@ -36,7 +37,7 @@ namespace MyFinanceAPI.Application.DTO.Extrato
 
         public int? TipoMovimentacaoId { get; set; }
         public string? TipoMovimentacaoNome { get; set; }
-        public int UsuarioId { get; set; }
+        // Sem UsuarioId: o dono vem só do token (BE-P4-17).
         [TextoAte(200)] public string? ChaveDescricao { get; set; }
         [TextoAte(64)] public string? ChaveImportacao { get; set; }
 

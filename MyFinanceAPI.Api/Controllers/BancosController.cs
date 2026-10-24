@@ -21,12 +21,12 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetBancos")]
-        public async Task<ActionResult<IEnumerable<BancoDTO>>> GetBancos()
+        public async Task<ActionResult<IEnumerable<BancoDTO>>> GetBancos([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var Bancos = await _BancoService.ListarAsync(userId);
-            return Ok(Bancos);
+            return Lista(Bancos, paginacao);
         }
 
         [HttpGet("/GetBancoById/{id}", Name = RotaPorId)]

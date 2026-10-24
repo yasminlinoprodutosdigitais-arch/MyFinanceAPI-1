@@ -9,10 +9,11 @@ public class ItemListaDTO
 {
     public int Id { get; set; }
     public int ListaId { get; set; }
-    [TextoAte(200)] public string Descricao { get; set; }
-    public int? Quantidade { get; set; }
+    [Obrigatorio, TextoAte(200)] public string Descricao { get; set; } = null!;
+    [Minimo(0)] public int? Quantidade { get; set; }
     [TextoAte(500)] public string? Observacao { get; set; }
-    [TextoAte(20)] public string? Situacao { get; set; }
+    [TextoAte(20), UmDe(StatusItemLista.Pendente, StatusItemLista.Aguardando, StatusItemLista.Ok)]
+    public string? Situacao { get; set; }
     public decimal? Valor { get; set; }
     public DateOnly? DataTarefa { get; set; }
     public TimeOnly? HorarioTarefa { get; set; }

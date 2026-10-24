@@ -36,7 +36,9 @@ namespace MyFinanceAPI.Ioc
                 options.AddPolicy(CorsPolicy, builder =>
                     builder.WithOrigins(origens)
                            .AllowAnyMethod()
-                           .AllowAnyHeader());
+                           .AllowAnyHeader()
+                           // Total das listas paginadas (BE-P4-16); sem isso o navegador esconde o cabeçalho do front.
+                           .WithExposedHeaders("X-Total-Count"));
             });
 
             // Registrar os serviços

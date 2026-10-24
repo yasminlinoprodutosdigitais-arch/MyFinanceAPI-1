@@ -378,4 +378,29 @@ public class ExtratoBancarioServiceTests
         _extratoRepo.Verify(r => r.DeleteAsync(ExtratoIdGerado, UserId), Times.Once);   // versão que checa o dono (BE-P2-04)
         Assert.Empty(_uow.Fora);
     }
+
+    // ---------- listagem (BE-P4-05) ----------
+
+    [Fact]
+    public async Task Listagem_le_os_bancos_uma_vez_e_preenche_o_nome_sem_mexer_na_entidade()
+    {
+        var extratos = new List<ExtratoBancario>
+        {
+            new() { Id = 1, BancoId = BancoId, UsuarioId = UserId },
+            new() { Id = 2, BancoId = 77, UsuarioId = UserId },
+            new() { Id = 3, BancoId = BancoId, UsuarioId = UserId },
+        };
+        _extratoRepo.Setup(r => r.GetByUserIdAsync(UserId, "2026-10")).ReturnsAsync(extratos);
+        _bancoService.Setup(s => s.ListarAsync(UserId))
+            .ReturnsAsync(new[] { new BancoDTO { Id = BancoId, NomeBanco = "Nubank" } });
+        var service = new ExtratoBancarioService(
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+
+        var lista = (await service.GetExtratoBancario(UserId, "2026-10")).ToList();
+
+        Assert.Equal(new[] { "Nubank", "Banco não encontrado", "Nubank" }, lista.Select(e => e.BancoNome));
+        _bancoService.Verify(s => s.ListarAsync(UserId), Times.Once);
+        _bancoService.Verify(s => s.ObterPorIdAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        Assert.All(extratos, e => Assert.Null(e.BancoNome));
+    }
 }

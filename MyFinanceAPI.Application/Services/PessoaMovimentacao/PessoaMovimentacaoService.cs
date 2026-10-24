@@ -24,8 +24,9 @@ public class PessoaMovimentacaoService(IPessoaMovimentacaoRepository pessoaMovim
             var year = int.Parse(dataSeparada[0]);
             var month = int.Parse(dataSeparada[1]);
 
+            // GetByMonthAsync já traz só os itens do usuário.
             var extratos = await extratoBancarioItemService.GetByMonthAsync(userId, year, month);
-            foreach (var extrato in extratos.Where(x => x.UsuarioId == userId && x.PessoaMovimentacaoId == dto.Id).ToList())
+            foreach (var extrato in extratos.Where(x => x.PessoaMovimentacaoId == dto.Id).ToList())
             {
                 extrato.NomePessoaTransacao = dto.NomePessoa;
                 extrato.CategoriaId = dto.CategoriaId;

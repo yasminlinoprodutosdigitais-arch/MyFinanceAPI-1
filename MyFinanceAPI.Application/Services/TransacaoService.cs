@@ -36,20 +36,29 @@ public class TransacaoService : ITransacaoService
 
         if (conta == null)
         {
+            // Antes o (int) de um CategoriaId nulo virava 500 (BE-P4-01).
+            if (transactionDTO.CategoriaId is not int categoriaId)
+                throw new ArgumentException("Informe a categoria para criar a conta do lançamento.");
+
             var novaConta = new ContaDTO
             {
                 Nome = transactionDTO.Nome,
                 Valor = transactionDTO.Valor,
-                CategoriaId = (int)transactionDTO.CategoriaId,
+                CategoriaId = categoriaId,
                 Ativo = StatusAtivo.Ativo,
                 DataOperacao = DiasDaContaNova(transactionDTO),
             };
             conta = await _accountService.Add(novaConta, userId);
         }
+        // Conta nova: o EF liga os vencimentos gravados à conta rastreada, então Vencimentos já vem preenchido.
+        // Conta antiga sem vencimento dividia por zero (BE-P4-01).
+        if (conta.Vencimentos is not { Count: > 0 })
+            throw new ArgumentException("A conta não tem dia de vencimento cadastrado. Edite a conta e informe ao menos um dia.");
+
         int? parcela = conta.EhParcelado ? await ProximaParcela(conta, userId) : null;
 
         var ultimoDiaMes = DateTime.DaysInMonth(mesAno.Year, mesAno.Month);
-        var valorParcelaMensal = conta.Valor / conta.Vencimentos.Count();
+        var valorParcelaMensal = conta.Valor / conta.Vencimentos.Count;
         foreach (var vencimento in conta.Vencimentos)
         {
             var dia = Math.Min(vencimento.Dia, ultimoDiaMes);
@@ -103,6 +112,8 @@ public class TransacaoService : ITransacaoService
 
     // A ParcelaAtual da conta só anda quando se paga; por isso o número vem do que já foi lançado:
     // a menor parcela a partir dela que ainda não existe (lançar dois meses sem pagar dá 4 e 5).
+    // O mês não entra na conta, de propósito (BE-P4-21, decisão de 23/10/2026): relançar uma parcela excluída
+    // num mês posterior é legítimo (pagar atrasado), mesmo que ela fique depois da seguinte no calendário.
     private async Task<int> ProximaParcela(ContaDTO conta, int userId)
     {
         var lancadas = (await _transactionRepository.GetParcelasLancadas(conta.Id, userId)).ToHashSet();
@@ -122,10 +133,8 @@ public class TransacaoService : ITransacaoService
 
     private async Task DeleteNaOperacao(int id, int userId)
     {
+        // O repositório já lança NaoEncontradoException quando não acha (BE-P4-14).
         var transaction = _mapper.Map<Domain.Entities.Transacao, TransacaoDTO>(await _transactionRepository.GetTransactionById(id, userId));
-        if (transaction == null)        {
-            throw new NaoEncontradoException("Transação não encontrada.");
-        }
 
         if(transaction.EhParcelado)
             await UpdateParcelaAtual(transaction, userId, deleted: true);
@@ -169,39 +178,35 @@ public class TransacaoService : ITransacaoService
         await _transactionRepository.Update(update, userId);
     }
 
+    /// <summary>
+    /// A conta só muda quando a transação entra ou sai de "pago" (pagar, estornar ou excluir uma paga).
+    /// Aí ela é recalculada pelo que está pago (BE-P4-19): ParcelaAtual é a menor parcela de 1 até o total
+    /// que ainda não foi paga, e a conta fica inativa só com todas pagas. Antes ela andava pelo ponteiro
+    /// (ponteiro + 1, inativa se o ponteiro estivesse na última), e pagar fora de ordem a deixava errada.
+    /// </summary>
     private async Task UpdateParcelaAtual(TransacaoDTO TransactionDTO, int userId, bool deleted = false)
     {
-        var account = await _accountService.GetAccountById(TransactionDTO.ContaId.Value, userId);
         var transaction = await _transactionRepository.GetTransactionById(TransactionDTO.Id, userId);
-        var statusAnterior = transaction.Situacao;
+        var estavaPaga = StatusTransacao.EhPago(transaction.Situacao);
+        var ficaPaga = !deleted && StatusTransacao.EhPago(TransactionDTO.Situacao);
+        if (estavaPaga == ficaPaga)
+            return;
 
-        var mudouStatus = statusAnterior != TransactionDTO.Situacao;
+        // A conta vem da transação gravada, não do corpo da requisição.
+        if (transaction.ContaId is not int contaId)
+            return;
+        var account = await _accountService.GetAccountById(contaId, userId);
+        if (account?.QuantidadeParcelas is not int total)
+            return;
 
-        if (mudouStatus || deleted)
-        {
-            if (StatusTransacao.EhEmAberto(statusAnterior) && StatusTransacao.EhPago(TransactionDTO.Situacao))
-            {
-                var proximaParcela = account.ParcelaAtual.GetValueOrDefault() + 1;
-                if (account.ParcelaAtual.GetValueOrDefault() == account.QuantidadeParcelas)
-                {
-                    account.Ativo = StatusAtivo.Inativo;
-                }
-                else
-                {
-                    account.ParcelaAtual = proximaParcela;
-                }
-                await _accountService.UpdateParcela(account, userId);
-            }
-            // Excluir uma parcela não paga não mexe na conta: ParcelaAtual só anda quando se paga.
-            else if (StatusTransacao.EhPago(statusAnterior) && (StatusTransacao.EhEmAberto(TransactionDTO.Situacao) || deleted))
-            {
-                // A parcela estornada volta a ser a próxima a pagar e a conta fica ativa. Não dá para
-                // olhar só a conta: ela estar na última parcela não quer dizer que a estornada seja a última.
-                account.ParcelaAtual = transaction.ParcelaAtual;
-                account.Ativo = StatusAtivo.Ativo;
+        var pagas = (await _transactionRepository.GetParcelasPagas(account.Id, userId, transaction.Id)).ToHashSet();
+        if (ficaPaga && transaction.ParcelaAtual is int parcela)
+            pagas.Add(parcela);
 
-                await _accountService.UpdateParcela(account, userId);
-            }
-        }
+        var emAberto = Enumerable.Range(1, total).Where(p => !pagas.Contains(p)).ToList();
+        account.ParcelaAtual = emAberto.Count > 0 ? emAberto[0] : total;
+        account.Ativo = emAberto.Count > 0 ? StatusAtivo.Ativo : StatusAtivo.Inativo;
+
+        await _accountService.UpdateParcela(account, userId);
     }
 }

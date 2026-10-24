@@ -34,5 +34,24 @@ namespace MyFinanceAPI.Api.Controllers
 
         /// <summary>404 com <c>{ message }</c>.</summary>
         protected NotFoundObjectResult NaoEncontrado(string mensagem) => NotFound(new MensagemErro(mensagem));
+
+        /// <summary>
+        /// 200 com a lista, paginada se a requisição pediu (BE-P4-16): a fatia no corpo e o total em X-Total-Count.
+        /// A paginação é sobre o que o service devolveu (já filtrado por usuário e, onde há, por mês), na ordem dele.
+        /// </summary>
+        protected ActionResult<IEnumerable<T>> Lista<T>(IEnumerable<T> itens, Paginacao paginacao)
+        {
+            if (!paginacao.Ativa)
+                return Ok(itens);
+
+            var todos = itens as IReadOnlyCollection<T> ?? itens.ToList();
+            var tamanho = paginacao.TamanhoPagina ?? Paginacao.TamanhoPadrao;
+            var pagina = paginacao.Pagina ?? 1;
+
+            Response.Headers[CabecalhoTotal] = todos.Count.ToString();
+            return Ok(todos.Skip((int)Math.Min((long)(pagina - 1) * tamanho, int.MaxValue)).Take(tamanho).ToList());
+        }
+
+        public const string CabecalhoTotal = "X-Total-Count";
     }
 }

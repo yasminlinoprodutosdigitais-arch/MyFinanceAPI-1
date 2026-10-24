@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace MyFinanceAPI.Domain.Entities;
 public class Conta : BaseEntity
 {
-    public string Nome { get; set; }
+    public string Nome { get; set; } = null!;
     public decimal Valor { get; set; }
     public int Ativo { get; set; }
     public bool EhParcelado { get; set; }

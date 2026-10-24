@@ -8,10 +8,10 @@ namespace MyFinanceAPI.Application.DTO;
 public class CategoriaDTO
 {
     public int Id { get; set; }
-    [TextoAte(120)] public string Nome { get; set; }
-    [TextoAte(120)] public string Subcategoria { get; set; }
-    public int NaturezaOperacao { get; set; }
-    public int Ativo { get; set; }
+    [Obrigatorio, TextoAte(120)] public string Nome { get; set; } = null!;
+    [Obrigatorio, TextoAte(120)] public string Subcategoria { get; set; } = null!;
+    [Faixa(0, 5)] public int NaturezaOperacao { get; set; }
+    [UmDe(StatusAtivo.Inativo, StatusAtivo.Ativo)] public int Ativo { get; set; }
     public DateTime DataAlteracao { get; set;}
     
     [JsonIgnore]

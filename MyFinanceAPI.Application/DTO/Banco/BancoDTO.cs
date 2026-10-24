@@ -9,7 +9,7 @@ namespace MyFinanceAPI.Application.DTO;
 public class BancoDTO
 {
     public int Id { get; set; }
-    [TextoAte(120)] public string NomeBanco { get; set; }
+    [Obrigatorio, TextoAte(120)] public string NomeBanco { get; set; } = null!;
     [TextoAte(10)] public string? Agencia { get; set; }
     [TextoAte(20)] public string? NumeroConta { get; set; }
     public int TipoCartaoId { get; set; }

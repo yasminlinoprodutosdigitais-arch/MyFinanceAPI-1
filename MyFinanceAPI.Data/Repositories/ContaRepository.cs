@@ -106,7 +106,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
         return account;
     }
 
-    public async Task<List<Conta>>? GetAccounts(int userId)
+    public async Task<List<Conta>> GetAccounts(int userId)
     {
         var accounts = await _context.Contas.AsNoTracking()
             .Where(a => a.UsuarioId == userId)
@@ -118,7 +118,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
                 Nome = t.Nome,
                 Valor = t.Valor,
                 CategoriaId = t.CategoriaId,
-                CategoriaNome = t.Categoria.Nome,
+                CategoriaNome = t.Categoria!.Nome,   // projeção no SQL: sem categoria, vem null
                 Ativo = t.Ativo,
                 EhParcelado = t.EhParcelado,
                 ParcelaAtual = t.ParcelaAtual,
@@ -131,7 +131,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
         return accounts;
     }
 
-    public async Task<List<Conta>>? GetContasAtivas(int userId)
+    public async Task<List<Conta>> GetContasAtivas(int userId)
     {
         var accounts = await _context.Contas.AsNoTracking()
             .Where(a => a.UsuarioId == userId && a.Ativo == StatusAtivo.Ativo)

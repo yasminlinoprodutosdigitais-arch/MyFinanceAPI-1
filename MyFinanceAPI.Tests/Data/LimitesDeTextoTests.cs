@@ -131,7 +131,7 @@ public class LimitesDeTextoTests
     [Fact]
     public void Conta_com_nome_de_121_caracteres_e_400_com_message()
     {
-        var resposta = Validar(new ContaDTO { Nome = new string('a', 121) });
+        var resposta = Validar(new ContaDTO { Nome = new string('a', 121), DataOperacao = [5] });
 
         var objeto = Assert.IsAssignableFrom<ObjectResult>(resposta);
         Assert.Equal(StatusCodes.Status400BadRequest, objeto.StatusCode);
@@ -141,6 +141,6 @@ public class LimitesDeTextoTests
     [Fact]
     public void Conta_com_nome_de_120_caracteres_passa()
     {
-        Assert.Null(Validar(new ContaDTO { Nome = new string('a', 120) }));
+        Assert.Null(Validar(new ContaDTO { Nome = new string('a', 120), DataOperacao = [5] }));
     }
 }

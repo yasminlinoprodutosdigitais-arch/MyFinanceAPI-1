@@ -71,6 +71,12 @@ public class TransacaoServiceTests
         });
     }
 
+    /// <summary>Parcelas pagas da conta, sem contar a transação editada (BE-P4-19).</summary>
+    private void ParcelasPagas(params int[] parcelas) =>
+        _repo.Setup(r => r.GetParcelasPagas(AccountId, UserId, TransactionId)).ReturnsAsync(parcelas.ToList());
+
+    private static int[] Ate(int ultima) => Enumerable.Range(1, ultima).ToArray();
+
     private static TransacaoDTO Edicao(string novoStatus, int parcelaAtual = 3, bool ehParcelado = true) => new()
     {
         Id = TransactionId,
@@ -126,6 +132,42 @@ public class TransacaoServiceTests
         });
         Assert.Equal(new DateOnly(2026, 2, 5), criadas[0].Data);
         Assert.Equal(new DateOnly(2026, 2, 28), criadas[1].Data); // dia 31 em fevereiro → último dia
+    }
+
+    // BE-P4-01: os dois casos davam 500 (InvalidOperationException do (int) e DivideByZeroException).
+
+    [Fact]
+    public async Task Add_com_conta_nova_sem_categoria_e_recusado_sem_criar_a_conta()
+    {
+        _accountService.Setup(s => s.GetAccountById(0, UserId)).ReturnsAsync((ContaDTO)null!);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(new TransacaoDTO
+        {
+            Nome = "Farmácia",
+            Valor = 50m,
+            Situacao = "PENDENTE",
+            Data = new DateOnly(2026, 10, 5),
+        }, UserId));
+
+        Assert.Contains("categoria", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _accountService.Verify(s => s.Add(It.IsAny<ContaDTO>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Add_com_conta_sem_vencimentos_e_recusado()
+    {
+        _accountService.Setup(s => s.GetAccountById(AccountId, UserId)).ReturnsAsync(new ContaDTO
+        {
+            Id = AccountId,
+            Valor = 300m,
+            CategoriaId = 4,
+            Vencimentos = new List<ContaVencimento>(),
+        });
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(Lancamento(), UserId));
+
+        Assert.Contains("vencimento", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _repo.Verify(r => r.Create(It.IsAny<List<Transacao>>()), Times.Never);
     }
 
     [Fact]
@@ -279,6 +321,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
         TransacaoGravada(statusAnterior, parcelaAtual: 3);
+        ParcelasPagas(1, 2);
 
         await CriarService().Update(Edicao(novoStatus), UserId);
 
@@ -293,6 +336,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
         TransacaoGravada("PENDENTE", parcelaAtual: 10);
+        ParcelasPagas(Ate(9));
 
         await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 10), UserId);
 
@@ -310,6 +354,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 4, quantidadeParcelas: 10);
         TransacaoGravada(statusAnterior, parcelaAtual: 3);
+        ParcelasPagas(1, 2);
 
         await CriarService().Update(Edicao(novoStatus), UserId);
 
@@ -328,6 +373,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 9);
+        ParcelasPagas(Ate(8));
 
         await CriarService().Update(Edicao("PENDENTE", parcelaAtual: 9), UserId);
 
@@ -341,6 +387,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 9);
+        ParcelasPagas(Ate(8));
 
         await CriarService().Delete(TransactionId, UserId);
 
@@ -354,12 +401,60 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, status: 2);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 10);
+        ParcelasPagas(Ate(9));
 
         await CriarService().Update(Edicao("PENDENTE", parcelaAtual: 10), UserId);
 
         var conta = Assert.Single(_parcelasAtualizadas);
         Assert.Equal(1, conta.Ativo);          // 1 = ativa
         Assert.Equal(10, conta.ParcelaAtual);
+    }
+
+    // ---------- BE-P4-19: a conta é recalculada pelo que está pago, não pelo ponteiro ----------
+
+    /// <summary>Antes: a conta estava na última, então pagar a 9 a inativava com a 10 em aberto.</summary>
+    [Fact]
+    public async Task Pagar_uma_anterior_com_a_conta_na_ultima_nao_inativa_a_conta()
+    {
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 9);
+        ParcelasPagas(Ate(8));
+
+        await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 9), UserId);
+
+        var conta = Assert.Single(_parcelasAtualizadas);
+        Assert.Equal(10, conta.ParcelaAtual);
+        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
+    }
+
+    /// <summary>Antes: pagar a 5 adiantada levava a conta para 4 (ponteiro + 1) com a 3 em aberto.</summary>
+    [Fact]
+    public async Task Pagar_fora_de_ordem_mantem_a_conta_na_menor_parcela_em_aberto()
+    {
+        ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 5);
+        ParcelasPagas(1, 2);
+
+        await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 5), UserId);
+
+        var conta = Assert.Single(_parcelasAtualizadas);
+        Assert.Equal(3, conta.ParcelaAtual);
+        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
+    }
+
+    /// <summary>Antes: pagar a última inativava a conta mesmo com a 8 e a 9 em aberto.</summary>
+    [Fact]
+    public async Task Pagar_a_ultima_com_anteriores_em_aberto_nao_inativa()
+    {
+        ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10);
+        TransacaoGravada("PENDENTE", parcelaAtual: 10);
+        ParcelasPagas(Ate(7));
+
+        await CriarService().Update(Edicao("PAGO NO PRAZO", parcelaAtual: 10), UserId);
+
+        var conta = Assert.Single(_parcelasAtualizadas);
+        Assert.Equal(8, conta.ParcelaAtual);
+        Assert.Equal(StatusAtivo.Ativo, conta.Ativo);
     }
 
     // ---------- Update: sem efeito na conta ----------
@@ -396,6 +491,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 4, quantidadeParcelas: 10);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 3);
+        ParcelasPagas(1, 2);
 
         await CriarService().Delete(TransactionId, UserId);
 
@@ -428,6 +524,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 10, quantidadeParcelas: 10, status: 2);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 10);
+        ParcelasPagas(Ate(9));
 
         await CriarService().Delete(TransactionId, UserId);
 
@@ -439,7 +536,9 @@ public class TransacaoServiceTests
     [Fact]
     public async Task Delete_de_transacao_inexistente_lanca_excecao_e_nao_remove()
     {
-        _repo.Setup(r => r.GetTransactionById(TransactionId, UserId)).ReturnsAsync((Transacao)null!);
+        // Contrato do repositório: não achou → NaoEncontradoException (nunca null). O service só a deixa passar (BE-P4-14).
+        _repo.Setup(r => r.GetTransactionById(TransactionId, UserId))
+            .ThrowsAsync(new NaoEncontradoException("Transação não encontrada."));
 
         var ex = await Assert.ThrowsAsync<NaoEncontradoException>(() => CriarService().Delete(TransactionId, UserId));
 
@@ -467,6 +566,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 3, quantidadeParcelas: 10);
         TransacaoGravada("PENDENTE", parcelaAtual: 3);
+        ParcelasPagas(1, 2);
         RegistrarGravacoesDaTransacao();
 
         await CriarService().Update(Edicao("PAGO NO PRAZO"), UserId);
@@ -480,6 +580,7 @@ public class TransacaoServiceTests
     {
         ContaParcelada(parcelaAtual: 4, quantidadeParcelas: 10);
         TransacaoGravada("PAGO NO PRAZO", parcelaAtual: 3);
+        ParcelasPagas(1, 2);
         RegistrarGravacoesDaTransacao();
 
         await CriarService().Delete(TransactionId, UserId);

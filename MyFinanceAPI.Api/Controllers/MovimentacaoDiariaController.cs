@@ -27,12 +27,12 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetMovimentacaoDiaria")]
-        public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoDiaria()
+        public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoDiaria([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var MovimentacaoDiaria = await _movimentacaoDiariaService.ListarAsync(userId);
-            return Ok(MovimentacaoDiaria);
+            return Lista(MovimentacaoDiaria, paginacao);
         }
 
         [HttpGet("/GetMovimentacaoDiariaById/{id}", Name = RotaPorId)]
@@ -48,12 +48,12 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetMovimentacaoDiariaByDate/{date}")]
-        public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoByDate(DateTime date)
+        public async Task<ActionResult<IEnumerable<MovimentacaoDiariaDTO>>> GetMovimentacaoByDate(DateTime date, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var movimentacoes = await _movimentacaoDiariaService.GetMovimentacaoByDate(date, userId);
-            return Ok(movimentacoes);
+            return Lista(movimentacoes, paginacao);
         }
 
         [HttpPost("/CreateMovimentacaoDiaria")]

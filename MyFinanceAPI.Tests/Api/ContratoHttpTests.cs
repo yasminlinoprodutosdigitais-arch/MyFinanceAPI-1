@@ -109,7 +109,7 @@ public class ContratoHttpTests
         var categorias = new Mock<ICategoriaService>();
         categorias.Setup(s => s.ListarAsync(UserId)).ReturnsAsync([]);
 
-        var resposta = await Com(new CategoriasController(categorias.Object)).GetCategories();
+        var resposta = await Com(new CategoriasController(categorias.Object)).GetCategories(new Paginacao());
 
         var corpo = Assert.IsType<OkObjectResult>(resposta.Result).Value;
         Assert.Empty(Assert.IsAssignableFrom<IEnumerable<CategoriaDTO>>(corpo));
@@ -195,7 +195,7 @@ public class ContratoHttpTests
     {
         var itens = new Mock<IExtratoBancarioItemService>();
 
-        var resposta = await Com(new ExtratoBancarioItemController(itens.Object)).GetByMonth("2025/11", null);
+        var resposta = await Com(new ExtratoBancarioItemController(itens.Object)).GetByMonth("2025/11", null, new Paginacao());
 
         Assert.StartsWith("Formato de mês inválido", Mensagem(resposta.Result!, 400));
     }

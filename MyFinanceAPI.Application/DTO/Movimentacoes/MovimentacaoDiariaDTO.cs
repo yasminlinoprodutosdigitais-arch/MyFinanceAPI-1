@@ -23,7 +23,7 @@ namespace MyFinanceAPI.Application.DTO.Movimentacoes
 
         [TextoAte(200)] public string? Descricao { get; set; }
 
-        [TextoAte(20)] public string TipoLancamento { get; set; } = string.Empty;
+        [Obrigatorio, TextoAte(20)] public string TipoLancamento { get; set; } = string.Empty;
 
         [TextoAte(120)] public string? NomePessoaTransacao { get; set; }
 

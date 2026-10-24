@@ -22,21 +22,21 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetItemLista")]
-        public async Task<ActionResult<IEnumerable<ItemListaDTO>>> GetItemLista()
+        public async Task<ActionResult<IEnumerable<ItemListaDTO>>> GetItemLista([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var ItemLista = await _itemListaService.ListarAsync(userId);
-            return Ok(ItemLista);
+            return Lista(ItemLista, paginacao);
         }
 
         [HttpGet("/GetItemListaById/{id}", Name = RotaItensDaLista)]
-        public async Task<ActionResult<List<ItemListaDTO>>> GetItemListaById(int id)
+        public async Task<ActionResult<IEnumerable<ItemListaDTO>>> GetItemListaById(int id, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var ItemLista = await _itemListaService.GetItemListaByListaId(id, userId);
-            return Ok(ItemLista);
+            return Lista(ItemLista, paginacao);
         }
 
         /// <summary>201 com o item criado; o Location aponta para os itens da lista dele.</summary>

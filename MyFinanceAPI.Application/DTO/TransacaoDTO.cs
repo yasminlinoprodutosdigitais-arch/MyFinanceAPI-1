@@ -14,14 +14,16 @@ public class TransacaoDTO
     /// <summary>"YYYY-MM-DD"; aceita também instante ISO de front antigo (ver DataCalendarioJsonConverter).</summary>
     [JsonConverter(typeof(DataCalendarioJsonConverter))]
     public DateOnly Data { get; set; }
-    [TextoAte(120)] public string Nome { get; set; }
+    [Obrigatorio, TextoAte(120)] public string Nome { get; set; } = null!;
     public decimal Valor { get; set; }
     public int? ContaId {get; set; }
     public string? ContaNome {get; set; }
     public int? CategoriaId {get; set; }
     public string? CategoriaNome {get; set; }
     public string? SubcategoriaNome {get; set; }
-    [TextoAte(20)] public string Situacao { get; set; }
+    [Obrigatorio, TextoAte(20)]
+    [UmDe(StatusTransacao.Pendente, StatusTransacao.Aguardando, StatusTransacao.PagoNoPrazo, StatusTransacao.PagoAtrasado)]
+    public string Situacao { get; set; } = null!;
     [Ignore]
     public int? TipoContaId { get; set; }
     
@@ -36,7 +38,7 @@ public class TransacaoDTO
     /// Só na criação sem ContaId (conta avulsa, modal "Adicionar nova conta"): dias de vencimento da
     /// conta criada junto. Vazio: o dia de <see cref="Data"/>. Não vem do banco.
     /// </summary>
-    public List<int>? DiasVencimento { get; set; }
+    [DiasDoMes] public List<int>? DiasVencimento { get; set; }
 
     public TransacaoDTO()
     {

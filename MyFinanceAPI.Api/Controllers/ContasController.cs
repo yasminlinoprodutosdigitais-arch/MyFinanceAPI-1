@@ -21,21 +21,21 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetAccounts")]
-        public async Task<ActionResult<IEnumerable<ContaDTO>>> GetAccounts()
+        public async Task<ActionResult<IEnumerable<ContaDTO>>> GetAccounts([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var accounts = await _accountService.GetAccounts(userId);
-            return Ok(accounts);
+            return Lista(accounts, paginacao);
         }
 
         [HttpGet("/GetContasAtivas")]
-        public async Task<ActionResult<IEnumerable<ContaDTO>>> GetContasAtivas()
+        public async Task<ActionResult<IEnumerable<ContaDTO>>> GetContasAtivas([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var accounts = await _accountService.GetContasAtivas(userId);
-            return Ok(accounts);
+            return Lista(accounts, paginacao);
         }
 
         [HttpGet("/GetAccountById/{id}", Name = RotaPorId)]

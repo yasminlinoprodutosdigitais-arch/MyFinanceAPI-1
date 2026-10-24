@@ -730,7 +730,6 @@ extratoBancario.itens.tipoMovimentacao.nomeTipoMovimentacao
 extratoBancario.itens.tipoMovimentacao.valorMeta
 extratoBancario.itens.tipoMovimentacaoId
 extratoBancario.itens.tipoMovimentacaoNome
-extratoBancario.itens.usuarioId
 extratoBancario.itens.valor
 extratoBancario.loteImportacaoId
 extratoBancario.nomeArquivoOrigem
@@ -1132,7 +1131,6 @@ extratoBancarioItem.tipoMovimentacao.nomeTipoMovimentacao
 extratoBancarioItem.tipoMovimentacao.valorMeta
 extratoBancarioItem.tipoMovimentacaoId
 extratoBancarioItem.tipoMovimentacaoNome
-extratoBancarioItem.usuarioId
 extratoBancarioItem.valor
 extratoImportacaoResultado.extratoId
 extratoImportacaoResultado.mensagem

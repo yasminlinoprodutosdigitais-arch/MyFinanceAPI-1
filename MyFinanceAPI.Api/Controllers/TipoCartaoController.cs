@@ -21,12 +21,12 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetTipoCartao")]
-        public async Task<ActionResult<IEnumerable<TipoCartaoDTO>>> GetTipoCartao()
+        public async Task<ActionResult<IEnumerable<TipoCartaoDTO>>> GetTipoCartao([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var TipoCartao = await _TipoCartaoService.ListarAsync(userId);
-            return Ok(TipoCartao);
+            return Lista(TipoCartao, paginacao);
         }
 
         [HttpGet("/GetTipoCartaoById/{id}", Name = RotaPorId)]

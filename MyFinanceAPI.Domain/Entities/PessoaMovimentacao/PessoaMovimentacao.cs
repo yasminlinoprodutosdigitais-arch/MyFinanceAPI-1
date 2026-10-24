@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace MyFinanceAPI.Domain.Entities;
 public class PessoaMovimentacao : BaseEntity
 {
-    public string NomePessoa { get; set; }
+    public string NomePessoa { get; set; } = null!;
     public int? CategoriaId { get; set; }
     public int? TipoMovimentacaoId { get; set; }
     public Categoria? Categoria{ get; set; }

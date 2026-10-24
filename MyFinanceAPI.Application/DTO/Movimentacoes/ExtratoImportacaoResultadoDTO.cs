@@ -6,7 +6,7 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public int QuantidadeCriados { get; set; }
         public int QuantidadeIgnorados { get; set; }
         public decimal ValorTotal { get; set; }
-        public string Mensagem { get; set; }
+        public string Mensagem { get; set; } = null!;
 
         public ExtratoImportacaoResultadoDTO() {}
 

@@ -58,11 +58,12 @@ public class TransacaoRepository(ContextDB context) : ITransacaoRepository
                 Situacao = t.Situacao,
 
                 CategoriaId = t.CategoriaId,
-                CategoriaNome = t.Categoria.Nome,
-                SubcategoriaNome = t.Categoria.Subcategoria,
-                
+                // Projeção no SQL: transação sem categoria ou sem conta traz null aqui, não exceção.
+                CategoriaNome = t.Categoria!.Nome,
+                SubcategoriaNome = t.Categoria!.Subcategoria,
+
                 ContaId = t.ContaId,
-                ContaNome = t.Conta.Nome,
+                ContaNome = t.Conta!.Nome,
 
                 EhParcelado = t.EhParcelado,
                 ParcelaAtual = t.ParcelaAtual,
@@ -95,18 +96,24 @@ public class TransacaoRepository(ContextDB context) : ITransacaoRepository
             .ToListAsync();
     }
 
+    public async Task<List<int>> GetParcelasPagas(int contaId, int userId, int exceto)
+    {
+        return await _context.Transacoes
+            .Where(t => t.UsuarioId == userId && t.ContaId == contaId && t.Id != exceto && t.ParcelaAtual != null
+                && (t.Situacao == StatusTransacao.PagoNoPrazo || t.Situacao == StatusTransacao.PagoAtrasado))
+            .Select(t => t.ParcelaAtual!.Value)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<Transacao> Remove(int id, int userId)
     {
-        var update = await GetTransactionById(id, userId);
-        if (update != null)
-        {
-            _context.Transacoes.Remove(update);
-            _context.SaveChanges();
-        }
-        else
-            throw new NaoEncontradoException("Transação não encontrada.");
+        // GetTransactionById já lança NaoEncontradoException; a gravação é assíncrona (BE-P4-15).
+        var transacao = await GetTransactionById(id, userId);
+        _context.Transacoes.Remove(transacao);
+        await _context.SaveChangesAsync();
 
-        return update;
+        return transacao;
     }
 
     public async Task<Transacao> Update(Transacao transaction, int userId)

@@ -9,7 +9,7 @@ namespace MyFinanceAPI.Application.DTO;
 public class TipoCartaoDTO 
 {
     public int Id { get; set; }
-    [TextoAte(60)] public string NomeTipoCartao { get; set; }
+    [Obrigatorio, TextoAte(60)] public string NomeTipoCartao { get; set; } = null!;
     [TextoAte(200)] public string? Descricao { get; set; }
     /// <summary>Agrupa por fatura em vez de data (DB-P1-07). JSON: ehCredito.</summary>
     public bool EhCredito { get; set; }

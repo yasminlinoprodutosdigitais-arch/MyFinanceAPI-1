@@ -9,8 +9,8 @@ namespace MyFinanceAPI.Application.DTO;
 public class TipoMovimentacaoDTO
 {
     public int Id { get; set; }
-    [TextoAte(60)] public string NomeTipoMovimentacao { get; set; }
-    [TextoAte(200)] public string Descricao { get; set; }
-    public decimal ValorMeta { get; set; }
+    [Obrigatorio, TextoAte(60)] public string NomeTipoMovimentacao { get; set; } = null!;
+    [Obrigatorio, TextoAte(200)] public string Descricao { get; set; } = null!;
+    [Minimo(0)] public decimal ValorMeta { get; set; }
     public TipoMovimentacaoDTO() { } 
 }

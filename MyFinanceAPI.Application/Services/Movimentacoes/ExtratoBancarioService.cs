@@ -45,16 +45,16 @@ namespace MyFinanceAPI.Application.Services
         /// </summary>
         public async Task<IEnumerable<ExtratoBancarioDTO>> GetExtratoBancario(int userId, string month)
         {
-            // Aqui você pode ter um campo UserId no ExtratoBancario (em BaseEntity)
             var extratos = await _extratoBancarioRepository.GetByUserIdAsync(userId, month);
-            
-            extratos = extratos.Select(e =>
-            {
-                var banco = _bancoService.ObterPorIdAsync(e.BancoId, userId).Result;
-                e.BancoNome = banco?.NomeBanco ?? "Banco não encontrado";
-                return e;
-            });
-            return _mapper.Map<IEnumerable<ExtratoBancarioDTO>>(extratos);
+
+            // Os bancos do usuário numa consulta só, e o nome vai no DTO. Antes era um .Result por extrato
+            // dentro do Select (sync-over-async e N+1), gravando o nome na entidade (BE-P4-05).
+            var nomes = (await _bancoService.ListarAsync(userId)).ToDictionary(b => b.Id, b => b.NomeBanco);
+            var dtos = _mapper.Map<List<ExtratoBancarioDTO>>(extratos);
+            foreach (var dto in dtos)
+                dto.BancoNome = nomes.GetValueOrDefault(dto.BancoId) ?? "Banco não encontrado";
+
+            return dtos;
         }
 
         /// <summary>
@@ -92,7 +92,9 @@ namespace MyFinanceAPI.Application.Services
             int bancoId
         )
         {
-            var banco = await _bancoService.ObterPorIdAsync(bancoId, userId);
+            // Banco inexistente ou de outro usuário: 404, não NullReferenceException (500).
+            var banco = await _bancoService.ObterPorIdAsync(bancoId, userId)
+                ?? throw new NaoEncontradoException("Banco não encontrado.");
             var culturePtBr = new CultureInfo("pt-BR");
             var cultureDecimal = CultureInfo.InvariantCulture;
 
@@ -242,7 +244,6 @@ namespace MyFinanceAPI.Application.Services
                         NomePessoaTransacao = nomePessoa,
                         Identificador = identificadorStr,
                         ChaveImportacao = chaveImportacao,
-                        UsuarioId = userId
                     };
 
                     listaItens.Add(item);
@@ -297,11 +298,12 @@ namespace MyFinanceAPI.Application.Services
             foreach (var item in listaItens)
             {
                 item.ExtratoBancarioId = extrato.Id;
-                item.UsuarioId = userId;
                 item.ChaveDescricao = GerarChaveDescricao(item.Descricao);
             }
 
-            var itens = _mapper.Map<IEnumerable<ExtratoBancarioItem>>(listaItens);
+            // O dono vai direto na entidade: o DTO não tem UsuarioId, que só vem do token (BE-P4-17).
+            var itens = _mapper.Map<List<ExtratoBancarioItem>>(listaItens);
+            itens.ForEach(i => i.UsuarioId = userId);
             await _extratoBancarioItemRepository.CreateRangeAsync(itens);
 
             var mensagem = $"Importação concluída. Criados: {criados}, já importados: {jaImportados}, "
@@ -336,7 +338,7 @@ namespace MyFinanceAPI.Application.Services
             string.Join('|', identificador.Trim(), data.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 tipoLancamento, (descricao ?? string.Empty).Trim());
 
-        public static string GerarChaveDescricao(string descricao)
+        public static string GerarChaveDescricao(string? descricao)
         {
             if (string.IsNullOrWhiteSpace(descricao))
                 return string.Empty;

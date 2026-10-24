@@ -9,7 +9,7 @@ namespace MyFinanceAPI.Domain.Entities
 
         public DateOnly DataMovimentacao { get; set; }
         public decimal Valor { get; set; }
-        public string TipoLancamento { get; set; }
+        public string TipoLancamento { get; set; } = null!;
 
         public string? Descricao { get; set; }
         public string? Observacao { get; set; }

@@ -36,30 +36,30 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetTransactionByDate/{date}/{pesquisaDataCompleta}")]
-        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta)
+        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> GetTransactionByDate(DateTime date, bool pesquisaDataCompleta, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var transaction = await _transactionService.GetTransactionByDate(date, userId, pesquisaDataCompleta);
-            return Ok(transaction);
+            return Lista(transaction, paginacao);
         }
 
         [HttpGet("/GetContaVencida/{date}")]
-        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> GetContaVencida(DateTime date)
+        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> GetContaVencida(DateTime date, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var transaction = await _transactionService.GetContaVencida(date, userId);
-            return Ok(transaction);
+            return Lista(transaction, paginacao);
         }
 
         [HttpGet("/BuscarContasMensais/{date}/{pesquisaDataCompleta}")]
-        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> BuscarContasMensais(DateTime date, bool pesquisaDataCompleta)
+        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> BuscarContasMensais(DateTime date, bool pesquisaDataCompleta, [FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var transaction = await _transactionService.BuscarContasMensais(date, userId, pesquisaDataCompleta);
-            return Ok(transaction);
+            return Lista(transaction, paginacao);
         }
 
         /// <summary>

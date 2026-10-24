@@ -22,10 +22,10 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public decimal ValorTotal { get; set; }
 
         public Guid LoteImportacaoId { get; set; }
-        [TextoAte(20)] public string Situacao { get; set; }
+        [TextoAte(20)] public string Situacao { get; set; } = null!;
 
         [TextoAte(260)] public string? NomeArquivoOrigem { get; set; }
 
-        public List<ExtratoBancarioItemDTO> Itens { get; set; }
+        public List<ExtratoBancarioItemDTO> Itens { get; set; } = null!;
     }
 }

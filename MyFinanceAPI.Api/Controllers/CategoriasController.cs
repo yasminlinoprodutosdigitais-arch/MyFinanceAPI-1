@@ -20,21 +20,21 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         [HttpGet("/GetCategories")]
-        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategories()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategories([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var categories = await _categoryService.ListarAsync(userId);
-            return Ok(categories);
+            return Lista(categories, paginacao);
         }
 
         [HttpGet("/GetCategoriasAtivas")]
-        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategoriasAtivas()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategoriasAtivas([FromQuery] Paginacao paginacao)
         {
             var userId = UsuarioId;
 
             var categories = await _categoryService.GetCategoriasAtivas(userId);
-            return Ok(categories);
+            return Lista(categories, paginacao);
         }
 
         [HttpGet("/GetCategoryById/{id}", Name = RotaPorId)]

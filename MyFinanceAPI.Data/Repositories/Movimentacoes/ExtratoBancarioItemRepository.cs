@@ -17,32 +17,19 @@ namespace MyFinanceAPI.Data.Repositories
             _context = context;
         }
 
+        // Sem try/catch: a falha chega ao ErroHandler (BE-P4-07). Antes este método engolia a exceção e
+        // devolvia null, e o controller quebrava em created.Id — o 500 genérico escondia o erro real.
         public async Task<ExtratoBancarioItem> CreateAsync(ExtratoBancarioItem item)
         {
-            try
-            {
-                await _context.ItensExtratoBancario.AddAsync(item);
-                await _context.SaveChangesAsync();
-                return item;
-                
-            } catch (Exception ex)
-            {
-                var msg = ex.InnerException.Message;
-                return null;
-            }
+            await _context.ItensExtratoBancario.AddAsync(item);
+            await _context.SaveChangesAsync();
+            return item;
         }
 
         public async Task CreateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
-        {try
-            {
-                await _context.ItensExtratoBancario.AddRangeAsync(itens);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (ex.Message, ex.StackTrace, etc.)
-                throw; // Rethrow or handle as needed
-            }
+        {
+            await _context.ItensExtratoBancario.AddRangeAsync(itens);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<HashSet<string>> ObterChavesImportacaoAsync(int userId, int bancoId)
@@ -118,7 +105,7 @@ namespace MyFinanceAPI.Data.Repositories
         public async Task<IEnumerable<ExtratoBancarioItem>> GetByUserAndMonthAsync(
             int userId,
             DateOnly inicioInclusive,
-            DateOnly fimExclusive, string numeroFatura = null, int? bancoId = null)
+            DateOnly fimExclusive, string? numeroFatura = null, int? bancoId = null)
         {
             return await _context.ItensExtratoBancario.AsNoTracking()
                 .Include(i => i.Banco)

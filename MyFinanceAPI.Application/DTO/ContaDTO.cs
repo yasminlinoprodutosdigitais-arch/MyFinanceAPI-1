@@ -13,11 +13,11 @@ public class ContaDTO
     public int CategoriaId { get; set; }
     [NotMapped]
     public string? CategoriaNome { get; set; }
-    public int Ativo { get; set; }
+    [UmDe(StatusAtivo.Inativo, StatusAtivo.Ativo)] public int Ativo { get; set; }
     public bool EhParcelado { get; set; }
     public int? QuantidadeParcelas { get; set; }
     public int? ParcelaAtual { get; set; }
-    public List<int> DataOperacao { get; set; }
+    [Obrigatorio, DiasDoMes] public List<int> DataOperacao { get; set; } = null!;
     public ICollection<Transacao>? Transacoes { get; set; }
     public ICollection<ContaVencimento>? Vencimentos { get; set; }
 
