@@ -22,7 +22,16 @@ public class CategoriaRepository(ContextDB context) : RepositorioDoUsuario<Categ
         existente.Subcategoria = entrada.Subcategoria;
         existente.NaturezaOperacao = entrada.NaturezaOperacao;
         existente.Ativo = entrada.Ativo;
+        existente.Icone = entrada.Icone;
+        existente.Cor = entrada.Cor;
     }
+
+    public async Task<Dictionary<int, int>> ContarContasPorCategoriaAsync(int userId) =>
+        await _context.Contas.AsNoTracking()
+            .Where(c => c.UsuarioId == userId)
+            .GroupBy(c => c.CategoriaId)
+            .Select(g => new { CategoriaId = g.Key, Quantidade = g.Count() })
+            .ToDictionaryAsync(g => g.CategoriaId, g => g.Quantidade);
 
     public async Task<IEnumerable<Categoria>> GetCategoriesByUserIdAtiva(int userId)
     {

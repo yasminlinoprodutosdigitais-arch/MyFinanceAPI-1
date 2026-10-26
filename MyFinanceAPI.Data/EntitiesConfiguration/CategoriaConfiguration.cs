@@ -17,6 +17,8 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
 
         builder.Property(e => e.Nome).HasMaxLength(120);
         builder.Property(e => e.Subcategoria).HasMaxLength(120);
+        builder.Property(e => e.Icone).HasMaxLength(40);
+        builder.Property(e => e.Cor).HasMaxLength(20);
         builder.Property(e => e.DataAlteracao).HasDefaultValueSql("now()");
 
         builder.HasIndex(e => new { e.UsuarioId, e.Nome, e.Subcategoria })

@@ -264,11 +264,21 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("ativo");
 
+                    b.Property<string>("Cor")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cor");
+
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Icone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("icone");
 
                     b.Property<int>("NaturezaOperacao")
                         .HasColumnType("integer")
