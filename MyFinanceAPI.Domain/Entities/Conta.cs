@@ -12,6 +12,8 @@ public class Conta : BaseEntity
     public bool EhParcelado { get; set; }
     public int? QuantidadeParcelas { get; set; }
     public int? ParcelaAtual { get; set; }
+    /// <summary>Anotação livre da conta (card #22); opcional.</summary>
+    public string? Observacao { get; set; }
 
     public int CategoriaId { get; set; }
     [NotMapped]

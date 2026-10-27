@@ -87,6 +87,27 @@ public class TransacaoRepository(ContextDB context) : ITransacaoRepository
         return transaction;
     }
 
+    public Task<List<Transacao>> GetTransacoesDaConta(int contaId, int userId) =>
+        _context.Transacoes.AsNoTracking()
+            .Where(TransacaoFiltros.DaConta(userId, contaId))
+            .Select(t => new Transacao
+            {
+                Id = t.Id,
+                Data = t.Data,
+                Nome = t.Nome,
+                Valor = t.Valor,
+                Situacao = t.Situacao,
+                CategoriaId = t.CategoriaId,
+                CategoriaNome = t.Categoria!.Nome,
+                ContaId = t.ContaId,
+                ContaNome = t.Conta!.Nome,
+                EhParcelado = t.EhParcelado,
+                ParcelaAtual = t.ParcelaAtual,
+                QuantidadeParcelas = t.QuantidadeParcelas,
+                Observacao = t.Observacao,
+            })
+            .ToListAsync();
+
     public async Task<List<int>> GetParcelasLancadas(int accountId, int userId)
     {
         return await _context.Transacoes

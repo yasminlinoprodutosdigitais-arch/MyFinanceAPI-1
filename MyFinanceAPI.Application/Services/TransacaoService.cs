@@ -158,6 +158,14 @@ public class TransacaoService : ITransacaoService
         return _mapper.Map<IEnumerable<TransacaoDTO>>(Transaction);
     }
 
+    public async Task<IReadOnlyList<TransacaoDTO>> GetTransacoesDaConta(int contaId, int userId)
+    {
+        var lancamentos = await _transactionRepository.GetTransacoesDaConta(contaId, userId);
+        return _mapper.Map<List<TransacaoDTO>>(lancamentos
+            .OrderByDescending(t => t.Data)
+            .ThenByDescending(t => t.Id));
+    }
+
     public async Task<IEnumerable<TransacaoDTO>> BuscarContasMensais(DateTime date, int userId, bool pesquisaDataCompleta = false)
     {
         var Transaction = await _transactionRepository.BuscarContasMensais(date, userId, pesquisaDataCompleta);

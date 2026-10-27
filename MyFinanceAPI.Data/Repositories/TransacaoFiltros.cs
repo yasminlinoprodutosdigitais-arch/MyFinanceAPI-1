@@ -25,4 +25,8 @@ public static class TransacaoFiltros
         var (inicio, fimExclusivo) = IntervaloDoMes(dia);
         return t => t.UsuarioId == userId && t.Data >= inicio && t.Data < fimExclusivo;
     }
+
+    /// <summary>Lançamentos de uma conta do usuário (aba Lançamentos do Cadastro de Contas, card #22).</summary>
+    public static Expression<Func<Transacao, bool>> DaConta(int userId, int contaId) =>
+        t => t.UsuarioId == userId && t.ContaId == contaId;
 }

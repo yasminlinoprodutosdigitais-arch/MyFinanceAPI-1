@@ -71,4 +71,89 @@ public class ContaServiceTests
         Assert.Equal(new[] { 5, 20 }, _vencimentosCriados!.Select(v => v.Dia));
         Assert.Empty(_uow.Fora);
     }
+
+    // Card #22: parcelas fora do CHECK do banco (total ≥ 1, atual de 0 até o total) voltam com mensagem clara,
+    // em vez do erro genérico de constraint.
+    [Theory]
+    [InlineData(null, 1)]
+    [InlineData(0, 0)]
+    [InlineData(3, 4)]
+    [InlineData(3, -1)]
+    [InlineData(3, null)]
+    public async Task Parcelada_com_parcelas_invalidas_e_recusada(int? total, int? atual)
+    {
+        var dto = Conta();
+        dto.EhParcelado = true;
+        dto.QuantidadeParcelas = total;
+        dto.ParcelaAtual = atual;
+
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().Add(dto, UserId));
+
+        Assert.Contains("parcela", erro.Message, StringComparison.OrdinalIgnoreCase);
+        _repo.Verify(r => r.Create(It.IsAny<Conta>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Parcelas_invalidas_tambem_sao_recusadas_na_edicao()
+    {
+        var dto = Conta(AccountId);
+        dto.EhParcelado = true;
+        dto.QuantidadeParcelas = 10;
+        dto.ParcelaAtual = 11;
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().Update(dto, UserId));
+
+        _repo.Verify(r => r.Update(It.IsAny<Conta>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(10, 0)]
+    [InlineData(10, 1)]
+    [InlineData(10, 10)]
+    public async Task Parcelada_dentro_do_limite_grava(int total, int atual)
+    {
+        var dto = Conta();
+        dto.EhParcelado = true;
+        dto.QuantidadeParcelas = total;
+        dto.ParcelaAtual = atual;
+
+        await CriarService().Add(dto, UserId);
+
+        _repo.Verify(r => r.Create(It.IsAny<Conta>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Nao_parcelada_nao_olha_as_parcelas()
+    {
+        var dto = Conta();
+        dto.QuantidadeParcelas = 0;
+        dto.ParcelaAtual = 0;
+
+        await CriarService().Add(dto, UserId);
+
+        _repo.Verify(r => r.Create(It.IsAny<Conta>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Excluir_conta_com_lancamentos_e_recusado_sugerindo_inativar()
+    {
+        _repo.Setup(r => r.EmUsoAsync(AccountId, UserId)).ReturnsAsync(true);
+
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().Remove(AccountId, UserId));
+
+        Assert.Contains("lançamentos", erro.Message);
+        Assert.Contains("Inative", erro.Message);
+        _repo.Verify(r => r.Remove(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Observacao_e_gravada()
+    {
+        var dto = Conta();
+        dto.Observacao = "Débito no cartão da Ágatha";
+
+        await CriarService().Add(dto, UserId);
+
+        _repo.Verify(r => r.Create(It.Is<Conta>(c => c.Observacao == "Débito no cartão da Ágatha")), Times.Once);
+    }
 }

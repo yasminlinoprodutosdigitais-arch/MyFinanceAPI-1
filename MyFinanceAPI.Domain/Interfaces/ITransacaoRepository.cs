@@ -10,6 +10,8 @@ public interface ITransacaoRepository
     Task<IEnumerable<Transacao>> GetContaVencida(DateTime hoje, int userId);
     Task<Transacao> GetTransactionById(int id, int userId);
     Task<List<int>> GetParcelasLancadas(int accountId, int userId);
+    /// <summary>Todos os lançamentos de uma conta do usuário, sem ordem garantida (card #22).</summary>
+    Task<List<Transacao>> GetTransacoesDaConta(int contaId, int userId);
     /// <summary>Números das parcelas pagas da conta, sem contar a transação <paramref name="exceto"/>.</summary>
     Task<List<int>> GetParcelasPagas(int contaId, int userId, int exceto);
     Task Create(List<Transacao> transaction);

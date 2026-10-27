@@ -12,6 +12,8 @@ public interface ITransacaoService
     Task<IEnumerable<TransacaoDTO>> GetTransactionByDate(DateTime date, int userId, bool pesquisaDataCompleta = false);
     Task<IEnumerable<TransacaoDTO>> BuscarContasMensais(DateTime date, int userId, bool pesquisaDataCompleta = false);    
     Task<IEnumerable<TransacaoDTO>> GetContaVencida(DateTime hoje, int userId);
+    /// <summary>Lançamentos da conta, do mais recente para o mais antigo (card #22).</summary>
+    Task<IReadOnlyList<TransacaoDTO>> GetTransacoesDaConta(int contaId, int userId);
 
     /// <summary>Cria uma transação por vencimento da conta e devolve as criadas.</summary>
     Task<IReadOnlyList<TransacaoDTO>> Add(TransacaoDTO TransactionDTO, int userId);

@@ -346,6 +346,11 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("nome");
 
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
+
                     b.Property<int?>("ParcelaAtual")
                         .HasColumnType("integer")
                         .HasColumnName("parcela_atual");

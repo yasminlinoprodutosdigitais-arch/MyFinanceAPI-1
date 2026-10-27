@@ -62,6 +62,17 @@ namespace MyFinanceAPI.Api.Controllers
             return Lista(transaction, paginacao);
         }
 
+        /// <summary>Lançamentos de uma conta, do mais recente para o mais antigo (aba Lançamentos, card #22).</summary>
+        [HttpGet("/GetTransacoesDaConta/{contaId}")]
+        public async Task<ActionResult<IEnumerable<TransacaoDTO>>> GetTransacoesDaConta(int contaId, [FromQuery] Paginacao paginacao)
+        {
+            if (contaId <= 0)
+                return ErroRequisicao("Id de conta inválido.");
+
+            var lancamentos = await _transactionService.GetTransacoesDaConta(contaId, UsuarioId);
+            return Lista(lancamentos, paginacao);
+        }
+
         /// <summary>
         /// Cria uma transação por vencimento da conta: o 201 leva todas as criadas, com o Location da primeira.
         /// </summary>

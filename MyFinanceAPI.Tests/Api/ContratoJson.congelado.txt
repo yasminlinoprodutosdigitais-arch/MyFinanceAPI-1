@@ -5,6 +5,7 @@ conta.dataOperacao
 conta.ehParcelado
 conta.id
 conta.nome
+conta.observacao
 conta.parcelaAtual
 conta.quantidadeParcelas
 conta.transacoes
@@ -17,6 +18,7 @@ conta.transacoes.conta.categoriaNome
 conta.transacoes.conta.ehParcelado
 conta.transacoes.conta.id
 conta.transacoes.conta.nome
+conta.transacoes.conta.observacao
 conta.transacoes.conta.parcelaAtual
 conta.transacoes.conta.quantidadeParcelas
 conta.transacoes.conta.transacoes
@@ -139,6 +141,7 @@ transacao.conta.categoriaNome
 transacao.conta.ehParcelado
 transacao.conta.id
 transacao.conta.nome
+transacao.conta.observacao
 transacao.conta.parcelaAtual
 transacao.conta.quantidadeParcelas
 transacao.conta.transacoes

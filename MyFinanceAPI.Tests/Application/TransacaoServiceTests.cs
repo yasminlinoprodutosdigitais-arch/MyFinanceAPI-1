@@ -738,4 +738,31 @@ public class TransacaoServiceTests
 
         _accountService.Verify(s => s.Add(It.IsAny<ContaDTO>(), It.IsAny<int>()), Times.Never);
     }
+
+    // Card #22: aba Lançamentos do Cadastro de Contas.
+    [Fact]
+    public async Task Lancamentos_da_conta_vem_do_mais_recente_para_o_mais_antigo()
+    {
+        Transacao T(int id, DateOnly data) =>
+            new() { Id = id, UsuarioId = UserId, ContaId = AccountId, Data = data, Nome = "Sofá", Situacao = StatusTransacao.PagoNoPrazo };
+        _repo.Setup(r => r.GetTransacoesDaConta(AccountId, UserId)).ReturnsAsync(
+        [
+            T(1, new DateOnly(2026, 8, 5)),
+            T(2, new DateOnly(2026, 10, 20)),
+            T(3, new DateOnly(2026, 10, 5)),
+            T(4, new DateOnly(2026, 9, 5)),
+        ]);
+
+        var lancamentos = await CriarService().GetTransacoesDaConta(AccountId, UserId);
+
+        Assert.Equal([2, 3, 4, 1], lancamentos.Select(l => l.Id));
+    }
+
+    [Fact]
+    public async Task Conta_sem_lancamentos_devolve_lista_vazia()
+    {
+        _repo.Setup(r => r.GetTransacoesDaConta(AccountId, UserId)).ReturnsAsync([]);
+
+        Assert.Empty(await CriarService().GetTransacoesDaConta(AccountId, UserId));
+    }
 }

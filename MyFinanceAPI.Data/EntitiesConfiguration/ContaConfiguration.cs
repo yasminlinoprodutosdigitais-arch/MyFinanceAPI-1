@@ -17,6 +17,7 @@ public class ContaConfiguration : IEntityTypeConfiguration<Conta>
 
         builder.Property(e => e.Nome).HasMaxLength(120);
         builder.Property(e => e.Valor).HasPrecision(10, 2);
+        builder.Property(e => e.Observacao).HasMaxLength(500);
 
         // Coluna que só o banco tinha; nenhum código lê, então fica como shadow property.
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");

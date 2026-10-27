@@ -78,6 +78,23 @@ public class TransacaoFiltrosTests
         Assert.DoesNotContain(".Year", expressao);
     }
 
+    // Card #22: lançamentos de uma conta (aba Lançamentos do Cadastro de Contas).
+    [Fact]
+    public void Da_conta_traz_so_os_lancamentos_daquela_conta_do_usuario()
+    {
+        Transacao DaConta(int id, int? contaId, int userId = UserId)
+        {
+            var t = T(id, new DateOnly(2026, 10, 5), userId);
+            t.ContaId = contaId;
+            return t;
+        }
+        var itens = new[] { DaConta(1, 10), DaConta(2, 11), DaConta(3, null), DaConta(4, 10, userId: 7), DaConta(5, 10) };
+
+        var ids = itens.AsQueryable().Where(TransacaoFiltros.DaConta(UserId, 10)).Select(t => t.Id).OrderBy(i => i).ToArray();
+
+        Assert.Equal([1, 5], ids);
+    }
+
     [Fact]
     public void Intervalo_do_mes_e_meio_aberto()
     {
