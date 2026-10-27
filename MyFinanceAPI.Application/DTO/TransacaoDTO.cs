@@ -40,6 +40,12 @@ public class TransacaoDTO
     /// </summary>
     [DiasDoMes] public List<int>? DiasVencimento { get; set; }
 
+    /// <summary>
+    /// Só na criação sem ContaId (card #47): false = lançamento avulso daquele mês, sem cadastrar a conta;
+    /// ausente ou true = cria a conta junto, como antes. Não vem do banco.
+    /// </summary>
+    public bool? CadastrarConta { get; set; }
+
     public TransacaoDTO()
     {
     }

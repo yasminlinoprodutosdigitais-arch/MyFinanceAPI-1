@@ -209,6 +209,71 @@ public class TransacaoServiceTests
         Assert.Contains("\"id\":900", json);
     }
 
+    // ---------- Add: lançamento avulso, sem cadastrar a conta (card #47) ----------
+
+    private static TransacaoDTO Avulso(List<int>? dias = null) => new()
+    {
+        Nome = "Presente da Ágatha",
+        Valor = 300m,
+        CategoriaId = 4,
+        Situacao = "PENDENTE",
+        Data = new DateOnly(2026, 11, 1),
+        DiasVencimento = dias ?? [10, 20],
+        CadastrarConta = false,
+    };
+
+    [Fact]
+    public async Task Avulso_nao_cria_conta_e_grava_um_lancamento_por_dia_com_o_valor_dividido()
+    {
+        List<Transacao>? criadas = null;
+        _repo.Setup(r => r.Create(It.IsAny<List<Transacao>>()))
+            .Callback<List<Transacao>>(t => criadas = t)
+            .Returns(Task.CompletedTask);
+
+        var devolvidas = await CriarService().Add(Avulso(), UserId);
+
+        _accountService.Verify(s => s.Add(It.IsAny<ContaDTO>(), It.IsAny<int>()), Times.Never);
+        Assert.Equal(2, criadas!.Count);
+        Assert.All(criadas, t =>
+        {
+            Assert.Null(t.ContaId);
+            Assert.Equal(150m, t.Valor);
+            Assert.Equal(4, t.CategoriaId);
+            Assert.Equal(UserId, t.UsuarioId);
+            Assert.Equal("PENDENTE", t.Situacao);
+            Assert.False(t.EhParcelado);
+            Assert.Null(t.ParcelaAtual);
+        });
+        Assert.Equal([new DateOnly(2026, 11, 10), new DateOnly(2026, 11, 20)], criadas.Select(t => t.Data));
+        Assert.Equal(2, devolvidas.Count);
+    }
+
+    [Fact]
+    public async Task Avulso_no_dia_31_de_um_mes_curto_cai_no_ultimo_dia()
+    {
+        List<Transacao>? criadas = null;
+        _repo.Setup(r => r.Create(It.IsAny<List<Transacao>>()))
+            .Callback<List<Transacao>>(t => criadas = t)
+            .Returns(Task.CompletedTask);
+        var dto = Avulso([31]);
+        dto.Data = new DateOnly(2026, 2, 1);
+
+        await CriarService().Add(dto, UserId);
+
+        Assert.Equal(new DateOnly(2026, 2, 28), Assert.Single(criadas!).Data);
+    }
+
+    [Fact]
+    public async Task Avulso_sem_categoria_e_recusado()
+    {
+        var dto = Avulso();
+        dto.CategoriaId = null;
+
+        await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(dto, UserId));
+
+        _repo.Verify(r => r.Create(It.IsAny<List<Transacao>>()), Times.Never);
+    }
+
     // ---------- Add: número da parcela ----------
 
     private List<Transacao>? _criadas;

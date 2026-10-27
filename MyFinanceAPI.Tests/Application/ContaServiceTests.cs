@@ -147,6 +147,17 @@ public class ContaServiceTests
     }
 
     [Fact]
+    public async Task Valor_fixo_e_gravado()
+    {
+        var dto = Conta();
+        dto.ValorFixo = true;
+
+        await CriarService().Add(dto, UserId);
+
+        _repo.Verify(r => r.Create(It.Is<Conta>(c => c.ValorFixo)), Times.Once);
+    }
+
+    [Fact]
     public async Task Observacao_e_gravada()
     {
         var dto = Conta();

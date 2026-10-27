@@ -86,6 +86,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
         existingAccount.QuantidadeParcelas = incomingAccount.QuantidadeParcelas;
         existingAccount.ParcelaAtual = incomingAccount.ParcelaAtual;
         existingAccount.Observacao = incomingAccount.Observacao;
+        existingAccount.ValorFixo = incomingAccount.ValorFixo;
 
         await _context.SaveChangesAsync();
 
@@ -125,6 +126,7 @@ public class ContaRepository(ContextDB context) : IContaRepository
                 ParcelaAtual = t.ParcelaAtual,
                 QuantidadeParcelas = t.QuantidadeParcelas,
                 Observacao = t.Observacao,
+                ValorFixo = t.ValorFixo,
                 Vencimentos = t.Vencimentos
             })
             .OrderBy(c => c.Nome)

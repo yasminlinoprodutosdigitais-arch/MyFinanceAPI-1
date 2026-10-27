@@ -14,6 +14,8 @@ public class Conta : BaseEntity
     public int? ParcelaAtual { get; set; }
     /// <summary>Anotação livre da conta (card #22); opcional.</summary>
     public string? Observacao { get; set; }
+    /// <summary>Valor igual todo mês (card #47): no lançamento em lote chega como AGUARDANDO; sem isso, PENDENTE.</summary>
+    public bool ValorFixo { get; set; }
 
     public int CategoriaId { get; set; }
     [NotMapped]

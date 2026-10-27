@@ -18,6 +18,8 @@ public class ContaConfiguration : IEntityTypeConfiguration<Conta>
         builder.Property(e => e.Nome).HasMaxLength(120);
         builder.Property(e => e.Valor).HasPrecision(10, 2);
         builder.Property(e => e.Observacao).HasMaxLength(500);
+        // Contas que já existem ficam como valor não fixo (decisão do card #47).
+        builder.Property(e => e.ValorFixo).HasDefaultValue(false);
 
         // Coluna que só o banco tinha; nenhum código lê, então fica como shadow property.
         builder.Property<DateTime>("DataAlteracao").HasDefaultValueSql("now()");

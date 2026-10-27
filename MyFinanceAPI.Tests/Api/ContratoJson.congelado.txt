@@ -45,6 +45,7 @@ conta.transacoes.conta.usuario.twoFactorEnabled
 conta.transacoes.conta.usuario.userName
 conta.transacoes.conta.usuarioId
 conta.transacoes.conta.valor
+conta.transacoes.conta.valorFixo
 conta.transacoes.conta.vencimentos
 conta.transacoes.conta.vencimentos.contaId
 conta.transacoes.conta.vencimentos.dia
@@ -106,6 +107,7 @@ conta.transacoes.usuario.userName
 conta.transacoes.usuarioId
 conta.transacoes.valor
 conta.valor
+conta.valorFixo
 conta.vencimentos
 conta.vencimentos.contaId
 conta.vencimentos.dia
@@ -132,6 +134,7 @@ conta.vencimentos.usuario.securityStamp
 conta.vencimentos.usuario.twoFactorEnabled
 conta.vencimentos.usuario.userName
 conta.vencimentos.usuarioId
+transacao.cadastrarConta
 transacao.categoriaId
 transacao.categoriaNome
 transacao.conta
@@ -205,6 +208,7 @@ transacao.conta.usuario.twoFactorEnabled
 transacao.conta.usuario.userName
 transacao.conta.usuarioId
 transacao.conta.valor
+transacao.conta.valorFixo
 transacao.conta.vencimentos
 transacao.conta.vencimentos.contaId
 transacao.conta.vencimentos.dia

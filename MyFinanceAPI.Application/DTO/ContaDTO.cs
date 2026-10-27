@@ -18,6 +18,7 @@ public class ContaDTO
     public int? QuantidadeParcelas { get; set; }
     public int? ParcelaAtual { get; set; }
     [TextoAte(500)] public string? Observacao { get; set; }
+    public bool ValorFixo { get; set; }
     [Obrigatorio, DiasDoMes] public List<int> DataOperacao { get; set; } = null!;
     public ICollection<Transacao>? Transacoes { get; set; }
     public ICollection<ContaVencimento>? Vencimentos { get; set; }

@@ -30,6 +30,9 @@ public class TransacaoService : ITransacaoService
     /// <summary>Uma transação por vencimento da conta; devolve as criadas, já com id.</summary>
     private async Task<IReadOnlyList<TransacaoDTO>> AddNaOperacao(TransacaoDTO transactionDTO, int userId)
     {
+        if (transactionDTO.ContaId is null && transactionDTO.CadastrarConta == false)
+            return await AddAvulso(transactionDTO, userId);
+
         var conta = await _accountService.GetAccountById(transactionDTO.ContaId ?? 0, userId);
         var mesAno = transactionDTO.Data;
         var transacoes = new List<Domain.Entities.Transacao>();
@@ -90,6 +93,36 @@ public class TransacaoService : ITransacaoService
         var criadas = _mapper.Map<List<TransacaoDTO>>(transacoes);
         criadas.ForEach(t => t.Conta = null);
         return criadas;
+    }
+
+    /// <summary>
+    /// Lançamento avulso (card #47, "Não, só este mês"): nenhuma conta no cadastro. Um lançamento por dia pedido,
+    /// com o valor dividido entre eles, como a conta faria; dia além do fim do mês cai no último dia.
+    /// </summary>
+    private async Task<IReadOnlyList<TransacaoDTO>> AddAvulso(TransacaoDTO transactionDTO, int userId)
+    {
+        if (transactionDTO.CategoriaId is not int categoriaId)
+            throw new ArgumentException("Informe a categoria do lançamento.");
+
+        var dias = DiasDaContaNova(transactionDTO);
+        var mesAno = transactionDTO.Data;
+        var ultimoDiaMes = DateTime.DaysInMonth(mesAno.Year, mesAno.Month);
+        var valor = transactionDTO.Valor / dias.Count;
+
+        var transacoes = dias.Select(dia => new Domain.Entities.Transacao
+        {
+            Nome = transactionDTO.Nome,
+            UsuarioId = userId,
+            Valor = valor,
+            Situacao = transactionDTO.Situacao,
+            EhParcelado = false,
+            CategoriaId = categoriaId,
+            Observacao = transactionDTO.Observacao,
+            Data = new DateOnly(mesAno.Year, mesAno.Month, Math.Min(dia, ultimoDiaMes))
+        }).ToList();
+
+        await _transactionRepository.Create(transacoes);
+        return _mapper.Map<List<TransacaoDTO>>(transacoes);
     }
 
     /// <summary>

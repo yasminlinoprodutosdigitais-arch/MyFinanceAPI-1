@@ -368,6 +368,12 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("valor");
 
+                    b.Property<bool>("ValorFixo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("valor_fixo");
+
                     b.HasKey("Id")
                         .HasName("pk_contas");
 
