@@ -249,6 +249,7 @@ transacao.situacao
 transacao.subcategoriaNome
 transacao.tipoContaId
 transacao.valor
+transacao.valorDoMes
 categoria.ativo
 categoria.cor
 categoria.dataAlteracao

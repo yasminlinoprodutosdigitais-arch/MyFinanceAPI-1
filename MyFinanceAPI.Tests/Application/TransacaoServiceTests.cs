@@ -209,6 +209,89 @@ public class TransacaoServiceTests
         Assert.Contains("\"id\":900", json);
     }
 
+    // ---------- Add: valor e dias só deste mês, pelo lote (card #48) ----------
+
+    private void ContaDoLote(params int[] dias)
+    {
+        _accountService.Setup(s => s.GetAccountById(AccountId, UserId)).ReturnsAsync(new ContaDTO
+        {
+            Id = AccountId,
+            Valor = 300m,
+            CategoriaId = 4,
+            DataOperacao = dias.ToList(),
+            Vencimentos = dias.Select(d => new ContaVencimento { ContaId = AccountId, Dia = d }).ToList(),
+        });
+        _repo.Setup(r => r.Create(It.IsAny<List<Transacao>>()))
+            .Callback<List<Transacao>>(t => _criadas = t)
+            .Returns(Task.CompletedTask);
+    }
+
+    [Fact]
+    public async Task Lote_com_valor_do_mes_divide_ele_entre_os_vencimentos_e_nao_mexe_na_conta()
+    {
+        ContaDoLote(5, 20);
+        var lancamento = Lancamento();
+        lancamento.ValorDoMes = 410m;
+
+        await CriarService().Add(lancamento, UserId);
+
+        Assert.All(_criadas!, t => Assert.Equal(205m, t.Valor));
+        _accountService.Verify(s => s.Update(It.IsAny<ContaDTO>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Lote_com_dias_usa_os_dias_pedidos_no_lugar_dos_da_conta()
+    {
+        ContaDoLote(5);
+        var lancamento = Lancamento();
+        lancamento.DiasVencimento = [25, 12];
+
+        await CriarService().Add(lancamento, UserId);
+
+        Assert.Equal([new DateOnly(2026, 11, 12), new DateOnly(2026, 11, 25)], _criadas!.Select(t => t.Data));
+        Assert.All(_criadas!, t => Assert.Equal(150m, t.Valor)); // valor da conta dividido entre os dias pedidos
+    }
+
+    [Fact]
+    public async Task Lote_com_dias_aceita_conta_sem_vencimento_cadastrado()
+    {
+        ContaDoLote();
+        var lancamento = Lancamento();
+        lancamento.DiasVencimento = [10];
+
+        await CriarService().Add(lancamento, UserId);
+
+        var criada = Assert.Single(_criadas!);
+        Assert.Equal(new DateOnly(2026, 11, 10), criada.Data);
+        Assert.Equal(300m, criada.Valor);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-10)]
+    public async Task Lote_com_valor_do_mes_zero_ou_negativo_e_recusado(int valor)
+    {
+        ContaDoLote(5);
+        var lancamento = Lancamento();
+        lancamento.ValorDoMes = valor;
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(lancamento, UserId));
+
+        Assert.Contains("valor", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _repo.Verify(r => r.Create(It.IsAny<List<Transacao>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Lote_com_dia_repetido_e_recusado()
+    {
+        ContaDoLote(5);
+        var lancamento = Lancamento();
+        lancamento.DiasVencimento = [7, 7];
+
+        await Assert.ThrowsAsync<ArgumentException>(() => CriarService().Add(lancamento, UserId));
+        _repo.Verify(r => r.Create(It.IsAny<List<Transacao>>()), Times.Never);
+    }
+
     // ---------- Add: lançamento avulso, sem cadastrar a conta (card #47) ----------
 
     private static TransacaoDTO Avulso(List<int>? dias = null) => new()

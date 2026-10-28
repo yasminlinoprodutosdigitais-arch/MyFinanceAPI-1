@@ -53,18 +53,25 @@ public class TransacaoService : ITransacaoService
             };
             conta = await _accountService.Add(novaConta, userId);
         }
+        else if (transactionDTO.ValorDoMes is <= 0)
+            throw new ArgumentException("O valor do mês deve ser maior que zero.");
+
+        // Lote (card #48): dias e valor pedidos valem só para este lançamento; o cadastro da conta não muda.
         // Conta nova: o EF liga os vencimentos gravados à conta rastreada, então Vencimentos já vem preenchido.
+        var diasDoMes = transactionDTO.ContaId is not null && transactionDTO.DiasVencimento is { Count: > 0 }
+            ? DiasDaContaNova(transactionDTO)
+            : conta.Vencimentos?.Select(v => v.Dia).ToList();
         // Conta antiga sem vencimento dividia por zero (BE-P4-01).
-        if (conta.Vencimentos is not { Count: > 0 })
+        if (diasDoMes is not { Count: > 0 })
             throw new ArgumentException("A conta não tem dia de vencimento cadastrado. Edite a conta e informe ao menos um dia.");
 
         int? parcela = conta.EhParcelado ? await ProximaParcela(conta, userId) : null;
 
         var ultimoDiaMes = DateTime.DaysInMonth(mesAno.Year, mesAno.Month);
-        var valorParcelaMensal = conta.Valor / conta.Vencimentos.Count;
-        foreach (var vencimento in conta.Vencimentos)
+        var valorParcelaMensal = (transactionDTO.ValorDoMes ?? conta.Valor) / diasDoMes.Count;
+        foreach (var diaDoVencimento in diasDoMes)
         {
-            var dia = Math.Min(vencimento.Dia, ultimoDiaMes);
+            var dia = Math.Min(diaDoVencimento, ultimoDiaMes);
             var novaTransacao = new Domain.Entities.Transacao
             {
                 ContaId = conta.Id,
@@ -126,7 +133,7 @@ public class TransacaoService : ITransacaoService
     }
 
     /// <summary>
-    /// Vencimentos da conta criada no lançamento: os dias pedidos (mesmas regras do Cadastro de Contas —
+    /// Dias pedidos no lançamento — da conta criada junto, ou só deste mês no lote (card #48) — com as mesmas regras do Cadastro de Contas (
     /// 1 a 31, sem repetir), em ordem; sem dias, o dia da data.
     /// </summary>
     private static List<int> DiasDaContaNova(TransacaoDTO transactionDTO)
