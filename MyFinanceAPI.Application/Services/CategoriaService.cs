@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using MyFinanceAPI.Application.Utils;
 using AutoMapper;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
@@ -16,8 +16,6 @@ public class CategoriaService(ICategoriaRepository categoryRepository, IContaRep
     /// <summary>Chaves da paleta do front (shared/ui/aparencia.ts); a cor em si fica nos tokens do front.</summary>
     private static readonly HashSet<string> Paleta =
         ["azul", "roxo", "verde-agua", "verde", "laranja", "indigo", "rosa", "vermelho", "amarelo", "cinza"];
-
-    private static readonly Regex IconePrimeIcons = new("^pi pi-[a-z0-9-]+$", RegexOptions.Compiled);
 
     public async Task<IEnumerable<CategoriaDTO>> GetCategoriasAtivas(int userId) =>
         Mapper.Map<IEnumerable<CategoriaDTO>>(await categoryRepository.GetCategoriesByUserIdAtiva(userId));
@@ -53,7 +51,7 @@ public class CategoriaService(ICategoriaRepository categoryRepository, IContaRep
         if (!string.IsNullOrWhiteSpace(dto.Cor) && !Paleta.Contains(dto.Cor.Trim()))
             throw new RegraNegocioException($"Cor inválida: {dto.Cor}.");
 
-        if (!string.IsNullOrWhiteSpace(dto.Icone) && !IconePrimeIcons.IsMatch(dto.Icone.Trim()))
+        if (!IconePrimeIcons.Valido(dto.Icone))
             throw new RegraNegocioException($"Ícone inválido: {dto.Icone}.");
 
         if (await categoryRepository.ExisteNomeAsync(userId, dto.Nome ?? string.Empty, dto.Subcategoria ?? string.Empty, ignorarId))

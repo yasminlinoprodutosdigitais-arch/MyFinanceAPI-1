@@ -17,14 +17,41 @@ public static class StatusTransacao
     public static bool EhEmAberto(string? status) => status is Pendente or Aguardando;
 }
 
-/// <summary>Status de ItemLista (coluna text).</summary>
-public static class StatusItemLista
+/// <summary>Como o valor do item de lista soma no total (coluna listas.modo_valor).</summary>
+public static class ModoValorLista
 {
-    public const string Pendente = "PENDENTE";
-    public const string Aguardando = "AGUARDANDO";
-    public const string Ok = "OK";
+    /// <summary>O valor é o preço de uma unidade: o total do item é quantidade × valor.</summary>
+    public const string Unitario = "UNITARIO";
+    /// <summary>O valor já é o total do item.</summary>
+    public const string Total = "TOTAL";
 
-    public static readonly string[] Todos = [Pendente, Aguardando, Ok];
+    public static readonly string[] Todos = [Unitario, Total];
+}
+
+/// <summary>
+/// Repetição de um item com data (coluna itens_lista.repeticao, card #67 parte 3). DIARIA: todo dia; SEMANAL: nos
+/// dias_semana; MENSAL: no mesmo dia do mês (no último dia, se o mês for mais curto).
+/// </summary>
+public static class RepeticaoItem
+{
+    public const string Nenhuma = "NENHUMA";
+    public const string Diaria = "DIARIA";
+    public const string Semanal = "SEMANAL";
+    public const string Mensal = "MENSAL";
+
+    public static readonly string[] Todos = [Nenhuma, Diaria, Semanal, Mensal];
+}
+
+/// <summary>Modelo escolhido ao criar a lista (coluna listas.modelo). Só pré-marca os campos; não muda regra.</summary>
+public static class ModeloLista
+{
+    public const string Compras = "COMPRAS";
+    public const string Orcamento = "ORCAMENTO";
+    public const string Tarefas = "TAREFAS";
+    public const string Agenda = "AGENDA";
+    public const string Branco = "BRANCO";
+
+    public static readonly string[] Todos = [Compras, Orcamento, Tarefas, Agenda, Branco];
 }
 
 /// <summary>TipoLancamento de ExtratoBancarioItem: gravado pela importação e pelo lançamento manual.</summary>
@@ -34,12 +61,4 @@ public static class TipoLancamentoExtrato
     public const string Saida = "Saída";
 
     public static readonly string[] Todos = [Entrada, Saida];
-}
-
-/// <summary>Tipo da Lista (coluna "TipoLista"). Espelha o enum TipoLista do front.</summary>
-public enum TipoLista
-{
-    Checklist = 1,
-    Cronograma = 2,
-    Orcamento = 3
 }

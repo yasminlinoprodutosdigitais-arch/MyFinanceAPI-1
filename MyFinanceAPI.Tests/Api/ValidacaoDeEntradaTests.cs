@@ -75,21 +75,27 @@ public class ValidacaoDeEntradaTests
     }
 
     [Fact]
-    public void Item_de_lista_valida_situacao_e_quantidade()
+    public void Item_de_lista_valida_quantidade_e_valor()
     {
-        Assert.Equal("Dados inválidos. Situacao aceita só: PENDENTE, AGUARDANDO, OK.",
-            Erro(new ItemListaDTO { Descricao = "Pão", Situacao = "FEITO" }));
-        Assert.Equal("Dados inválidos. Quantidade não pode ser menor que 0.",
-            Erro(new ItemListaDTO { Descricao = "Pão", Quantidade = -1 }));
-        Assert.Null(Erro(new ItemListaDTO { Descricao = "Pão", Quantidade = 0, Situacao = null }));
+        Assert.Equal("Dados inválidos. Quantidade não pode ser menor que 1.",
+            Erro(new ItemListaDTO { Descricao = "Pão", Quantidade = 0 }));
+        Assert.Equal("Dados inválidos. Valor não pode ser menor que 0.",
+            Erro(new ItemListaDTO { Descricao = "Pão", Valor = -0.01m }));
+        Assert.Equal("Dados inválidos. Descricao é obrigatório.",
+            Erro(new ItemListaDTO { Descricao = "" }));
+        Assert.Null(Erro(new ItemListaDTO { Descricao = "Pão", Quantidade = 1, Valor = 0 }));
     }
 
     [Fact]
-    public void Tipo_de_lista_fora_do_enum_e_recusado()
+    public void Lista_aceita_so_os_modos_e_modelos_do_dominio()
     {
-        Assert.Equal("Dados inválidos. TipoMovimentacao aceita só: " + string.Join(", ", Enum.GetValues<TipoLista>().Select(v => (int)v)) + ".",
-            Erro(new ListaDTO { Nome = "Feira", TipoMovimentacao = 99 }));
-        Assert.Null(Erro(new ListaDTO { Nome = "Feira", TipoMovimentacao = (int)Enum.GetValues<TipoLista>()[0] }));
+        Assert.Equal("Dados inválidos. ModoValor aceita só: UNITARIO, TOTAL.",
+            Erro(new ListaDTO { Nome = "Feira", ModoValor = "POR_KG" }));
+        Assert.Equal("Dados inválidos. Modelo aceita só: COMPRAS, ORCAMENTO, TAREFAS, AGENDA, BRANCO.",
+            Erro(new ListaDTO { Nome = "Feira", Modelo = "CHECKLIST" }));
+        Assert.Equal("Dados inválidos. Limite não pode ser menor que 0.",
+            Erro(new ListaDTO { Nome = "Feira", UsaValor = true, UsaLimite = true, Limite = -1 }));
+        Assert.Null(Erro(new ListaDTO { Nome = "Feira", ModoValor = ModoValorLista.Unitario, Modelo = ModeloLista.Compras }));
     }
 
     [Fact]

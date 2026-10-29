@@ -28,6 +28,7 @@ namespace MyFinanceAPI.Ioc
 
             // Transação sobre o mesmo ContextDB que os repositórios usam na requisição (BE-P1-05).
             services.AddScoped<IUnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<ContextDB>()));
+            services.AddSingleton(TimeProvider.System);
 
             // CORS só para as origens do front (Cors__AllowedOrigins); sem configuração fora do local a API não sobe (BE-P1-10).
             var origens = CorsOrigins.Ler(configuration, ambienteLocal);

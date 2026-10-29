@@ -14,7 +14,8 @@ namespace MyFinanceAPI.Data.Context
     /// <item><c>DataCriacao</c> (Transactions, ExtratoBancarioItem): agora, só na criação; nunca é regravada,
     /// nem quando o update chega com a entidade desanexada (shadow com default).</item>
     /// </list>
-    /// Updates fora do change tracker (ExecuteUpdate, SQL cru) não passam por aqui — hoje não existem.
+    /// Updates fora do change tracker (ExecuteUpdate, SQL cru) não passam por aqui: quem usa grava a data à mão
+    /// (lote dos itens de lista, card #67).
     /// </summary>
     public sealed class DataAlteracaoInterceptor(TimeProvider relogio) : SaveChangesInterceptor
     {

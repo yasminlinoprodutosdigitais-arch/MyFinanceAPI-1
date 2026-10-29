@@ -683,15 +683,15 @@ namespace MyFinanceAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
+                    b.Property<DateOnly?>("Data")
+                        .HasColumnType("date")
+                        .HasColumnName("data");
+
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
-
-                    b.Property<DateOnly?>("DataTarefa")
-                        .HasColumnType("date")
-                        .HasColumnName("data_tarefa");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
@@ -699,9 +699,27 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("descricao");
 
-                    b.Property<TimeOnly?>("HorarioTarefa")
+                    b.Property<int[]>("DiasSemana")
+                        .HasColumnType("integer[]")
+                        .HasColumnName("dias_semana");
+
+                    b.Property<bool>("Feito")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("feito");
+
+                    b.Property<DateTime?>("FeitoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("feito_em");
+
+                    b.Property<TimeOnly?>("Hora")
                         .HasColumnType("time without time zone")
-                        .HasColumnName("horario_tarefa");
+                        .HasColumnName("hora");
+
+                    b.Property<int?>("ItemOrigemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("item_origem_id");
 
                     b.Property<int>("ListaId")
                         .HasColumnType("integer")
@@ -712,14 +730,25 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("observacao");
 
+                    b.Property<int?>("Ordem")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordem");
+
                     b.Property<int?>("Quantidade")
                         .HasColumnType("integer")
                         .HasColumnName("quantidade");
 
-                    b.Property<string>("Situacao")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("situacao");
+                    b.Property<string>("Repeticao")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("NENHUMA")
+                        .HasColumnName("repeticao");
+
+                    b.Property<DateOnly?>("RepetirAte")
+                        .HasColumnType("date")
+                        .HasColumnName("repetir_ate");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
@@ -733,6 +762,9 @@ namespace MyFinanceAPI.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_itens_lista");
 
+                    b.HasIndex("ItemOrigemId")
+                        .HasDatabaseName("ix_itens_lista_item_origem_id");
+
                     b.HasIndex("ListaId")
                         .HasDatabaseName("ix_itens_lista_lista_id");
 
@@ -741,9 +773,19 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.ToTable("itens_lista", null, t =>
                         {
-                            t.HasCheckConstraint("itens_lista_quantidade_check", "quantidade >= 0");
+                            t.HasCheckConstraint("itens_lista_dias_semana_check", "dias_semana <@ ARRAY[1, 2, 3, 4, 5, 6, 7]");
 
-                            t.HasCheckConstraint("itens_lista_situacao_check", "situacao IN ('PENDENTE', 'AGUARDANDO', 'OK')");
+                            t.HasCheckConstraint("itens_lista_quantidade_check", "quantidade >= 1");
+
+                            t.HasCheckConstraint("itens_lista_repeticao_check", "repeticao IN ('NENHUMA', 'DIARIA', 'SEMANAL', 'MENSAL')");
+
+                            t.HasCheckConstraint("itens_lista_repeticao_com_data_check", "repeticao = 'NENHUMA' OR data IS NOT NULL");
+
+                            t.HasCheckConstraint("itens_lista_repetir_ate_check", "repetir_ate >= data");
+
+                            t.HasCheckConstraint("itens_lista_semanal_com_dias_check", "repeticao <> 'SEMANAL' OR cardinality(dias_semana) > 0");
+
+                            t.HasCheckConstraint("itens_lista_valor_check", "valor >= 0");
                         });
                 });
 
@@ -756,9 +798,9 @@ namespace MyFinanceAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ativo");
+                    b.Property<DateTime?>("ArquivadaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("arquivada_em");
 
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
@@ -766,15 +808,77 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("Icone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("icone");
+
+                    b.Property<decimal?>("Limite")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("limite");
+
+                    b.Property<int?>("ListaOrigemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("lista_origem_id");
+
+                    b.Property<string>("Modelo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("BRANCO")
+                        .HasColumnName("modelo");
+
+                    b.Property<string>("ModoValor")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("TOTAL")
+                        .HasColumnName("modo_valor");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("nome");
 
-                    b.Property<int>("TipoLista")
-                        .HasColumnType("integer")
-                        .HasColumnName("tipo_lista");
+                    b.Property<Guid>("SerieId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("serie_id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<bool>("UsaData")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_data");
+
+                    b.Property<bool>("UsaLimite")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_limite");
+
+                    b.Property<bool>("UsaObservacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_observacao");
+
+                    b.Property<bool>("UsaQuantidade")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_quantidade");
+
+                    b.Property<bool>("UsaValor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_valor");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
@@ -783,12 +887,21 @@ namespace MyFinanceAPI.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_listas");
 
-                    b.HasIndex("UsuarioId")
-                        .HasDatabaseName("ix_listas_usuario_id");
+                    b.HasIndex("ListaOrigemId")
+                        .HasDatabaseName("ix_listas_lista_origem_id");
+
+                    b.HasIndex("UsuarioId", "SerieId")
+                        .HasDatabaseName("ix_listas_usuario_id_serie_id");
 
                     b.ToTable("listas", null, t =>
                         {
-                            t.HasCheckConstraint("listas_tipo_lista_check", "tipo_lista IN (1, 2, 3)");
+                            t.HasCheckConstraint("listas_limite_check", "limite >= 0");
+
+                            t.HasCheckConstraint("listas_limite_com_valor_check", "NOT usa_limite OR usa_valor");
+
+                            t.HasCheckConstraint("listas_modelo_check", "modelo IN ('COMPRAS', 'ORCAMENTO', 'TAREFAS', 'AGENDA', 'BRANCO')");
+
+                            t.HasCheckConstraint("listas_modo_valor_check", "modo_valor IN ('UNITARIO', 'TOTAL')");
                         });
                 });
 
@@ -863,6 +976,70 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasDatabaseName("ix_movimentacoes_diarias_usuario_id");
 
                     b.ToTable("movimentacoes_diarias", (string)null);
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.OcorrenciaItemLista", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Data")
+                        .HasColumnType("date")
+                        .HasColumnName("data");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("Feito")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("feito");
+
+                    b.Property<DateTime?>("FeitoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("feito_em");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("item_id");
+
+                    b.Property<DateOnly?>("NovaData")
+                        .HasColumnType("date")
+                        .HasColumnName("nova_data");
+
+                    b.Property<TimeOnly?>("NovaHora")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("nova_hora");
+
+                    b.Property<bool>("Pulada")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("pulada");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_itens_lista_ocorrencias");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_itens_lista_ocorrencias_usuario_id");
+
+                    b.HasIndex("ItemId", "Data")
+                        .IsUnique()
+                        .HasDatabaseName("ix_itens_lista_ocorrencias_item_id_data");
+
+                    b.ToTable("itens_lista_ocorrencias", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", b =>
@@ -1427,6 +1604,12 @@ namespace MyFinanceAPI.Data.Migrations
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ItemLista", b =>
                 {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.ItemLista", null)
+                        .WithMany()
+                        .HasForeignKey("ItemOrigemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_itens_lista_itens_lista_item_origem_id");
+
                     b.HasOne("MyFinanceAPI.Domain.Entities.Lista", "Lista")
                         .WithMany()
                         .HasForeignKey("ListaId")
@@ -1448,6 +1631,12 @@ namespace MyFinanceAPI.Data.Migrations
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Lista", b =>
                 {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Lista", null)
+                        .WithMany()
+                        .HasForeignKey("ListaOrigemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_listas_listas_lista_origem_id");
+
                     b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
@@ -1490,6 +1679,25 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("TipoCartao");
 
                     b.Navigation("TipoMovimentacao");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.OcorrenciaItemLista", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.ItemLista", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_itens_lista_ocorrencias_itens_lista_item_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_itens_lista_ocorrencias_asp_net_users_usuario_id");
 
                     b.Navigation("Usuario");
                 });

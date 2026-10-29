@@ -16,12 +16,18 @@ public class DomainToDTOMappingProfile : Profile
             .ForMember(dest => dest.Categoria, opt => opt.Ignore());
         CreateMap<Transacao, TransacaoDTO>().ReverseMap();
         CreateMap<Banco, BancoDTO>().ReverseMap();
-        // O JSON mantém "tipoMovimentacao"; a entidade/coluna é TipoLista (DB-P1-06).
+        // Resumo é calculado na listagem; arquivada_em, feito_em, série e origens são gravados pelo serviço, não pela entrada.
         CreateMap<Lista, ListaDTO>()
-            .ForMember(d => d.TipoMovimentacao, o => o.MapFrom(s => (int)s.TipoLista))
+            .ForMember(d => d.Resumo, o => o.Ignore())
             .ReverseMap()
-            .ForMember(d => d.TipoLista, o => o.MapFrom(s => (TipoLista)s.TipoMovimentacao));
-        CreateMap<ItemLista, ItemListaDTO>().ReverseMap();
+            .ForMember(d => d.ArquivadaEm, o => o.Ignore())
+            .ForMember(d => d.SerieId, o => o.Ignore())
+            .ForMember(d => d.ListaOrigemId, o => o.Ignore());
+        CreateMap<ItemLista, ItemListaDTO>()
+            .ReverseMap()
+            .ForMember(d => d.FeitoEm, o => o.Ignore())
+            .ForMember(d => d.ItemOrigemId, o => o.Ignore())
+            .ForMember(d => d.Lista, o => o.Ignore());
         CreateMap<MovimentacaoDiaria, MovimentacaoDiariaDTO>().ReverseMap();
         CreateMap<ExtratoBancario, ExtratoBancarioDTO>().ReverseMap();
         CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>()

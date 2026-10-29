@@ -167,16 +167,49 @@ public class ContratoHttpTests
     }
 
     [Fact]
-    public async Task Create_de_item_da_lista_aponta_para_os_itens_da_lista_dele()
+    public async Task Duplicar_lista_responde_201_com_a_copia()
+    {
+        var listas = new Mock<IListaService>();
+        listas.Setup(s => s.DuplicarAsync(8, It.Is<DuplicarListaDTO>(d => d.Nome == "Outubro"), UserId)).ReturnsAsync(new ListaDTO { Id = 9, Nome = "Outubro" });
+
+        var resposta = await Com(new ListasController(listas.Object)).Duplicar(8, new DuplicarListaDTO { Nome = "Outubro" });
+
+        Assert.Equal("Outubro", Criado<ListasController, ListaDTO>(resposta.Result!, idEsperado: 9).Nome);
+    }
+
+    [Fact]
+    public async Task Arquivar_lista_responde_204()
+    {
+        var listas = new Mock<IListaService>();
+
+        var resposta = await Com(new ListasController(listas.Object)).Arquivar(21);
+
+        Assert.IsType<NoContentResult>(resposta);
+        listas.Verify(s => s.ArquivarAsync(21, UserId));
+    }
+
+    [Fact]
+    public async Task Create_de_item_da_lista_aponta_para_os_itens_da_lista_da_rota()
     {
         var itens = new Mock<IItemListaService>();
-        itens.Setup(s => s.AdicionarAsync(It.IsAny<ItemListaDTO>(), UserId))
+        itens.Setup(s => s.AdicionarNaListaAsync(8, It.IsAny<ItemListaDTO>(), UserId))
             .ReturnsAsync(new ItemListaDTO { Id = 30, ListaId = 8, Descricao = "Arroz" });
 
-        var resposta = await Com(new ItemListaController(itens.Object)).CreateItemLista(new ItemListaDTO { ListaId = 8, Descricao = "Arroz" });
+        var resposta = await Com(new ItemListaController(itens.Object)).CreateItem(8, new ItemListaDTO { Descricao = "Arroz" });
 
         var corpo = Criado<ItemListaController, ItemListaDTO>(resposta.Result!, idEsperado: 8);
         Assert.Equal(30, corpo.Id);
+    }
+
+    [Fact]
+    public async Task Lote_de_itens_responde_200_com_a_quantidade_afetada()
+    {
+        var itens = new Mock<IItemListaService>();
+        itens.Setup(s => s.MarcarFeitoAsync(8, It.IsAny<IReadOnlyCollection<int>>(), true, UserId)).ReturnsAsync(2);
+
+        var resposta = await Com(new ItemListaController(itens.Object)).MarcarFeito(8, new MarcarItensDTO { Ids = [1, 2] });
+
+        Assert.Equal(2, Assert.IsType<ResultadoLoteDTO>(Assert.IsType<OkObjectResult>(resposta.Result).Value).Afetados);
     }
 
     [Fact]
