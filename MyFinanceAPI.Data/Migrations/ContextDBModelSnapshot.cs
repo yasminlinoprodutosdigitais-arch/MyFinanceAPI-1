@@ -802,6 +802,11 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("arquivada_em");
 
+                    b.Property<string>("Cor")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cor");
+
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -895,6 +900,8 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.ToTable("listas", null, t =>
                         {
+                            t.HasCheckConstraint("listas_cor_check", "cor IN ('azul', 'roxo', 'verde-agua', 'verde', 'laranja', 'indigo', 'rosa', 'vermelho', 'amarelo', 'cinza')");
+
                             t.HasCheckConstraint("listas_limite_check", "limite >= 0");
 
                             t.HasCheckConstraint("listas_limite_com_valor_check", "NOT usa_limite OR usa_valor");

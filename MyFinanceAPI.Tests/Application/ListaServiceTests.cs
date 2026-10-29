@@ -136,6 +136,29 @@ public class ListaServiceTests
     }
 
     [Fact]
+    public async Task Cor_da_paleta_e_gravada_e_vazia_vira_null()
+    {
+        _listas.Setup(r => r.CriarAsync(It.IsAny<Lista>())).ReturnsAsync((Lista l) => l);
+
+        await CriarService().AdicionarAsync(Dto(d => d.Cor = " verde-agua "), UserId);
+        await CriarService().AdicionarAsync(Dto(d => d.Cor = "  "), UserId);
+
+        _listas.Verify(r => r.CriarAsync(It.Is<Lista>(l => l.Cor == "verde-agua")));
+        _listas.Verify(r => r.CriarAsync(It.Is<Lista>(l => l.Cor == null)));
+    }
+
+    [Theory]
+    [InlineData("#ff0000")]
+    [InlineData("Verde")]
+    public async Task Cor_fora_da_paleta_e_recusada(string cor)
+    {
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
+            CriarService().AdicionarAsync(Dto(d => d.Cor = cor), UserId));
+
+        Assert.Equal($"Cor inválida: {cor}.", erro.Message);
+    }
+
+    [Fact]
     public async Task Criar_nunca_nasce_arquivada()
     {
         _listas.Setup(r => r.CriarAsync(It.IsAny<Lista>())).ReturnsAsync((Lista l) => { l.Id = 30; return l; });
@@ -161,7 +184,7 @@ public class ListaServiceTests
     {
         var original = new Lista
         {
-            Id = 12, UsuarioId = UserId, Nome = "Lista de compras", Icone = "pi pi-shopping-cart", UsaQuantidade = true,
+            Id = 12, UsuarioId = UserId, Nome = "Lista de compras", Icone = "pi pi-shopping-cart", Cor = "laranja", UsaQuantidade = true,
             UsaValor = true, ModoValor = ModoValorLista.Unitario, UsaLimite = true, Limite = 500m,
             Modelo = ModeloLista.Compras, ArquivadaEm = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc), SerieId = Serie,
         };
@@ -191,6 +214,7 @@ public class ListaServiceTests
         Assert.Equal(500m, copia.Limite);
         Assert.Equal(ModoValorLista.Unitario, copia.ModoValor);
         Assert.Equal("pi pi-shopping-cart", copia.Icone);
+        Assert.Equal("laranja", copia.Cor);
         Assert.Equal(new[] { "Arroz", "Feijão" }, copiados!.Select(i => i.Descricao));
         Assert.All(copiados!, i =>
         {

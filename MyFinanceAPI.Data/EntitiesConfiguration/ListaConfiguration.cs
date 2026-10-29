@@ -15,12 +15,14 @@ public class ListaConfiguration : IEntityTypeConfiguration<Lista>
             t.HasCheckConstraint("listas_limite_check", "limite >= 0");
             t.HasCheckConstraint("listas_modo_valor_check", CheckSql.In("modo_valor", ModoValorLista.Todos));
             t.HasCheckConstraint("listas_modelo_check", CheckSql.In("modelo", ModeloLista.Todos));
+            t.HasCheckConstraint("listas_cor_check", CheckSql.In("cor", PaletaCores.Todas));
         });
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).UseSerialColumn();
 
         builder.Property(e => e.Nome).HasMaxLength(120);
         builder.Property(e => e.Icone).HasMaxLength(40);
+        builder.Property(e => e.Cor).HasMaxLength(20);
 
         builder.Property(e => e.UsaQuantidade).HasDefaultValue(false);
         builder.Property(e => e.UsaValor).HasDefaultValue(false);

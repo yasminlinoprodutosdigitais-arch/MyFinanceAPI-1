@@ -9,6 +9,8 @@ public class ListaDTO
     public int Id { get; set; }
     [Obrigatorio, TextoAte(120)] public string Nome { get; set; } = null!;
     [TextoAte(40)] public string? Icone { get; set; }
+    /// <summary>Chave da paleta; null = cor derivada dos campos, no front (card #63).</summary>
+    [TextoAte(20)] public string? Cor { get; set; }
 
     public bool UsaQuantidade { get; set; }
     public bool UsaValor { get; set; }

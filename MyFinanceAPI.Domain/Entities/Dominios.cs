@@ -54,6 +54,21 @@ public static class ModeloLista
     public static readonly string[] Todos = [Compras, Orcamento, Tarefas, Agenda, Branco];
 }
 
+/// <summary>
+/// Chaves da paleta do front (shared/ui/aparencia.ts) para a cor de categorias (#23) e listas (#63).
+/// Guarda-se a chave, nunca o hex: a cor em si fica nos tokens do front.
+/// </summary>
+public static class PaletaCores
+{
+    public static readonly string[] Todas =
+        ["azul", "roxo", "verde-agua", "verde", "laranja", "indigo", "rosa", "vermelho", "amarelo", "cinza"];
+
+    private static readonly HashSet<string> Chaves = [.. Todas];
+
+    /// <summary>Vazio vale (sem cor).</summary>
+    public static bool Valida(string? cor) => string.IsNullOrWhiteSpace(cor) || Chaves.Contains(cor.Trim());
+}
+
 /// <summary>TipoLancamento de ExtratoBancarioItem: gravado pela importação e pelo lançamento manual.</summary>
 public static class TipoLancamentoExtrato
 {

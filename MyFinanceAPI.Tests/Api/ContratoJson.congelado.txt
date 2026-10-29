@@ -301,6 +301,7 @@ tipoCartao.ehSistema
 tipoCartao.id
 tipoCartao.nomeTipoCartao
 lista.arquivadaEm
+lista.cor
 lista.icone
 lista.id
 lista.limite

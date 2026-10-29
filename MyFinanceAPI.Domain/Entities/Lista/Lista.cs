@@ -8,6 +8,8 @@ public class Lista : BaseEntity
 {
     public string Nome { get; set; } = null!;
     public string? Icone { get; set; }
+    /// <summary>Chave de <see cref="PaletaCores"/>; null = o front deriva a cor dos campos (card #63).</summary>
+    public string? Cor { get; set; }
 
     public bool UsaQuantidade { get; set; }
     public bool UsaValor { get; set; }

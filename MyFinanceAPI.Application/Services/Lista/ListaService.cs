@@ -32,8 +32,17 @@ public class ListaService(
             throw new RegraNegocioException("Informe o limite de gasto.");
         if (!IconePrimeIcons.Valido(dto.Icone))
             throw new RegraNegocioException($"Ícone inválido: {dto.Icone}.");
+        if (!PaletaCores.Valida(dto.Cor))
+            throw new RegraNegocioException($"Cor inválida: {dto.Cor}.");
 
         return Task.CompletedTask;
+    }
+
+    protected override Lista ParaEntidade(ListaDTO dto)
+    {
+        var lista = base.ParaEntidade(dto);
+        lista.Cor = string.IsNullOrWhiteSpace(dto.Cor) ? null : dto.Cor.Trim();
+        return lista;
     }
 
     private ListaDTO ParaDto(ListaComResumo r)
@@ -146,6 +155,7 @@ public class ListaService(
             ListaOrigemId = original.Id,
             Nome = string.IsNullOrWhiteSpace(opcoes.Nome) ? NomeDaCopia(original.Nome) : opcoes.Nome.Trim(),
             Icone = original.Icone,
+            Cor = original.Cor,
             UsaQuantidade = original.UsaQuantidade,
             UsaValor = original.UsaValor,
             ModoValor = original.ModoValor,

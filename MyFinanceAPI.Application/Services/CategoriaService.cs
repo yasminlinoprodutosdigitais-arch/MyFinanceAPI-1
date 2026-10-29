@@ -13,10 +13,6 @@ public class CategoriaService(ICategoriaRepository categoryRepository, IContaRep
     /// <summary>NaturezaOperacao 0 = "Rendimento / Entrada": a única da Receita, e nunca de Despesa.</summary>
     private const int RendimentoEntrada = 0;
 
-    /// <summary>Chaves da paleta do front (shared/ui/aparencia.ts); a cor em si fica nos tokens do front.</summary>
-    private static readonly HashSet<string> Paleta =
-        ["azul", "roxo", "verde-agua", "verde", "laranja", "indigo", "rosa", "vermelho", "amarelo", "cinza"];
-
     public async Task<IEnumerable<CategoriaDTO>> GetCategoriasAtivas(int userId) =>
         Mapper.Map<IEnumerable<CategoriaDTO>>(await categoryRepository.GetCategoriesByUserIdAtiva(userId));
 
@@ -48,7 +44,7 @@ public class CategoriaService(ICategoriaRepository categoryRepository, IContaRep
                 ? "Receita só pode ter a natureza Rendimento / Entrada."
                 : "Despesa não pode ter a natureza Rendimento / Entrada.");
 
-        if (!string.IsNullOrWhiteSpace(dto.Cor) && !Paleta.Contains(dto.Cor.Trim()))
+        if (!PaletaCores.Valida(dto.Cor))
             throw new RegraNegocioException($"Cor inválida: {dto.Cor}.");
 
         if (!IconePrimeIcons.Valido(dto.Icone))
