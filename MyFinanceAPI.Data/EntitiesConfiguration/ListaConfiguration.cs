@@ -31,6 +31,7 @@ public class ListaConfiguration : IEntityTypeConfiguration<Lista>
         builder.Property(e => e.Limite).HasPrecision(10, 2);
         builder.Property(e => e.UsaData).HasDefaultValue(false);
         builder.Property(e => e.UsaObservacao).HasDefaultValue(false);
+        builder.Property(e => e.UsaTipo).HasDefaultValue(false);
         builder.Property(e => e.Modelo).HasMaxLength(20).HasDefaultValue(ModeloLista.Branco);
 
         // Série nova a cada lista criada; duplicar e ligar à série gravam a da outra lista (card #67, parte 2).

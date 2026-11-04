@@ -72,12 +72,17 @@ public class ItemListaService(
         return Mapper.Map<List<ItemListaDTO>>(await itemListaRepository.ListarDaListaAsync(listaId, userId));
     }
 
+    /// <summary>Tipo sem espaços nas pontas; só espaços conta como sem tipo (card #61).</summary>
+    private static void NormalizarTipo(ItemLista item) =>
+        item.Tipo = string.IsNullOrWhiteSpace(item.Tipo) ? null : item.Tipo.Trim();
+
     private ItemLista NovoItem(int listaId, ItemListaDTO dto, int userId)
     {
         var item = ParaEntidade(dto);
         item.Id = 0;
         item.ListaId = listaId;
         item.FeitoEm = item.Feito ? Agora : null;
+        NormalizarTipo(item);
         ValidarRepeticao(item);
         DefinirDono(item, userId);
         return item;
@@ -97,6 +102,7 @@ public class ItemListaService(
         item.Id = itemId;
         item.ListaId = listaId;
         item.FeitoEm = !item.Feito ? null : existente.Feito ? existente.FeitoEm : Agora;
+        NormalizarTipo(item);
         ValidarRepeticao(item);
         await itemListaRepository.AtualizarAsync(item, userId);
     }

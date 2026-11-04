@@ -163,6 +163,7 @@ public class ListaService(
             Limite = original.Limite,
             UsaData = original.UsaData,
             UsaObservacao = original.UsaObservacao,
+            UsaTipo = original.UsaTipo,
             Modelo = original.Modelo,
         };
 
@@ -184,6 +185,7 @@ public class ListaService(
                     DiasSemana = i.DiasSemana,
                     RepetirAte = i.RepetirAte,
                     Observacao = i.Observacao,
+                    Tipo = i.Tipo,
                     Ordem = i.Ordem,
                 }).ToList());
             if (opcoes.ArquivarOriginal && original.ArquivadaEm is null)

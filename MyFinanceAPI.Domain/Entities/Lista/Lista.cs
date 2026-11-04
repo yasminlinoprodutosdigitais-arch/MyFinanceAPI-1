@@ -20,6 +20,8 @@ public class Lista : BaseEntity
     public decimal? Limite { get; set; }
     public bool UsaData { get; set; }
     public bool UsaObservacao { get; set; }
+    /// <summary>Campo Tipo nos itens: texto livre para agrupar e filtrar (card #61).</summary>
+    public bool UsaTipo { get; set; }
     /// <summary><see cref="ModeloLista"/>; só informativo.</summary>
     public string Modelo { get; set; } = ModeloLista.Branco;
 

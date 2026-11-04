@@ -20,6 +20,8 @@ public class ListaDTO
     [Minimo(0)] public decimal? Limite { get; set; }
     public bool UsaData { get; set; }
     public bool UsaObservacao { get; set; }
+    /// <summary>Campo Tipo nos itens (card #61).</summary>
+    public bool UsaTipo { get; set; }
     [TextoAte(20), UmDe(ModeloLista.Compras, ModeloLista.Orcamento, ModeloLista.Tarefas, ModeloLista.Agenda, ModeloLista.Branco)]
     public string Modelo { get; set; } = ModeloLista.Branco;
 

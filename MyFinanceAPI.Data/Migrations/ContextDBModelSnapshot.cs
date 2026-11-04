@@ -750,6 +750,11 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("date")
                         .HasColumnName("repetir_ate");
 
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("tipo");
+
                     b.Property<int>("UsuarioId")
                         .HasColumnType("integer")
                         .HasColumnName("usuario_id");
@@ -878,6 +883,12 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("usa_quantidade");
+
+                    b.Property<bool>("UsaTipo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("usa_tipo");
 
                     b.Property<bool>("UsaValor")
                         .ValueGeneratedOnAdd()

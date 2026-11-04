@@ -60,6 +60,21 @@ public class ItemListaServiceTests
             i.ListaId == ListaId && i.UsuarioId == UserId && i.Feito && i.FeitoEm == Agora.UtcDateTime)));
     }
 
+    [Theory]
+    [InlineData("  Grãos  ", "Grãos")]
+    [InlineData("   ", null)]
+    [InlineData(null, null)]
+    public async Task Tipo_do_item_sai_sem_espacos_e_vazio_vira_sem_tipo(string? entrada, string? esperado)
+    {
+        // Card #61: no criar e no editar.
+        ItemExistente(5);
+        await CriarService().AdicionarNaListaAsync(ListaId, new ItemListaDTO { Descricao = "Feijão", Tipo = entrada }, UserId);
+        await CriarService().AtualizarNaListaAsync(ListaId, 5, new ItemListaDTO { Id = 5, Descricao = "Feijão", Tipo = entrada }, UserId);
+
+        _itens.Verify(r => r.CriarAsync(It.Is<ItemLista>(i => i.Tipo == esperado)));
+        _itens.Verify(r => r.AtualizarAsync(It.Is<ItemLista>(i => i.Tipo == esperado), UserId));
+    }
+
     [Fact]
     public async Task Adicionar_pendente_nao_tem_feito_em()
     {

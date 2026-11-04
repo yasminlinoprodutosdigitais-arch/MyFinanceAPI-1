@@ -320,6 +320,7 @@ lista.usaData
 lista.usaLimite
 lista.usaObservacao
 lista.usaQuantidade
+lista.usaTipo
 lista.usaValor
 resumoLista.feitos
 resumoLista.itens
@@ -340,6 +341,7 @@ itemLista.ordem
 itemLista.quantidade
 itemLista.repeticao
 itemLista.repetirAte
+itemLista.tipo
 itemLista.valor
 marcarItens.feito
 marcarItens.ids
@@ -380,6 +382,7 @@ dividirItem.item.ordem
 dividirItem.item.quantidade
 dividirItem.item.repeticao
 dividirItem.item.repetirAte
+dividirItem.item.tipo
 dividirItem.item.valor
 comparacaoListas.anterior
 comparacaoListas.anterior.id

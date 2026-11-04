@@ -26,6 +26,7 @@ public class ListaRepository(ContextDB context) : RepositorioDoUsuario<Lista>(co
         existente.Limite = entrada.Limite;
         existente.UsaData = entrada.UsaData;
         existente.UsaObservacao = entrada.UsaObservacao;
+        existente.UsaTipo = entrada.UsaTipo;
         existente.Modelo = entrada.Modelo;
     }
 

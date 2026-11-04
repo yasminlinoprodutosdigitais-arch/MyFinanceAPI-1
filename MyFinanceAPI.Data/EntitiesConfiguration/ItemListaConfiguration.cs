@@ -24,6 +24,7 @@ public class ItemListaConfiguration : IEntityTypeConfiguration<ItemLista>
 
         builder.Property(e => e.Descricao).HasMaxLength(200);
         builder.Property(e => e.Observacao).HasMaxLength(500);
+        builder.Property(e => e.Tipo).HasMaxLength(60);
         builder.Property(e => e.Feito).HasDefaultValue(false);
         builder.Property(e => e.Valor).HasPrecision(10, 2);
         builder.Property(e => e.Repeticao).HasMaxLength(10).HasDefaultValue(RepeticaoItem.Nenhuma);

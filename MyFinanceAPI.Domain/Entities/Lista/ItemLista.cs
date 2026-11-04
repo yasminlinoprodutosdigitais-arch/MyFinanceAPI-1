@@ -20,6 +20,8 @@ public class ItemLista : BaseEntity
     /// <summary>Última data em que a repetição vale; null = sem fim.</summary>
     public DateOnly? RepetirAte { get; set; }
     public string? Observacao { get; set; }
+    /// <summary>Texto livre (até 60) para agrupar e filtrar; null = sem tipo (card #61).</summary>
+    public string? Tipo { get; set; }
     public int? Ordem { get; set; }
     /// <summary>Item de onde este foi copiado ao duplicar a lista: pareia os itens na comparação.</summary>
     public int? ItemOrigemId { get; set; }

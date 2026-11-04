@@ -33,6 +33,7 @@ public class ItemListaRepository(ContextDB context) : RepositorioDoUsuario<ItemL
         existente.DiasSemana = entrada.DiasSemana;
         existente.RepetirAte = entrada.RepetirAte;
         existente.Observacao = entrada.Observacao;
+        existente.Tipo = entrada.Tipo;
         existente.Ordem = entrada.Ordem;
     }
 

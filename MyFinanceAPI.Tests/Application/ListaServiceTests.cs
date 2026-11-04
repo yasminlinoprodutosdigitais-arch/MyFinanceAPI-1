@@ -187,6 +187,7 @@ public class ListaServiceTests
             Id = 12, UsuarioId = UserId, Nome = "Lista de compras", Icone = "pi pi-shopping-cart", Cor = "laranja", UsaQuantidade = true,
             UsaValor = true, ModoValor = ModoValorLista.Unitario, UsaLimite = true, Limite = 500m,
             Modelo = ModeloLista.Compras, ArquivadaEm = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc), SerieId = Serie,
+            UsaTipo = true,
         };
         _listas.Setup(r => r.ObterPorIdAsync(12, UserId)).ReturnsAsync(original);
         _listas.Setup(r => r.CriarAsync(It.IsAny<Lista>()))
@@ -195,7 +196,7 @@ public class ListaServiceTests
         _itens.Setup(r => r.ListarDaListaAsync(12, UserId)).ReturnsAsync(
         [
             new ItemLista { Id = 1, ListaId = 12, UsuarioId = UserId, Descricao = "Arroz", Feito = true, FeitoEm = DateTime.UtcNow, Quantidade = 2, Valor = 6.5m, Ordem = 1 },
-            new ItemLista { Id = 2, ListaId = 12, UsuarioId = UserId, Descricao = "Feijão", Observacao = "carioca" },
+            new ItemLista { Id = 2, ListaId = 12, UsuarioId = UserId, Descricao = "Feijão", Observacao = "carioca", Tipo = "Grãos" },
         ]);
         List<ItemLista>? copiados = null;
         _itens.Setup(r => r.CriarVariosAsync(It.IsAny<IEnumerable<ItemLista>>()))
@@ -226,6 +227,10 @@ public class ListaServiceTests
         });
         Assert.Equal(6.5m, copiados![0].Valor);
         Assert.Equal("carioca", copiados[1].Observacao);
+        // Card #61: o campo Tipo e o tipo de cada item vão para a cópia.
+        Assert.True(copia.UsaTipo);
+        Assert.Equal("Grãos", copiados[1].Tipo);
+        Assert.Null(copiados[0].Tipo);
         Assert.Empty(_uow.Fora);
     }
 

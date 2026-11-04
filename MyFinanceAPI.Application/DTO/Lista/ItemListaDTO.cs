@@ -23,6 +23,8 @@ public class ItemListaDTO
     public int[]? DiasSemana { get; set; }
     public DateOnly? RepetirAte { get; set; }
     [TextoAte(500)] public string? Observacao { get; set; }
+    /// <summary>Texto livre para agrupar e filtrar (card #61); vazio vira null.</summary>
+    [TextoAte(60)] public string? Tipo { get; set; }
     public int? Ordem { get; set; }
     /// <summary>Item de onde este foi copiado ao duplicar; só sai.</summary>
     public int? ItemOrigemId { get; set; }
