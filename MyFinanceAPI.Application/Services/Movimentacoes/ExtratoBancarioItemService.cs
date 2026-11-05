@@ -156,20 +156,14 @@ namespace MyFinanceAPI.Application.Services
 
                     if (pessoaMovimentacao == null)
                     {
-                        // Busca-ou-cria pelo nome (o repositório normaliza e trata a unique).
+                        // Busca-ou-cria pelo nome (o repositório normaliza e trata a unique); nasce sem padrão.
                         var pessoaCriada = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(
                             new PessoaMovimentacao { NomePessoa = dto.NomePessoaTransacao }, userId);
                         pessoaId = pessoaCriada.Id;
                     }
 
-                    // Como antes: a pessoa vinculada passa a ter a categoria/tipo do item.
-                    await _pessoaMovimentacaoRepository.AtualizarAsync(new PessoaMovimentacao
-                    {
-                        Id = pessoaId,
-                        NomePessoa = dto.NomePessoaTransacao,
-                        CategoriaId = dto.CategoriaId,
-                        TipoMovimentacaoId = dto.TipoMovimentacaoId
-                    }, userId);
+                    // Card #45, parte 2: trocar a pessoa de um lançamento não reescreve mais a categoria/tipo
+                    // padrão dela (antes a edição sobrescrevia sem avisar). O padrão muda em Configurar pessoas.
                     existing.PessoaMovimentacaoId = pessoaId;
                 }
             }

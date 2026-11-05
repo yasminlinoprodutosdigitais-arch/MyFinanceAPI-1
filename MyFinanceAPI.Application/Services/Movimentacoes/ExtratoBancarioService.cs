@@ -24,21 +24,39 @@ namespace MyFinanceAPI.Application.Services
         private readonly IMapper _mapper;
         private readonly IBancoService _bancoService;
         private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
+        private readonly ICategoriaRepository _categoriaRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public ExtratoBancarioService(
             IExtratoBancarioRepository extratoBancarioRepository,
             IExtratoBancarioItemRepository extratoBancarioItemRepository,
             IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
+            ICategoriaRepository categoriaRepository,
             IMapper mapper, IBancoService bancoService, IUnitOfWork unitOfWork)
         {
             _extratoBancarioRepository = extratoBancarioRepository;
             _extratoBancarioItemRepository = extratoBancarioItemRepository;
             _mapper = mapper;
             _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
+            _categoriaRepository = categoriaRepository;
             _bancoService = bancoService;
             _unitOfWork = unitOfWork;
         }
+
+        /// <summary>Categoria (Despesa, Essencial) dos encargos importados; criada na primeira vez (card #45).</summary>
+        public const string CategoriaEncargos = "Tarifas e encargos";
+        private const string SubcategoriaDespesa = "Despesa";
+        private const int NaturezaEssencial = 1;
+
+        /// <summary>
+        /// Lista fixa do card #45, parte 2 (vira regra configurável no card #76). Palavra inteira: "AMORA" não é "MORA".
+        /// </summary>
+        private static readonly Regex Encargo = new(
+            @"\b(IOF|ANUIDADES?|JUROS|ENCARGOS?|TARIFAS?|MULTAS?|MORA)\b",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        /// <summary>A descrição é de encargo do cartão ou da conta (IOF, juros, anuidade…): fica com o "Eu".</summary>
+        public static bool EhEncargo(string? descricao) => !string.IsNullOrWhiteSpace(descricao) && Encargo.IsMatch(descricao);
 
         /// <summary>
         /// Lista todos os extratos do usuário.
@@ -113,6 +131,9 @@ namespace MyFinanceAPI.Application.Services
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var listaItens = new List<ExtratoBancarioItemDTO>();
+            // Só buscados (ou criados) quando aparece o primeiro encargo.
+            PessoaMovimentacao? titular = null;
+            Categoria? categoriaEncargos = null;
 
             DateOnly? dataInicio = null;
             DateOnly? dataFim = null;
@@ -199,7 +220,8 @@ namespace MyFinanceAPI.Application.Services
                     var valorAbsoluto = Math.Abs(valor);
                     
                     string? nomePessoa = null;
-                    if (!string.IsNullOrWhiteSpace(descricaoStr))
+                    var encargo = EhEncargo(descricaoStr);
+                    if (!encargo && !string.IsNullOrWhiteSpace(descricaoStr))
                     {
                         var partesDesc = descricaoStr.Split('-', StringSplitOptions.RemoveEmptyEntries);
                         if (partesDesc.Length >= 2)
@@ -211,7 +233,16 @@ namespace MyFinanceAPI.Application.Services
                     var tipoMovimentacaoId = 0;
                     var categoriaId = 0;
 
-                    if (!string.IsNullOrWhiteSpace(nomePessoa))
+                    if (encargo)
+                    {
+                        // Encargo fica com o dono: "Eu" + "Tarifas e encargos", sem criar pessoa pelo nome.
+                        titular ??= await _pessoaMovimentacaoRepository.ObterTitularAsync(userId);
+                        categoriaEncargos ??= await ObterCategoriaEncargosAsync(userId);
+                        pessoaId = titular.Id;
+                        nomePessoa = titular.NomePessoa;
+                        categoriaId = categoriaEncargos.Id;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(nomePessoa))
                     {
                         var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
                         if (pessoaCadastrada.Any())
@@ -317,6 +348,17 @@ namespace MyFinanceAPI.Application.Services
                 mensagem
             );
         }
+
+        private async Task<Categoria> ObterCategoriaEncargosAsync(int userId) =>
+            await _categoriaRepository.ObterPorNomeAsync(userId, CategoriaEncargos, SubcategoriaDespesa)
+            ?? await _categoriaRepository.CriarAsync(new Categoria
+            {
+                Nome = CategoriaEncargos,
+                Subcategoria = SubcategoriaDespesa,
+                NaturezaOperacao = NaturezaEssencial,
+                Ativo = true,
+                UsuarioId = userId
+            });
 
         /// <summary>
         /// Chave de idempotência de uma linha do extrato. A mesma fórmula está no SQL da migration

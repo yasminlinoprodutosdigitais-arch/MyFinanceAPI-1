@@ -18,6 +18,15 @@ public class PessoaMovimentacaoConfiguration : IEntityTypeConfiguration<PessoaMo
         builder.HasIndex(e => new { e.UsuarioId, e.NomePessoa })
             .IsUnique();
 
+        builder.Property(e => e.EhTitular).HasDefaultValue(false);
+        builder.Property(e => e.EntraNosAcertos).HasDefaultValue(false);
+
+        // Card #45: só uma pessoa "Eu" por usuário.
+        builder.HasIndex(e => e.UsuarioId)
+            .IsUnique()
+            .HasFilter("eh_titular")
+            .HasDatabaseName("ux_pessoas_movimentacao_titular");
+
         builder.HasOne(e => e.Usuario)
             .WithMany()
             .HasForeignKey(e => e.UsuarioId)

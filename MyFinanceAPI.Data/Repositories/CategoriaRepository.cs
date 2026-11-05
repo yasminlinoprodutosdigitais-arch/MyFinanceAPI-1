@@ -47,6 +47,14 @@ public class CategoriaRepository(ContextDB context) : RepositorioDoUsuario<Categ
             && c.Nome.Trim().ToUpper() == nome && c.Subcategoria.Trim().ToUpper() == sub);
     }
 
+    public async Task<Categoria?> ObterPorNomeAsync(int userId, string nome, string subcategoria)
+    {
+        var n = (nome ?? string.Empty).Trim().ToUpper();
+        var sub = (subcategoria ?? string.Empty).Trim().ToUpper();
+        return await _context.Categorias.FirstOrDefaultAsync(c => c.UsuarioId == userId
+            && c.Nome.Trim().ToUpper() == n && c.Subcategoria.Trim().ToUpper() == sub);
+    }
+
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
         if (!await _context.Categorias.AnyAsync(c => c.Id == id && c.UsuarioId == userId))

@@ -27,6 +27,37 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
             ?? throw new RegraNegocioException("O nome da pessoa é obrigatório.");
         existente.CategoriaId = entrada.CategoriaId;
         existente.TipoMovimentacaoId = entrada.TipoMovimentacaoId;
+        existente.EntraNosAcertos = entrada.EntraNosAcertos;
+        // EhTitular nunca muda por edição: só o ObterTitularAsync marca a pessoa "Eu".
+    }
+
+    /// <summary>Nome gravado da pessoa "Eu" (normalizado, como os outros).</summary>
+    public const string NomeTitular = "EU";
+
+    public async Task<PessoaMovimentacao> ObterTitularAsync(int userId)
+    {
+        var titular = await _context.PessoasMovimentacao.FirstOrDefaultAsync(p => p.UsuarioId == userId && p.EhTitular);
+        if (titular != null)
+            return titular;
+
+        // Quem já tinha uma pessoa "EU" (cadastrada à mão ou vinda de importação) ganha ela como titular.
+        var pessoa = await _context.PessoasMovimentacao.FirstOrDefaultAsync(p => p.UsuarioId == userId && p.NomePessoa == NomeTitular)
+            ?? (await ObterOuCriarAsync(new PessoaMovimentacao { NomePessoa = NomeTitular }, userId));
+        if (pessoa.EhTitular)
+            return pessoa;
+
+        pessoa.EhTitular = true;
+        try
+        {
+            await _context.SaveChangesAsync();
+            return pessoa;
+        }
+        catch (DbUpdateException ex) when (ViolaUnique(ex))
+        {
+            // Outra gravação marcou a titular ao mesmo tempo: fica a dela.
+            await _context.Entry(pessoa).ReloadAsync();
+            return await _context.PessoasMovimentacao.FirstAsync(p => p.UsuarioId == userId && p.EhTitular);
+        }
     }
 
     /// <summary>

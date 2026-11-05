@@ -10,4 +10,6 @@ public interface IPessoaMovimentacaoRepository : IRepositorioDoUsuario<PessoaMov
     Task<PessoaMovimentacao> ObterOuCriarAsync(PessoaMovimentacao pessoa, int userId);
     /// <summary>True se a pessoa é do usuário e está vinculada a itens de extrato.</summary>
     Task<bool> EmUsoAsync(int id, int userId);
+    /// <summary>A pessoa "Eu" do usuário; cria na primeira vez (ou marca a pessoa "EU" que já existir).</summary>
+    Task<PessoaMovimentacao> ObterTitularAsync(int userId);
 }

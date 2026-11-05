@@ -146,4 +146,57 @@ public class ExtratoBancarioItemServiceTests
         Assert.Equal(Mercado, _pessoasCadastradas[0].CategoriaId);
         _pessoaRepo.Verify(r => r.ObterOuCriarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
     }
+
+    // ---------- edição: trocar a pessoa (card #45, parte 2) ----------
+
+    private readonly ExtratoBancarioItem _existente = new()
+    {
+        Id = 5, UsuarioId = UserId, DataMovimentacao = new DateOnly(2026, 12, 1), Valor = 30, TipoLancamento = "Saída",
+        PessoaMovimentacaoId = null, NomePessoaTransacao = "PADARIA"
+    };
+
+    private Task Editar(string? pessoa, int? pessoaId, int? categoriaId)
+    {
+        _itemRepo.Setup(r => r.GetByIdAsync(_existente.Id)).ReturnsAsync(_existente);
+        _pessoaRepo.Setup(r => r.ObterPorIdAsync(88, UserId))
+            .ReturnsAsync(new PessoaMovimentacao { Id = 88, NomePessoa = "CARLOS", CategoriaId = Mercado, TipoMovimentacaoId = Lanche });
+        var dto = Lancamento(pessoa, categoriaId);
+        dto.Id = _existente.Id;
+        dto.PessoaMovimentacaoId = pessoaId;
+        dto.AlteraVinculoPessoa = true;
+        return new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
+    }
+
+    [Fact]
+    public async Task Editar_liga_a_pessoa_cadastrada_pelo_id_sem_mexer_no_padrao_dela()
+    {
+        await Editar("CARLOS", 88, Outros);
+
+        Assert.Equal(88, _existente.PessoaMovimentacaoId);
+        Assert.Equal(Outros, _existente.CategoriaId);
+        _pessoaRepo.Verify(r => r.AtualizarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Editar_com_nome_novo_cria_a_pessoa_sem_padrao()
+    {
+        await Editar("Ágatha", null, Outros);
+
+        var criada = Assert.Single(_pessoasCriadas);
+        Assert.Equal("Ágatha", criada.NomePessoa);
+        Assert.Null(criada.CategoriaId);
+        Assert.Null(criada.TipoMovimentacaoId);
+        Assert.Equal(900, _existente.PessoaMovimentacaoId);
+        _pessoaRepo.Verify(r => r.AtualizarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Editar_sem_nome_tira_a_pessoa()
+    {
+        _existente.PessoaMovimentacaoId = 88;
+
+        await Editar("  ", 88, Outros);
+
+        Assert.Null(_existente.PessoaMovimentacaoId);
+    }
 }

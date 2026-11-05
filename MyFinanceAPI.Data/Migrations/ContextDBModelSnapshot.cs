@@ -1079,6 +1079,18 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("EhTitular")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("eh_titular");
+
+                    b.Property<bool>("EntraNosAcertos")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("entra_nos_acertos");
+
                     b.Property<string>("NomePessoa")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -1101,6 +1113,11 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasIndex("TipoMovimentacaoId")
                         .HasDatabaseName("ix_pessoas_movimentacao_tipo_movimentacao_id");
+
+                    b.HasIndex("UsuarioId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_pessoas_movimentacao_titular")
+                        .HasFilter("eh_titular");
 
                     b.HasIndex("UsuarioId", "NomePessoa")
                         .IsUnique()
