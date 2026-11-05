@@ -31,5 +31,8 @@ namespace MyFinanceAPI.Domain.Interfaces
         /// truncados pelo bug BE-P0-07 (importações anteriores a 02/10/2026). Usado para repará-los na reimportação.
         /// </summary>
         Task<List<ExtratoBancarioItem>> ObterCandidatosTruncadosAsync(int userId, int bancoId);
+
+        /// <summary>Lançamentos do usuário com pessoa dos acertos ("Entra nos acertos" ou o "Eu"), com pessoa e banco (card #45).</summary>
+        Task<List<ExtratoBancarioItem>> ListarParaAcertosAsync(int userId);
     }
 }

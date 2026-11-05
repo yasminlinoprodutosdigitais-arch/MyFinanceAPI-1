@@ -57,6 +57,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IMovimentacaoDiariaService, MovimentacaoDiariaService>();
             services.AddScoped<IExtratoBancarioService, ExtratoBancarioService>();
             services.AddScoped<IExtratoBancarioItemService, ExtratoBancarioItemService>();
+            services.AddScoped<IAcertosService, AcertosService>();
             services.AddScoped<ITipoMovimentacaoService, TipoMovimentacaoService>();
             services.AddScoped<IItemListaService, ItemListaService>();
             services.AddScoped<IListaService, ListaService>();  

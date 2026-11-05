@@ -525,6 +525,10 @@ namespace MyFinanceAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AbateItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("abate_item_id");
+
                     b.Property<int?>("BancoId")
                         .HasColumnType("integer")
                         .HasColumnName("banco_id");
@@ -636,6 +640,9 @@ namespace MyFinanceAPI.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_itens_extrato_bancario");
+
+                    b.HasIndex("AbateItemId")
+                        .HasDatabaseName("ix_itens_extrato_bancario_abate_item_id");
 
                     b.HasIndex("BancoId")
                         .HasDatabaseName("ix_itens_extrato_bancario_banco_id");
@@ -1579,6 +1586,12 @@ namespace MyFinanceAPI.Data.Migrations
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", b =>
                 {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", null)
+                        .WithMany()
+                        .HasForeignKey("AbateItemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_itens_extrato_bancario_itens_extrato_bancario_abate_item_id");
+
                     b.HasOne("MyFinanceAPI.Domain.Entities.Banco", "Banco")
                         .WithMany()
                         .HasForeignKey("BancoId")

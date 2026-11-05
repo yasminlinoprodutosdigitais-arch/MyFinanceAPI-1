@@ -71,6 +71,12 @@ public class ExtratoBancarioItemConfiguration : IEntityTypeConfiguration<Extrato
             .HasForeignKey(e => e.CategoriaId)
             .OnDelete(DeleteBehavior.NoAction);
 
+        // Card #45, parte 3: o pagamento aponta a compra que abate; apagar a compra devolve o pagamento ao saldo geral.
+        builder.HasOne<ExtratoBancarioItem>()
+            .WithMany()
+            .HasForeignKey(e => e.AbateItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(e => e.PessoaMovimentacao)
             .WithMany()
             .HasForeignKey(e => e.PessoaMovimentacaoId)

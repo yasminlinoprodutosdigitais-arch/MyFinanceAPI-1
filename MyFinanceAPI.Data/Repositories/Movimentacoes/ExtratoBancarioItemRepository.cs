@@ -50,6 +50,18 @@ namespace MyFinanceAPI.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<ExtratoBancarioItem>> ListarParaAcertosAsync(int userId)
+        {
+            return await _context.ItensExtratoBancario.AsNoTracking()
+                .Include(i => i.PessoaMovimentacao)
+                .Include(i => i.Banco)
+                .Where(i => i.UsuarioId == userId && i.PessoaMovimentacao != null
+                            && (i.PessoaMovimentacao.EntraNosAcertos || i.PessoaMovimentacao.EhTitular))
+                .OrderBy(i => i.DataMovimentacao)
+                .ThenBy(i => i.Id)
+                .ToListAsync();
+        }
+
         // =========================
         //          UPDATE
         // =========================

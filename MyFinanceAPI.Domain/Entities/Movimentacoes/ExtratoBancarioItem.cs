@@ -44,6 +44,11 @@ namespace MyFinanceAPI.Domain.Entities
         /// nunca editado; nulo em itens lançados à mão.
         /// </summary>
         public string? ChaveImportacao { get; set; }
+        /// <summary>
+        /// Pagamento de uma pessoa (Entrada) que abate uma compra dela (Saída) — card #45, parte 3. Nulo = abate o saldo
+        /// geral da pessoa. Se a compra for apagada, volta a nulo.
+        /// </summary>
+        public int? AbateItemId { get; set; }
         public PessoaMovimentacao? PessoaMovimentacao { get; set; }
     }
 

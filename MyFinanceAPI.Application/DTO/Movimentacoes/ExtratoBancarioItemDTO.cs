@@ -42,6 +42,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         [TextoAte(64)] public string? ChaveImportacao { get; set; }
 
         public bool AlteraVinculoPessoa { get; set; }
+        /// <summary>Compra (Saída da mesma pessoa) que este pagamento abate; nulo = saldo geral (card #45, parte 3).</summary>
+        public int? AbateItemId { get; set; }
 
 
         public BancoDTO? Banco { get; set; }

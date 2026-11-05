@@ -218,7 +218,7 @@ public class ContratoHttpTests
         var itens = new Mock<IExtratoBancarioItemService>();
         var dto = new ExtratoBancarioItemDTO { Id = 4 };
 
-        var resposta = await Com(new ExtratoBancarioItemController(itens.Object)).UpdateExtratoItem(dto);
+        var resposta = await Com(new ExtratoBancarioItemController(itens.Object, Mock.Of<IAcertosService>())).UpdateExtratoItem(dto);
 
         Assert.Same(dto, Assert.IsType<OkObjectResult>(resposta.Result).Value);
     }
@@ -228,7 +228,7 @@ public class ContratoHttpTests
     {
         var itens = new Mock<IExtratoBancarioItemService>();
 
-        var resposta = await Com(new ExtratoBancarioItemController(itens.Object)).GetByMonth("2025/11", null, new Paginacao());
+        var resposta = await Com(new ExtratoBancarioItemController(itens.Object, Mock.Of<IAcertosService>())).GetByMonth("2025/11", null, new Paginacao());
 
         Assert.StartsWith("Formato de mês inválido", Mensagem(resposta.Result!, 400));
     }

@@ -93,6 +93,8 @@ namespace MyFinanceAPI.Application.Services
 
             entity.CategoriaId = categoriaEscolhida ?? entity.CategoriaId;
             entity.TipoMovimentacaoId = tipoEscolhido ?? entity.TipoMovimentacaoId;
+            entity.AbateItemId = dto.AbateItemId;
+            await ValidarAbatimentoAsync(entity, userId);
 
             var created = await _itemRepository.CreateAsync(entity);
             return _mapper.Map<ExtratoBancarioItemDTO>(created);
@@ -168,7 +170,31 @@ namespace MyFinanceAPI.Application.Services
                 }
             }
 
+            existing.AbateItemId = dto.AbateItemId;
+            await ValidarAbatimentoAsync(existing, userId);
+
             await _itemRepository.UpdateAsync(existing);
+        }
+
+        /// <summary>
+        /// Card #45, parte 3: só um pagamento (Entrada) abate uma compra, e a compra tem que ser uma Saída da mesma pessoa,
+        /// do mesmo usuário.
+        /// </summary>
+        private async Task ValidarAbatimentoAsync(ExtratoBancarioItem pagamento, int userId)
+        {
+            if (pagamento.AbateItemId is not > 0)
+            {
+                pagamento.AbateItemId = null;
+                return;
+            }
+
+            if (pagamento.TipoLancamento != TipoLancamentoExtrato.Entrada)
+                throw new RegraNegocioException("Só um pagamento recebido (entrada) pode abater uma compra.");
+
+            var compra = await _itemRepository.GetByIdAsync(pagamento.AbateItemId.Value);
+            if (compra == null || compra.UsuarioId != userId || compra.TipoLancamento != TipoLancamentoExtrato.Saida
+                || compra.PessoaMovimentacaoId == null || compra.PessoaMovimentacaoId != pagamento.PessoaMovimentacaoId)
+                throw new RegraNegocioException("A compra abatida tem que ser uma saída da mesma pessoa.");
         }
 
         public async Task RemoveAsync(int id, int userId)

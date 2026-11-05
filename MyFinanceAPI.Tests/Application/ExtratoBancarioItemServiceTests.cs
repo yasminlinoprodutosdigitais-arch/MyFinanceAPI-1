@@ -190,6 +190,89 @@ public class ExtratoBancarioItemServiceTests
         _pessoaRepo.Verify(r => r.AtualizarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
     }
 
+    // ---------- pagamento que abate uma compra (card #45, parte 3) ----------
+
+    private ExtratoBancarioItemDTO Pagamento(int? abateItemId, int pessoaId = 88)
+    {
+        _pessoaRepo.Setup(r => r.ObterPorIdAsync(88, UserId))
+            .ReturnsAsync(new PessoaMovimentacao { Id = 88, NomePessoa = "CARLOS" });
+        return new ExtratoBancarioItemDTO
+        {
+            DataMovimentacao = new DateOnly(2026, 12, 10), Valor = 50, TipoLancamento = TipoLancamentoExtrato.Entrada, BancoId = 5,
+            PessoaMovimentacao = new PessoaMovimentacaoDTO { Id = pessoaId, NomePessoa = "CARLOS" },
+            AbateItemId = abateItemId
+        };
+    }
+
+    private void Compra(int id, string tipo = TipoLancamentoExtrato.Saida, int? pessoaId = 88, int usuarioId = UserId) =>
+        _itemRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(new ExtratoBancarioItem
+        {
+            Id = id, UsuarioId = usuarioId, TipoLancamento = tipo, PessoaMovimentacaoId = pessoaId, Valor = 120,
+            DataMovimentacao = new DateOnly(2026, 11, 3)
+        });
+
+    [Fact]
+    public async Task Pagamento_grava_a_compra_que_abate()
+    {
+        Compra(40);
+
+        await Criar(Pagamento(40));
+
+        Assert.Equal(40, _itemCriado!.AbateItemId);
+    }
+
+    [Fact]
+    public async Task Pagamento_sem_compra_abate_o_saldo_geral()
+    {
+        await Criar(Pagamento(null));
+
+        Assert.Null(_itemCriado!.AbateItemId);
+    }
+
+    [Theory]
+    [InlineData("entrada")]      // a "compra" é uma entrada
+    [InlineData("outra-pessoa")] // compra de outra pessoa
+    [InlineData("outro-usuario")]
+    [InlineData("inexistente")]
+    public async Task Pagamento_recusa_compra_que_nao_e_saida_da_mesma_pessoa(string caso)
+    {
+        switch (caso)
+        {
+            case "entrada": Compra(40, tipo: TipoLancamentoExtrato.Entrada); break;
+            case "outra-pessoa": Compra(40, pessoaId: 99); break;
+            case "outro-usuario": Compra(40, usuarioId: 1); break;
+        }
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Criar(Pagamento(40)));
+        _itemRepo.Verify(r => r.CreateAsync(It.IsAny<ExtratoBancarioItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task So_entrada_abate_compra()
+    {
+        Compra(40);
+        var saida = Pagamento(40);
+        saida.TipoLancamento = TipoLancamentoExtrato.Saida;
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Criar(saida));
+    }
+
+    [Fact]
+    public async Task Editar_tambem_valida_e_grava_a_compra_abatida()
+    {
+        Compra(40);
+        _itemRepo.Setup(r => r.GetByIdAsync(_existente.Id)).ReturnsAsync(_existente);
+        _existente.TipoLancamento = TipoLancamentoExtrato.Entrada;
+        _existente.PessoaMovimentacaoId = 88;
+        var dto = Pagamento(40);
+        dto.Id = _existente.Id;
+        dto.PessoaMovimentacaoId = 88;
+
+        await new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
+
+        Assert.Equal(40, _existente.AbateItemId);
+    }
+
     [Fact]
     public async Task Editar_sem_nome_tira_a_pessoa()
     {

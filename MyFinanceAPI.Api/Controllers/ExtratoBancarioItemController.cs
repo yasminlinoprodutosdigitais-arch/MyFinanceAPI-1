@@ -16,11 +16,25 @@ namespace MyFinanceAPI.Api.Controllers
         public const string RotaPorId = "GetExtratoBancarioItemById";
 
         private readonly IExtratoBancarioItemService _extratoBancarioItemService;
+        private readonly IAcertosService _acertosService;
 
         public ExtratoBancarioItemController(
-            IExtratoBancarioItemService extratoBancarioItemService)
+            IExtratoBancarioItemService extratoBancarioItemService,
+            IAcertosService acertosService)
         {
             _extratoBancarioItemService = extratoBancarioItemService;
+            _acertosService = acertosService;
+        }
+
+        /// <summary>
+        /// Acertos com pessoas (card #45, parte 3): quem me deve, por pessoa. inicio/fim em "AAAA-MM" (vazio = desde o
+        /// início / até hoje); bancoId filtra as compras da conta ou do cartão e os pagamentos que as abatem.
+        /// </summary>
+        [HttpGet("/GetAcertos")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.AcertosDTO>> GetAcertos(
+            [FromQuery] string? inicio, [FromQuery] string? fim, [FromQuery] int? bancoId)
+        {
+            return Ok(await _acertosService.ObterAsync(UsuarioId, inicio, fim, bancoId));
         }
 
         // GET /GetExtratoBancarioItemById/{id}
