@@ -39,5 +39,15 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
         CreateMap<PessoaMovimentacao, PessoaMovimentacaoDTO>().ReverseMap();
+        CreateMap<RegraClassificacao, RegraClassificacaoDTO>()
+            .ForMember(d => d.CategoriaNome, o => o.MapFrom(s => s.Categoria != null ? s.Categoria.Nome : null))
+            .ForMember(d => d.TipoMovimentacaoNome, o => o.MapFrom(s => s.TipoMovimentacao != null ? s.TipoMovimentacao.NomeTipoMovimentacao : null))
+            .ForMember(d => d.PessoaNome, o => o.MapFrom(s => s.PessoaMovimentacao != null ? s.PessoaMovimentacao.NomePessoa : null))
+            .ForMember(d => d.BancoNome, o => o.MapFrom(s => s.Banco != null ? s.Banco.NomeBanco : null))
+            .ReverseMap()
+            .ForMember(e => e.Categoria, o => o.Ignore())
+            .ForMember(e => e.TipoMovimentacao, o => o.Ignore())
+            .ForMember(e => e.PessoaMovimentacao, o => o.Ignore())
+            .ForMember(e => e.Banco, o => o.Ignore());
     }
 }

@@ -21,6 +21,8 @@ public class ExtratoBancarioItemServiceTests
 
     private readonly Mock<IExtratoBancarioItemRepository> _itemRepo = new();
     private readonly Mock<IPessoaMovimentacaoRepository> _pessoaRepo = new();
+    private readonly Mock<IRegraClassificacaoRepository> _regrasRepo = new();
+    private readonly List<RegraClassificacao> _regras = new();
     private readonly List<PessoaMovimentacao> _pessoasCadastradas = new();
     private readonly List<PessoaMovimentacao> _pessoasCriadas = new();
     private ExtratoBancarioItem? _itemCriado;
@@ -30,6 +32,7 @@ public class ExtratoBancarioItemServiceTests
         _itemRepo.Setup(r => r.CreateAsync(It.IsAny<ExtratoBancarioItem>()))
             .Callback<ExtratoBancarioItem>(i => _itemCriado = i)
             .ReturnsAsync((ExtratoBancarioItem i) => i);
+        _regrasRepo.Setup(r => r.ListarAtivasAsync(UserId)).ReturnsAsync(() => _regras);
         _pessoaRepo.Setup(r => r.VerificaPossuiPessoa(It.IsAny<string?>(), UserId))
             .Returns((string? nome, int _) => Task.FromResult<IEnumerable<PessoaMovimentacao>>(
                 _pessoasCadastradas.Where(p => p.NomePessoa == nome).ToList()));
@@ -43,7 +46,7 @@ public class ExtratoBancarioItemServiceTests
     }
 
     private Task Criar(ExtratoBancarioItemDTO dto) =>
-        new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create()).AddAsync(dto, UserId);
+        new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, _regrasRepo.Object, MapperFactory.Create()).AddAsync(dto, UserId);
 
     private static ExtratoBancarioItemDTO Lancamento(string? pessoa, int? categoriaId) => new()
     {
@@ -147,6 +150,29 @@ public class ExtratoBancarioItemServiceTests
         _pessoaRepo.Verify(r => r.ObterOuCriarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
     }
 
+    // ---------- regras no lançamento manual (card #76, fase 1) ----------
+
+    [Fact]
+    public async Task Manual_sem_categoria_escolhida_usa_a_regra_antes_do_padrao_da_pessoa()
+    {
+        PessoaComVinculo("DALLE PIZZA CIC", Mercado, Lanche);
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "PIZZA", CategoriaId = Outros, Ativa = true });
+
+        await Criar(Lancamento("DALLE PIZZA CIC", null));
+
+        Assert.Equal((Outros, Lanche), (_itemCriado!.CategoriaId, _itemCriado.TipoMovimentacaoId));
+    }
+
+    [Fact]
+    public async Task Manual_com_categoria_escolhida_ignora_a_regra()
+    {
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "PIZZA", CategoriaId = Outros, Ativa = true });
+
+        await Criar(Lancamento("Pizza do bairro", Mercado));
+
+        Assert.Equal(Mercado, _itemCriado!.CategoriaId);
+    }
+
     // ---------- edição: trocar a pessoa (card #45, parte 2) ----------
 
     private readonly ExtratoBancarioItem _existente = new()
@@ -164,7 +190,7 @@ public class ExtratoBancarioItemServiceTests
         dto.Id = _existente.Id;
         dto.PessoaMovimentacaoId = pessoaId;
         dto.AlteraVinculoPessoa = true;
-        return new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
+        return new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, _regrasRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
     }
 
     [Fact]
@@ -268,7 +294,7 @@ public class ExtratoBancarioItemServiceTests
         dto.Id = _existente.Id;
         dto.PessoaMovimentacaoId = 88;
 
-        await new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
+        await new ExtratoBancarioItemService(_itemRepo.Object, _pessoaRepo.Object, _regrasRepo.Object, MapperFactory.Create()).UpdateAsync(dto, UserId);
 
         Assert.Equal(40, _existente.AbateItemId);
     }

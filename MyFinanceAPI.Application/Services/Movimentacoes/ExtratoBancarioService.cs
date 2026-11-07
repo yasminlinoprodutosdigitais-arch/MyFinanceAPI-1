@@ -25,6 +25,7 @@ namespace MyFinanceAPI.Application.Services
         private readonly IBancoService _bancoService;
         private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
         private readonly ICategoriaRepository _categoriaRepository;
+        private readonly IRegraClassificacaoRepository _regraRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public ExtratoBancarioService(
@@ -32,6 +33,7 @@ namespace MyFinanceAPI.Application.Services
             IExtratoBancarioItemRepository extratoBancarioItemRepository,
             IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
             ICategoriaRepository categoriaRepository,
+            IRegraClassificacaoRepository regraRepository,
             IMapper mapper, IBancoService bancoService, IUnitOfWork unitOfWork)
         {
             _extratoBancarioRepository = extratoBancarioRepository;
@@ -39,6 +41,7 @@ namespace MyFinanceAPI.Application.Services
             _mapper = mapper;
             _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
             _categoriaRepository = categoriaRepository;
+            _regraRepository = regraRepository;
             _bancoService = bancoService;
             _unitOfWork = unitOfWork;
         }
@@ -134,6 +137,10 @@ namespace MyFinanceAPI.Application.Services
             // Só buscados (ou criados) quando aparece o primeiro encargo.
             PessoaMovimentacao? titular = null;
             Categoria? categoriaEncargos = null;
+            // Card #76: as regras ligadas, lidas uma vez por importação.
+            var regras = await _regraRepository.ListarAtivasAsync(userId);
+            // Quantos lançamentos cada regra classificou nesta importação ("aplicada N vezes").
+            var usoRegras = new Dictionary<int, int>();
 
             DateOnly? dataInicio = null;
             DateOnly? dataFim = null;
@@ -242,6 +249,14 @@ namespace MyFinanceAPI.Application.Services
                         nomePessoa = titular.NomePessoa;
                         categoriaId = categoriaEncargos.Id;
                     }
+                    else if (ClassificadorRegras.Encontrar(regras, descricaoStr, nomePessoa, banco.Id) is { PessoaMovimentacaoId: not null } regraComPessoa)
+                    {
+                        // Regra que liga uma pessoa: usa ela, sem criar outra pelo nome da descrição (card #76).
+                        pessoaId = regraComPessoa.PessoaMovimentacaoId;
+                        nomePessoa = regraComPessoa.PessoaMovimentacao?.NomePessoa ?? nomePessoa;
+                        tipoMovimentacaoId = regraComPessoa.PessoaMovimentacao?.TipoMovimentacaoId ?? 0;
+                        categoriaId = regraComPessoa.PessoaMovimentacao?.CategoriaId ?? 0;
+                    }
                     else if (!string.IsNullOrWhiteSpace(nomePessoa))
                     {
                         var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
@@ -259,6 +274,15 @@ namespace MyFinanceAPI.Application.Services
                             tipoMovimentacaoId = novaPessoa.TipoMovimentacaoId ?? 0;
                             categoriaId = novaPessoa.CategoriaId ?? 0;
                         }
+                    }
+
+                    // Ordem (card #76): encargo > regra > padrão da pessoa.
+                    int? regraUsada = null;
+                    if (!encargo && ClassificadorRegras.Encontrar(regras, descricaoStr, nomePessoa, banco.Id) is { } regra)
+                    {
+                        regraUsada = regra.Id;
+                        categoriaId = regra.CategoriaId ?? categoriaId;
+                        tipoMovimentacaoId = regra.TipoMovimentacaoId ?? tipoMovimentacaoId;
                     }
 
                     var item = new ExtratoBancarioItemDTO
@@ -279,6 +303,8 @@ namespace MyFinanceAPI.Application.Services
 
                     listaItens.Add(item);
                     criados++;
+                    if (regraUsada is int usada)
+                        usoRegras[usada] = usoRegras.GetValueOrDefault(usada) + 1;
 
                     if (dataInicio == null || dataMov < dataInicio.Value)
                         dataInicio = dataMov;
@@ -336,6 +362,7 @@ namespace MyFinanceAPI.Application.Services
             var itens = _mapper.Map<List<ExtratoBancarioItem>>(listaItens);
             itens.ForEach(i => i.UsuarioId = userId);
             await _extratoBancarioItemRepository.CreateRangeAsync(itens);
+            await _regraRepository.RegistrarUsoAsync(userId, usoRegras);
 
             var mensagem = $"Importação concluída. Criados: {criados}, já importados: {jaImportados}, "
                 + (corrigidos > 0 ? $"corrigidos (centavos): {corrigidos}, " : "")

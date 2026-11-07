@@ -15,15 +15,18 @@ namespace MyFinanceAPI.Application.Services
     {
         private readonly IExtratoBancarioItemRepository _itemRepository;
         private readonly IPessoaMovimentacaoRepository _pessoaMovimentacaoRepository;
+        private readonly IRegraClassificacaoRepository _regraRepository;
         private readonly IMapper _mapper;
 
         public ExtratoBancarioItemService(
             IExtratoBancarioItemRepository itemRepository,
             IPessoaMovimentacaoRepository pessoaMovimentacaoRepository,
+            IRegraClassificacaoRepository regraRepository,
             IMapper mapper)
         {
             _itemRepository = itemRepository;
             _pessoaMovimentacaoRepository = pessoaMovimentacaoRepository;
+            _regraRepository = regraRepository;
             _mapper = mapper;
         }
 
@@ -91,12 +94,17 @@ namespace MyFinanceAPI.Application.Services
                 entity.CategoriaId = null;
             }
 
-            entity.CategoriaId = categoriaEscolhida ?? entity.CategoriaId;
-            entity.TipoMovimentacaoId = tipoEscolhido ?? entity.TipoMovimentacaoId;
+            // Card #76: sem escolha no formulário, a regra vem antes do padrão da pessoa.
+            var regra = ClassificadorRegras.Encontrar(await _regraRepository.ListarAtivasAsync(userId), entity.Descricao, entity.NomePessoaTransacao, entity.BancoId);
+            entity.CategoriaId = categoriaEscolhida ?? regra?.CategoriaId ?? entity.CategoriaId;
+            entity.TipoMovimentacaoId = tipoEscolhido ?? regra?.TipoMovimentacaoId ?? entity.TipoMovimentacaoId;
             entity.AbateItemId = dto.AbateItemId;
             await ValidarAbatimentoAsync(entity, userId);
 
             var created = await _itemRepository.CreateAsync(entity);
+            // A regra conta como usada quando decidiu a categoria ou o tipo (nada escolhido no formulário).
+            if (regra != null && ((categoriaEscolhida == null && regra.CategoriaId != null) || (tipoEscolhido == null && regra.TipoMovimentacaoId != null)))
+                await _regraRepository.RegistrarUsoAsync(userId, new Dictionary<int, int> { [regra.Id] = 1 });
             return _mapper.Map<ExtratoBancarioItemDTO>(created);
         }
 

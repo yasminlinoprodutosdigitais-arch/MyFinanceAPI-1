@@ -34,5 +34,10 @@ namespace MyFinanceAPI.Domain.Interfaces
 
         /// <summary>Lançamentos do usuário com pessoa dos acertos ("Entra nos acertos" ou o "Eu"), com pessoa e banco (card #45).</summary>
         Task<List<ExtratoBancarioItem>> ListarParaAcertosAsync(int userId);
+
+        /// <summary>Todos os lançamentos do usuário, sem rastreio: o histórico e os alvos das regras de classificação (card #76).</summary>
+        Task<List<ExtratoBancarioItem>> ListarParaClassificacaoAsync(int userId);
+        /// <summary>Grava vários lançamentos de uma vez (o "aplicar regra" do card #76).</summary>
+        Task UpdateRangeAsync(IEnumerable<ExtratoBancarioItem> itens);
     }
 }

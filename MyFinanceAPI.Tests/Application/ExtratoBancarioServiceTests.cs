@@ -25,6 +25,8 @@ public class ExtratoBancarioServiceTests
     private readonly Mock<IExtratoBancarioItemRepository> _itemRepo = new();
     private readonly Mock<IPessoaMovimentacaoRepository> _pessoaRepo = new();
     private readonly Mock<ICategoriaRepository> _categoriaRepo = new();
+    private readonly Mock<IRegraClassificacaoRepository> _regrasRepo = new();
+    private readonly List<RegraClassificacao> _regras = new();
     private readonly Mock<IBancoService> _bancoService = new();
     private readonly UnitOfWorkFalso _uow = new();
 
@@ -39,6 +41,7 @@ public class ExtratoBancarioServiceTests
 
     public ExtratoBancarioServiceTests()
     {
+        _regrasRepo.Setup(r => r.ListarAtivasAsync(UserId)).ReturnsAsync(() => _regras);
         _bancoService.Setup(s => s.ObterPorIdAsync(BancoId, UserId))
             .ReturnsAsync(new BancoDTO { Id = BancoId, NomeBanco = "Nubank", TipoCartaoId = TipoCartaoId });
 
@@ -73,7 +76,7 @@ public class ExtratoBancarioServiceTests
         var csv = string.Join("\n", linhas);
         var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
         var service = new ExtratoBancarioService(
-            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, _regrasRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
         return service.ImportarExtratoAsync(stream, "NU_2026-10.csv", UserId, BancoId);
     }
 
@@ -371,7 +374,7 @@ public class ExtratoBancarioServiceTests
             .Callback(() => _uow.Registrar("Extrato.Remove"))
             .Returns(Task.CompletedTask);
         var service = new ExtratoBancarioService(
-            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, _regrasRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
 
         await service.Remove(ExtratoIdGerado, UserId);
 
@@ -471,6 +474,56 @@ public class ExtratoBancarioServiceTests
         _categoriaRepo.Verify(r => r.ObterPorNomeAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
+    // ---------- regras de classificação (card #76, fase 1) ----------
+
+    [Fact]
+    public async Task Regra_classifica_na_importacao_e_vence_o_padrao_da_pessoa()
+    {
+        _pessoasCadastradas.Add(new PessoaMovimentacao { Id = 30, NomePessoa = "IFOOD", CategoriaId = 1, TipoMovimentacaoId = 2 });
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "IFOOD", CategoriaId = 8, Ativa = true });
+        _regras.Add(new RegraClassificacao { Id = 2, Texto = "UBER", CategoriaId = 9, TipoMovimentacaoId = 4, Ativa = true });
+
+        await Importar(Cabecalho,
+            "01/10/2026,-30.00,a,Compra no débito - IFOOD",
+            "02/10/2026,-15.00,b,Uber *Trip",
+            "03/10/2026,-5.00,c,Compra no débito - PADARIA");
+
+        var ifood = _itensCriados.Single(i => i.Identificador == "a");
+        Assert.Equal((8, 2, 30), (ifood.CategoriaId, ifood.TipoMovimentacaoId, ifood.PessoaMovimentacaoId)); // tipo sem regra: o da pessoa
+        var uber = _itensCriados.Single(i => i.Identificador == "b");
+        Assert.Equal((9, 4), (uber.CategoriaId, uber.TipoMovimentacaoId));
+        Assert.Null(_itensCriados.Single(i => i.Identificador == "c").CategoriaId);
+        // Uso contado por regra ("aplicada N vezes").
+        _regrasRepo.Verify(r => r.RegistrarUsoAsync(UserId, It.Is<IReadOnlyDictionary<int, int>>(u => u.Count == 2 && u[1] == 1 && u[2] == 1)), Times.Once);
+    }
+
+    [Fact]
+    public async Task Regra_com_pessoa_liga_a_pessoa_sem_criar_outra_pelo_nome()
+    {
+        _regras.Add(new RegraClassificacao
+        {
+            Id = 1, Texto = "PIX ENVIADO MARIA", CategoriaId = 8, PessoaMovimentacaoId = 40, Ativa = true,
+            PessoaMovimentacao = new PessoaMovimentacao { Id = 40, NomePessoa = "MARIA SILVA" }
+        });
+
+        await Importar(Cabecalho, "01/10/2026,-30.00,a,Pix enviado Maria - MARIA S");
+
+        var item = Assert.Single(_itensCriados);
+        Assert.Equal((40, "MARIA SILVA", 8), (item.PessoaMovimentacaoId, item.NomePessoaTransacao, item.CategoriaId));
+        Assert.Empty(_pessoasCriadas);
+    }
+
+    [Fact]
+    public async Task Encargo_vence_a_regra()
+    {
+        PrepararEncargos();
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "IOF", CategoriaId = 99, Ativa = true });
+
+        await Importar(Cabecalho, "05/10/2026,-3.50,id-1,IOF de compra internacional");
+
+        Assert.Equal(50, Assert.Single(_itensCriados).CategoriaId);
+    }
+
     // ---------- listagem (BE-P4-05) ----------
 
     [Fact]
@@ -486,7 +539,7 @@ public class ExtratoBancarioServiceTests
         _bancoService.Setup(s => s.ListarAsync(UserId))
             .ReturnsAsync(new[] { new BancoDTO { Id = BancoId, NomeBanco = "Nubank" } });
         var service = new ExtratoBancarioService(
-            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+            _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, _regrasRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
 
         var lista = (await service.GetExtratoBancario(UserId, "2026-10")).ToList();
 

@@ -1133,6 +1133,118 @@ namespace MyFinanceAPI.Data.Migrations
                     b.ToTable("pessoas_movimentacao", (string)null);
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.RegraClassificacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("ativa");
+
+                    b.Property<int?>("BancoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("banco_id");
+
+                    b.Property<string>("Campo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("descricao_ou_pessoa")
+                        .HasColumnName("campo");
+
+                    b.Property<int?>("CategoriaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Operador")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("contem")
+                        .HasColumnName("operador");
+
+                    b.Property<int>("Ordem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("ordem");
+
+                    b.Property<int?>("PessoaMovimentacaoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pessoa_movimentacao_id");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("texto");
+
+                    b.Property<int?>("TipoMovimentacaoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_movimentacao_id");
+
+                    b.Property<DateTime?>("UltimaAplicacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ultima_aplicacao");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<int>("VezesAplicada")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("vezes_aplicada");
+
+                    b.HasKey("Id")
+                        .HasName("pk_regras_classificacao");
+
+                    b.HasIndex("BancoId")
+                        .HasDatabaseName("ix_regras_classificacao_banco_id");
+
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_regras_classificacao_categoria_id");
+
+                    b.HasIndex("PessoaMovimentacaoId")
+                        .HasDatabaseName("ix_regras_classificacao_pessoa_movimentacao_id");
+
+                    b.HasIndex("TipoMovimentacaoId")
+                        .HasDatabaseName("ix_regras_classificacao_tipo_movimentacao_id");
+
+                    b.HasIndex("UsuarioId", "Ordem")
+                        .HasDatabaseName("ix_regras_classificacao_usuario_id_ordem");
+
+                    b.HasIndex("UsuarioId", "Campo", "Operador", "Texto", "BancoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_regras_classificacao_usuario_id_campo_operador_texto_banco_");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("UsuarioId", "Campo", "Operador", "Texto", "BancoId"), false);
+
+                    b.ToTable("regras_classificacao", (string)null);
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoCartao", b =>
                 {
                     b.Property<int>("Id")
@@ -1772,6 +1884,50 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasConstraintName("fk_pessoas_movimentacao_asp_net_users_usuario_id");
 
                     b.Navigation("Categoria");
+
+                    b.Navigation("TipoMovimentacao");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.RegraClassificacao", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Banco", "Banco")
+                        .WithMany()
+                        .HasForeignKey("BancoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_regras_classificacao_bancos_banco_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_regras_classificacao_categorias_categoria_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", "PessoaMovimentacao")
+                        .WithMany()
+                        .HasForeignKey("PessoaMovimentacaoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_regras_classificacao_pessoa_movimentacao_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.TipoMovimentacao", "TipoMovimentacao")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimentacaoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_regras_classificacao_tipos_movimentacao_tipo_movimentacao_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_regras_classificacao_asp_net_users_usuario_id");
+
+                    b.Navigation("Banco");
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("PessoaMovimentacao");
 
                     b.Navigation("TipoMovimentacao");
 

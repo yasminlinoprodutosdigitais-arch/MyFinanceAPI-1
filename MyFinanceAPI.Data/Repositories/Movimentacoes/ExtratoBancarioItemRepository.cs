@@ -72,6 +72,16 @@ namespace MyFinanceAPI.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public Task<List<ExtratoBancarioItem>> ListarParaClassificacaoAsync(int userId) =>
+            // Com a categoria: a prévia mostra o nome nos exemplos. O "aplicar" só grava os sem categoria (nav vazia).
+            _context.ItensExtratoBancario.AsNoTracking().Include(i => i.Categoria).Where(i => i.UsuarioId == userId).ToListAsync();
+
+        public async Task UpdateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
+        {
+            _context.ItensExtratoBancario.UpdateRange(itens);
+            await _context.SaveChangesAsync();
+        }
+
         // =========================
         //          DELETE
         // =========================
