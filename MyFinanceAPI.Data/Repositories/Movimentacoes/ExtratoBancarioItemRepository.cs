@@ -82,6 +82,31 @@ namespace MyFinanceAPI.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public Task<Dictionary<int, int>> ContarPorPessoaAsync(int userId) =>
+            _context.ItensExtratoBancario
+                .Where(i => i.UsuarioId == userId && i.PessoaMovimentacaoId != null)
+                .GroupBy(i => i.PessoaMovimentacaoId!.Value)
+                .Select(g => new { g.Key, Quantidade = g.Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Quantidade);
+
+        public async Task DesligarPessoasAsync(int userId, IReadOnlyCollection<int> pessoaIds)
+        {
+            var ids = pessoaIds.ToList();
+            var ligados = await _context.ItensExtratoBancario
+                .Include(i => i.PessoaMovimentacao)
+                .Where(i => i.UsuarioId == userId && i.PessoaMovimentacaoId != null && ids.Contains(i.PessoaMovimentacaoId.Value))
+                .ToListAsync();
+            foreach (var item in ligados)
+            {
+                // O nome continua no lançamento (o estabelecimento); só o vínculo com o cadastro sai.
+                if (string.IsNullOrWhiteSpace(item.NomePessoaTransacao))
+                    item.NomePessoaTransacao = item.PessoaMovimentacao?.NomePessoa;
+                item.PessoaMovimentacaoId = null;
+                item.PessoaMovimentacao = null;
+            }
+            await _context.SaveChangesAsync();
+        }
+
         // =========================
         //          DELETE
         // =========================

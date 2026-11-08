@@ -77,21 +77,10 @@ namespace MyFinanceAPI.Application.Services
                 entity.TipoMovimentacaoId = tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null;
                 entity.CategoriaId = categoriaId != 0 ? categoriaId : null;
             }
-            else if (string.IsNullOrWhiteSpace(entity.NomePessoaTransacao))
-            {
-                // Sem nome de pessoa → item sem pessoa (não existe mais o placeholder "Pessoa sem nome").
-                entity.PessoaMovimentacaoId = null;
-            }
             else
             {
-                var pessoaCriada = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(new PessoaMovimentacao
-                {
-                    NomePessoa = entity.NomePessoaTransacao,
-                    CategoriaId = entity.CategoriaId
-                }, userId);
-                entity.PessoaMovimentacaoId = pessoaCriada.Id;
-                entity.TipoMovimentacaoId = null;
-                entity.CategoriaId = null;
+                // Sem nome, ou nome que não é pessoa cadastrada (card #76, fase 2): o nome fica só no lançamento.
+                entity.PessoaMovimentacaoId = null;
             }
 
             // Card #76: sem escolha no formulário, a regra vem antes do padrão da pessoa.
@@ -164,17 +153,13 @@ namespace MyFinanceAPI.Application.Services
                         ? null
                         : await _pessoaMovimentacaoRepository.ObterPorIdAsync(pessoaId, userId);
 
-                    if (pessoaMovimentacao == null)
-                    {
-                        // Busca-ou-cria pelo nome (o repositório normaliza e trata a unique); nasce sem padrão.
-                        var pessoaCriada = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(
-                            new PessoaMovimentacao { NomePessoa = dto.NomePessoaTransacao }, userId);
-                        pessoaId = pessoaCriada.Id;
-                    }
+                    // Card #76, fase 2: sem id, liga pelo nome a uma pessoa já cadastrada; nome novo fica só no lançamento.
+                    pessoaMovimentacao ??= (await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(dto.NomePessoaTransacao, userId))
+                        .FirstOrDefault();
 
                     // Card #45, parte 2: trocar a pessoa de um lançamento não reescreve mais a categoria/tipo
                     // padrão dela (antes a edição sobrescrevia sem avisar). O padrão muda em Configurar pessoas.
-                    existing.PessoaMovimentacaoId = pessoaId;
+                    existing.PessoaMovimentacaoId = pessoaMovimentacao?.Id;
                 }
             }
 

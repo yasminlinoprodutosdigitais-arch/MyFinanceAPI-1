@@ -54,6 +54,8 @@ public class ContratoJsonCongeladoTests
         ("movimentacaoDiaria", typeof(MovimentacaoDiariaDTO)),
         ("tipoMovimentacao", typeof(TipoMovimentacaoDTO)),
         ("pessoaMovimentacao", typeof(PessoaMovimentacaoDTO)),
+        ("pessoaEstabelecimento", typeof(PessoaEstabelecimentoDTO)),
+        ("pessoasRemovidas", typeof(PessoasRemovidasDTO)),
         ("regraClassificacao", typeof(RegraClassificacaoDTO)),
         ("sugestaoCategoria", typeof(SugestaoCategoriaDTO)),
         ("previaRegra", typeof(PreviaRegraDTO)),

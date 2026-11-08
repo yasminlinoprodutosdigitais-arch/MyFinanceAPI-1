@@ -39,5 +39,9 @@ namespace MyFinanceAPI.Domain.Interfaces
         Task<List<ExtratoBancarioItem>> ListarParaClassificacaoAsync(int userId);
         /// <summary>Grava vários lançamentos de uma vez (o "aplicar regra" do card #76).</summary>
         Task UpdateRangeAsync(IEnumerable<ExtratoBancarioItem> itens);
+        /// <summary>Quantos lançamentos do usuário cada pessoa tem (id da pessoa → quantidade; card #76, fase 2).</summary>
+        Task<Dictionary<int, int>> ContarPorPessoaAsync(int userId);
+        /// <summary>Tira estas pessoas dos lançamentos do usuário; o nome dela fica no lançamento (card #76, fase 2).</summary>
+        Task DesligarPessoasAsync(int userId, IReadOnlyCollection<int> pessoaIds);
     }
 }

@@ -114,6 +114,17 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         }
     }
 
+    public async Task<int> RemoverVariasAsync(int userId, IReadOnlyCollection<int> ids)
+    {
+        var lista = ids.ToList();
+        var alvo = await _context.PessoasMovimentacao
+            .Where(p => p.UsuarioId == userId && !p.EhTitular && lista.Contains(p.Id))
+            .ToListAsync();
+        _context.PessoasMovimentacao.RemoveRange(alvo);
+        await _context.SaveChangesAsync();
+        return alvo.Count;
+    }
+
     public async Task<bool> EmUsoAsync(int id, int userId)
     {
         if (!await _context.PessoasMovimentacao.AnyAsync(p => p.Id == id && p.UsuarioId == userId))

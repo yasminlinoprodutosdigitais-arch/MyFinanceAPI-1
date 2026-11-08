@@ -14,11 +14,23 @@ namespace MyFinanceAPI.Api.Controllers
         public const string RotaPorId = "GetPessoaMovimentacao";
 
         private readonly IPessoaMovimentacaoService _PessoaMovimentacaoService;
+        private readonly ILimpezaPessoasService _limpeza;
 
-        public PessoaMovimentacaoController(IPessoaMovimentacaoService PessoaMovimentacaoService)
+        public PessoaMovimentacaoController(IPessoaMovimentacaoService PessoaMovimentacaoService, ILimpezaPessoasService limpeza)
         {
             _PessoaMovimentacaoService = PessoaMovimentacaoService;
+            _limpeza = limpeza;
         }
+
+        /// <summary>Card #76, fase 2: pessoas que parecem estabelecimento (candidatas à limpeza), com quantos lançamentos.</summary>
+        [HttpGet("/GetPessoasEstabelecimento")]
+        public async Task<ActionResult<IEnumerable<PessoaEstabelecimentoDTO>>> GetPessoasEstabelecimento([FromQuery] Paginacao paginacao) =>
+            Lista(await _limpeza.CandidatasAsync(UsuarioId), paginacao);
+
+        /// <summary>Card #76, fase 2: apaga as escolhidas que ainda são candidatas; os lançamentos ficam com o nome.</summary>
+        [HttpPost("/RemoverPessoasEstabelecimento")]
+        public async Task<ActionResult<PessoasRemovidasDTO>> RemoverPessoasEstabelecimento([FromBody] List<int> ids) =>
+            Ok(new PessoasRemovidasDTO { Quantidade = await _limpeza.RemoverAsync(UsuarioId, ids ?? []) });
 
         [HttpGet("/GetPessoaMovimentacao")]
         public async Task<ActionResult<IEnumerable<PessoaMovimentacaoDTO>>> GetPessoaMovimentacao([FromQuery] Paginacao paginacao)

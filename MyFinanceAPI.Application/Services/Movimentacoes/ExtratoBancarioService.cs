@@ -259,20 +259,14 @@ namespace MyFinanceAPI.Application.Services
                     }
                     else if (!string.IsNullOrWhiteSpace(nomePessoa))
                     {
+                        // Card #76, fase 2: só liga a uma pessoa já cadastrada. Nome novo (estabelecimento, Pix de alguém
+                        // ainda não cadastrado) fica só no lançamento; a categoria vem das regras.
                         var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
                         if (pessoaCadastrada.Any())
                         {
                             pessoaId = pessoaCadastrada.First().Id;
                             tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
                             categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
-                        }
-                        else
-                        {
-                            var novaPessoa = await _pessoaMovimentacaoRepository.ObterOuCriarAsync(
-                                new PessoaMovimentacao { NomePessoa = nomePessoa }, userId);
-                            pessoaId = novaPessoa.Id;
-                            tipoMovimentacaoId = novaPessoa.TipoMovimentacaoId ?? 0;
-                            categoriaId = novaPessoa.CategoriaId ?? 0;
                         }
                     }
 

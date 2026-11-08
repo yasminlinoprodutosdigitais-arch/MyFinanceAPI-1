@@ -275,14 +275,16 @@ public class ExtratoBancarioServiceTests
     }
 
     [Fact]
-    public async Task Pessoa_nova_e_cadastrada_em_maiusculas_sem_categoria()
+    public async Task Nome_novo_fica_so_no_lancamento_sem_cadastrar_pessoa()
     {
+        // Card #76, fase 2: estabelecimento (ou nome ainda não cadastrado) não vira pessoa.
         await Importar(Cabecalho, "01/10/2026,-12.50,a,Transferência enviada pelo Pix - Maria Souza - BANCO X");
 
-        var nova = Assert.Single(_pessoasCriadas);
-        Assert.Equal("MARIA SOUZA", nova.NomePessoa);
+        Assert.Empty(_pessoasCriadas);
+        _pessoaRepo.Verify(r => r.ObterOuCriarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
         var item = Assert.Single(_itensCriados);
-        Assert.Equal(nova.Id, item.PessoaMovimentacaoId);
+        Assert.Null(item.PessoaMovimentacaoId);
+        Assert.Equal("MARIA SOUZA", item.NomePessoaTransacao);
         Assert.Null(item.CategoriaId);
         Assert.Null(item.TipoMovimentacaoId);
     }
@@ -356,7 +358,7 @@ public class ExtratoBancarioServiceTests
             "06/09/2026,-20.00,b,Transferência enviada pelo Pix - Maria Souza - BANCO X");
 
         Assert.Single(_itensAtualizados);
-        Assert.Single(_pessoasCriadas);
+        Assert.Empty(_pessoasCriadas);
         Assert.NotNull(_extratoCriado);
         Assert.NotEmpty(_itensCriados);
         Assert.Empty(_uow.Fora);
@@ -442,14 +444,16 @@ public class ExtratoBancarioServiceTests
             Assert.Equal(50, i.CategoriaId);
         });
 
-        // A categoria é criada uma vez (Despesa, Essencial); só a compra comum vira pessoa.
+        // A categoria é criada uma vez (Despesa, Essencial); a compra comum fica só com o nome (fase 2 do #76).
         var categoria = Assert.Single(_categoriasCriadas);
         Assert.Equal(ExtratoBancarioService.CategoriaEncargos, categoria.Nome);
         Assert.Equal("Despesa", categoria.Subcategoria);
         Assert.Equal(1, categoria.NaturezaOperacao);
         Assert.True(categoria.Ativo);
         Assert.Equal(UserId, categoria.UsuarioId);
-        Assert.Equal(["AMORA DOCES"], _pessoasCriadas.Select(p => p.NomePessoa));
+        Assert.Empty(_pessoasCriadas);
+        var compra = _itensCriados.Single(i => i.Identificador == "id-3");
+        Assert.Equal(("AMORA DOCES", (int?)null), (compra.NomePessoaTransacao, compra.PessoaMovimentacaoId));
     }
 
     [Fact]

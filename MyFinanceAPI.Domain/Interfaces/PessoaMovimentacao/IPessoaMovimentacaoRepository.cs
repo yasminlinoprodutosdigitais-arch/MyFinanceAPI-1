@@ -12,4 +12,6 @@ public interface IPessoaMovimentacaoRepository : IRepositorioDoUsuario<PessoaMov
     Task<bool> EmUsoAsync(int id, int userId);
     /// <summary>A pessoa "Eu" do usuário; cria na primeira vez (ou marca a pessoa "EU" que já existir).</summary>
     Task<PessoaMovimentacao> ObterTitularAsync(int userId);
+    /// <summary>Apaga várias pessoas do usuário de uma vez (a limpeza do card #76, fase 2); devolve quantas apagou.</summary>
+    Task<int> RemoverVariasAsync(int userId, IReadOnlyCollection<int> ids);
 }

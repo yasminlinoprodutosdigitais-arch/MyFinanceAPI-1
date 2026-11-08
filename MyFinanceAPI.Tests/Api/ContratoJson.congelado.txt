@@ -2146,6 +2146,10 @@ pessoaMovimentacao.tipoMovimentacao.usuario.userName
 pessoaMovimentacao.tipoMovimentacao.usuarioId
 pessoaMovimentacao.tipoMovimentacao.valorMeta
 pessoaMovimentacao.tipoMovimentacaoId
+pessoaEstabelecimento.id
+pessoaEstabelecimento.lancamentos
+pessoaEstabelecimento.nomePessoa
+pessoasRemovidas.quantidade
 regraClassificacao.ativa
 regraClassificacao.bancoId
 regraClassificacao.bancoNome

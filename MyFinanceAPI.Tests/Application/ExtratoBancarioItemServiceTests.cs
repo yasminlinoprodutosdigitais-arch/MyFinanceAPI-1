@@ -99,13 +99,15 @@ public class ExtratoBancarioItemServiceTests
     }
 
     [Fact]
-    public async Task Pessoa_nova_com_categoria_escolhida_grava_no_item_e_no_vinculo_criado()
+    public async Task Nome_novo_com_categoria_escolhida_fica_so_no_lancamento()
     {
+        // Card #76, fase 2: o nome digitado que não é pessoa cadastrada fica só no lançamento.
         await Criar(Lancamento("PADARIA NOVA", Outros));
 
-        Assert.Equal(900, _itemCriado!.PessoaMovimentacaoId);
+        Assert.Null(_itemCriado!.PessoaMovimentacaoId);
+        Assert.Equal("PADARIA NOVA", _itemCriado.NomePessoaTransacao);
         Assert.Equal(Outros, _itemCriado.CategoriaId);
-        Assert.Equal(Outros, Assert.Single(_pessoasCriadas).CategoriaId);
+        Assert.Empty(_pessoasCriadas);
     }
 
     [Fact]
@@ -113,7 +115,8 @@ public class ExtratoBancarioItemServiceTests
     {
         await Criar(Lancamento("PADARIA NOVA", null));
 
-        Assert.Null(_itemCriado!.CategoriaId);
+        Assert.Null(_itemCriado!.PessoaMovimentacaoId);
+        Assert.Null(_itemCriado.CategoriaId);
         Assert.Null(_itemCriado.TipoMovimentacaoId);
     }
 
@@ -204,16 +207,26 @@ public class ExtratoBancarioItemServiceTests
     }
 
     [Fact]
-    public async Task Editar_com_nome_novo_cria_a_pessoa_sem_padrao()
+    public async Task Editar_com_nome_novo_fica_so_no_lancamento()
     {
         await Editar("Ágatha", null, Outros);
 
-        var criada = Assert.Single(_pessoasCriadas);
-        Assert.Equal("Ágatha", criada.NomePessoa);
-        Assert.Null(criada.CategoriaId);
-        Assert.Null(criada.TipoMovimentacaoId);
-        Assert.Equal(900, _existente.PessoaMovimentacaoId);
-        _pessoaRepo.Verify(r => r.AtualizarAsync(It.IsAny<PessoaMovimentacao>(), It.IsAny<int>()), Times.Never);
+        Assert.Empty(_pessoasCriadas);
+        Assert.Null(_existente.PessoaMovimentacaoId);
+        Assert.Equal("Ágatha", _existente.NomePessoaTransacao);
+        Assert.Equal(Outros, _existente.CategoriaId);
+    }
+
+    [Fact]
+    public async Task Editar_com_nome_de_pessoa_cadastrada_sem_id_liga_pelo_nome()
+    {
+        PessoaComVinculo("GIOVANNE", Mercado, Lanche);
+
+        await Editar("GIOVANNE", null, Outros);
+
+        Assert.Equal(88, _existente.PessoaMovimentacaoId);
+        Assert.Equal(Outros, _existente.CategoriaId);   // o padrão da pessoa não sobrescreve a edição
+        Assert.Empty(_pessoasCriadas);
     }
 
     // ---------- pagamento que abate uma compra (card #45, parte 3) ----------
