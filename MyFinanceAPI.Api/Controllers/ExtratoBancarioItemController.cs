@@ -61,6 +61,14 @@ namespace MyFinanceAPI.Api.Controllers
         }
 
         // PUT /UpdateExtratoBancarioItem
+        /// <summary>Card #76, fase 3: divide o lançamento nestas partes; lista vazia desfaz a divisão.</summary>
+        [HttpPut("/DividirExtratoBancarioItem/{id:int}")]
+        public async Task<IActionResult> DividirExtratoItem(int id, [FromBody] List<ExtratoItemParteDTO> partes)
+        {
+            await _extratoBancarioItemService.DividirAsync(id, partes ?? new List<ExtratoItemParteDTO>(), UsuarioId);
+            return NoContent();
+        }
+
         [HttpPut("/UpdateExtratoBancarioItem")]
         public async Task<ActionResult<ExtratoBancarioItemDTO>> UpdateExtratoItem([FromBody] ExtratoBancarioItemDTO dto)
         {

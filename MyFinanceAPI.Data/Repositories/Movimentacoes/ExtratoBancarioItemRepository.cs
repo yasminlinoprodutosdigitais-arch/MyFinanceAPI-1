@@ -55,8 +55,12 @@ namespace MyFinanceAPI.Data.Repositories
             return await _context.ItensExtratoBancario.AsNoTracking()
                 .Include(i => i.PessoaMovimentacao)
                 .Include(i => i.Banco)
-                .Where(i => i.UsuarioId == userId && i.PessoaMovimentacao != null
-                            && (i.PessoaMovimentacao.EntraNosAcertos || i.PessoaMovimentacao.EhTitular))
+                .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
+                .Where(i => i.UsuarioId == userId
+                            && ((!i.Partes.Any() && i.PessoaMovimentacao != null
+                                    && (i.PessoaMovimentacao.EntraNosAcertos || i.PessoaMovimentacao.EhTitular))
+                                || i.Partes.Any(p => p.PessoaMovimentacao != null
+                                    && (p.PessoaMovimentacao.EntraNosAcertos || p.PessoaMovimentacao.EhTitular))))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)
                 .ToListAsync();
@@ -74,13 +78,27 @@ namespace MyFinanceAPI.Data.Repositories
 
         public Task<List<ExtratoBancarioItem>> ListarParaClassificacaoAsync(int userId) =>
             // Com a categoria: a prévia mostra o nome nos exemplos. O "aplicar" só grava os sem categoria (nav vazia).
-            _context.ItensExtratoBancario.AsNoTracking().Include(i => i.Categoria).Where(i => i.UsuarioId == userId).ToListAsync();
+            _context.ItensExtratoBancario.AsNoTracking().Include(i => i.Categoria).Include(i => i.Partes).Where(i => i.UsuarioId == userId).ToListAsync();
 
         public async Task UpdateRangeAsync(IEnumerable<ExtratoBancarioItem> itens)
         {
             _context.ItensExtratoBancario.UpdateRange(itens);
             await _context.SaveChangesAsync();
         }
+
+        public async Task SubstituirPartesAsync(int itemId, IReadOnlyList<ExtratoItemParte> partes)
+        {
+            _context.ExtratoItemPartes.RemoveRange(_context.ExtratoItemPartes.Where(p => p.ExtratoBancarioItemId == itemId));
+            await _context.ExtratoItemPartes.AddRangeAsync(partes);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId) =>
+            await _context.ItensExtratoBancario.Where(i => i.AbateItemId == itemId).Select(i => i.PessoaMovimentacaoId).ToListAsync();
+
+        public async Task<IEnumerable<int>> PessoasEmPartesAsync(int userId) =>
+            await _context.ExtratoItemPartes.Where(p => p.UsuarioId == userId && p.PessoaMovimentacaoId != null)
+                .Select(p => p.PessoaMovimentacaoId!.Value).Distinct().ToListAsync();
 
         public Task<Dictionary<int, int>> ContarPorPessoaAsync(int userId) =>
             _context.ItensExtratoBancario
@@ -146,6 +164,7 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.Banco)
                 .Include(i => i.TipoCartao)
                 .Include(i => i.TipoMovimentacao)
+                .Include(i => i.Partes)
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
@@ -159,6 +178,8 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.TipoCartao)
                 .Include(i => i.Categoria)
                 .Include(i => i.TipoMovimentacao)
+                .Include(i => i.Partes).ThenInclude(p => p.Categoria)
+                .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
                 .Where(ExtratoBancarioItemFiltros.DoMesOuDaFatura(userId, inicioInclusive, fimExclusive, numeroFatura, bancoId))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)

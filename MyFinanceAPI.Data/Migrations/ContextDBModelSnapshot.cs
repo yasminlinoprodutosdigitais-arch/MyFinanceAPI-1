@@ -681,6 +681,85 @@ namespace MyFinanceAPI.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoItemParte", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoriaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
+
+                    b.Property<int>("ExtratoBancarioItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("extrato_bancario_item_id");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordem");
+
+                    b.Property<int?>("PessoaMovimentacaoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pessoa_movimentacao_id");
+
+                    b.Property<int?>("TipoMovimentacaoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo_movimentacao_id");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_extrato_item_partes");
+
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_extrato_item_partes_categoria_id");
+
+                    b.HasIndex("PessoaMovimentacaoId")
+                        .HasDatabaseName("ix_extrato_item_partes_pessoa_movimentacao_id");
+
+                    b.HasIndex("TipoMovimentacaoId")
+                        .HasDatabaseName("ix_extrato_item_partes_tipo_movimentacao_id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_extrato_item_partes_usuario_id");
+
+                    b.HasIndex("ExtratoBancarioItemId", "Ordem")
+                        .HasDatabaseName("ix_extrato_item_partes_extrato_bancario_item_id_ordem");
+
+                    b.ToTable("extrato_item_partes", null, t =>
+                        {
+                            t.HasCheckConstraint("extrato_item_partes_valor_check", "valor > 0");
+                        });
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ItemLista", b =>
                 {
                     b.Property<int>("Id")
@@ -1762,6 +1841,51 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoItemParte", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_extrato_item_partes_categorias_categoria_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", "ExtratoBancarioItem")
+                        .WithMany("Partes")
+                        .HasForeignKey("ExtratoBancarioItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_extrato_item_partes_extrato_bancario_item_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", "PessoaMovimentacao")
+                        .WithMany()
+                        .HasForeignKey("PessoaMovimentacaoId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_extrato_item_partes_pessoa_movimentacao_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.TipoMovimentacao", "TipoMovimentacao")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimentacaoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_extrato_item_partes_tipos_movimentacao_tipo_movimentacao_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_extrato_item_partes_asp_net_users_usuario_id");
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("ExtratoBancarioItem");
+
+                    b.Navigation("PessoaMovimentacao");
+
+                    b.Navigation("TipoMovimentacao");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ItemLista", b =>
                 {
                     b.HasOne("MyFinanceAPI.Domain.Entities.ItemLista", null)
@@ -1995,6 +2119,11 @@ namespace MyFinanceAPI.Data.Migrations
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancario", b =>
                 {
                     b.Navigation("Itens");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", b =>
+                {
+                    b.Navigation("Partes");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoMovimentacao", b =>

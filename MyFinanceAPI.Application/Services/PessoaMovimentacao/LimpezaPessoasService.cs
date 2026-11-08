@@ -47,5 +47,6 @@ public class LimpezaPessoasService(
             .ToList();
 
     private async Task<IReadOnlySet<int>> PessoasEmRegrasAsync(int userId) =>
-        (await regras.ListarAsync(userId)).Where(r => r.PessoaMovimentacaoId != null).Select(r => r.PessoaMovimentacaoId!.Value).ToHashSet();
+        (await regras.ListarAsync(userId)).Where(r => r.PessoaMovimentacaoId != null).Select(r => r.PessoaMovimentacaoId!.Value)
+            .Concat(await itens.PessoasEmPartesAsync(userId)).ToHashSet();
 }

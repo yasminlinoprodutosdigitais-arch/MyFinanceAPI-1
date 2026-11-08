@@ -50,6 +50,9 @@ namespace MyFinanceAPI.Domain.Entities
         /// </summary>
         public int? AbateItemId { get; set; }
         public PessoaMovimentacao? PessoaMovimentacao { get; set; }
+        /// <summary>Partes do lançamento dividido (card #76, fase 3); vazio = não dividido.</summary>
+        public List<ExtratoItemParte> Partes { get; set; } = new();
+        public bool Dividido => Partes.Count > 0;
     }
 
 }

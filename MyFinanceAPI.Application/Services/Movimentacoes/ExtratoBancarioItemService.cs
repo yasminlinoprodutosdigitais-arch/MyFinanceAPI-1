@@ -125,6 +125,9 @@ namespace MyFinanceAPI.Application.Services
             if (existing.UsuarioId != userId)
                 throw new UnauthorizedAccessException("Usuário não autorizado para alterar este item.");
 
+            if (existing.Dividido && existing.Valor != dto.Valor)
+                throw new RegraNegocioException("Este lançamento está dividido: desfaça a divisão para mudar o valor.");
+
             // Atualiza campos permitidos
             existing.DataMovimentacao = dto.DataMovimentacao;
             existing.Valor = dto.Valor;
@@ -185,9 +188,62 @@ namespace MyFinanceAPI.Application.Services
                 throw new RegraNegocioException("Só um pagamento recebido (entrada) pode abater uma compra.");
 
             var compra = await _itemRepository.GetByIdAsync(pagamento.AbateItemId.Value);
-            if (compra == null || compra.UsuarioId != userId || compra.TipoLancamento != TipoLancamentoExtrato.Saida
-                || compra.PessoaMovimentacaoId == null || compra.PessoaMovimentacaoId != pagamento.PessoaMovimentacaoId)
+            // Dividida (card #76, fase 3): vale a pessoa de alguma parte.
+            var mesmaPessoa = compra != null && pagamento.PessoaMovimentacaoId != null && (compra.Dividido
+                ? compra.Partes.Any(p => p.PessoaMovimentacaoId == pagamento.PessoaMovimentacaoId)
+                : compra.PessoaMovimentacaoId == pagamento.PessoaMovimentacaoId);
+            if (compra == null || compra.UsuarioId != userId || compra.TipoLancamento != TipoLancamentoExtrato.Saida || !mesmaPessoa)
                 throw new RegraNegocioException("A compra abatida tem que ser uma saída da mesma pessoa.");
+        }
+
+        public async Task DividirAsync(int id, IReadOnlyList<ExtratoItemParteDTO> partes, int userId)
+        {
+            var item = await _itemRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Item de extrato não encontrado.");
+            if (item.UsuarioId != userId)
+                throw new UnauthorizedAccessException("Usuário não autorizado para alterar este item.");
+
+            ValidarPartes(item, partes);
+
+            static int? IdOuNulo(int? v) => v is > 0 ? v : null;
+            var pessoas = partes.Select(p => IdOuNulo(p.PessoaMovimentacaoId)).OfType<int>().Distinct().ToList();
+            foreach (var pessoaId in pessoas)
+            {
+                if (await _pessoaMovimentacaoRepository.ObterPorIdAsync(pessoaId, userId) == null)
+                    throw new RegraNegocioException("Pessoa da parte não encontrada.");
+            }
+
+            // Um pagamento que já abate esta compra precisa continuar sendo de quem deve alguma parte dela.
+            var podemAbater = partes.Count > 0 ? pessoas.Select(p => (int?)p).ToHashSet() : new HashSet<int?> { item.PessoaMovimentacaoId };
+            if ((await _itemRepository.PessoasQueAbatemAsync(id)).Any(p => !podemAbater.Contains(p)))
+                throw new RegraNegocioException("Há pagamento abatendo esta compra de uma pessoa que ficaria fora da divisão.");
+
+            await _itemRepository.SubstituirPartesAsync(id, partes.Select((p, i) => new ExtratoItemParte
+            {
+                ExtratoBancarioItemId = id,
+                UsuarioId = userId,
+                Valor = p.Valor,
+                CategoriaId = IdOuNulo(p.CategoriaId),
+                TipoMovimentacaoId = IdOuNulo(p.TipoMovimentacaoId),
+                PessoaMovimentacaoId = IdOuNulo(p.PessoaMovimentacaoId),
+                Descricao = string.IsNullOrWhiteSpace(p.Descricao) ? null : p.Descricao.Trim(),
+                Ordem = i
+            }).ToList());
+        }
+
+        /// <summary>Só saída se divide; 2 ou mais partes positivas cuja soma é o valor do lançamento (vazio = desfazer).</summary>
+        public static void ValidarPartes(ExtratoBancarioItem item, IReadOnlyList<ExtratoItemParteDTO> partes)
+        {
+            if (partes.Count == 0)
+                return;
+            if (item.TipoLancamento != TipoLancamentoExtrato.Saida)
+                throw new RegraNegocioException("Só uma saída pode ser dividida.");
+            if (partes.Count < 2)
+                throw new RegraNegocioException("Divida em pelo menos 2 partes.");
+            if (partes.Any(p => p.Valor <= 0))
+                throw new RegraNegocioException("Cada parte precisa ter um valor maior que zero.");
+            if (partes.Sum(p => p.Valor) != item.Valor)
+                throw new RegraNegocioException("A soma das partes tem que ser igual ao valor do lançamento.");
         }
 
         public async Task RemoveAsync(int id, int userId)

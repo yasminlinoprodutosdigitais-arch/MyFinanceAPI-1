@@ -43,5 +43,11 @@ namespace MyFinanceAPI.Domain.Interfaces
         Task<Dictionary<int, int>> ContarPorPessoaAsync(int userId);
         /// <summary>Tira estas pessoas dos lançamentos do usuário; o nome dela fica no lançamento (card #76, fase 2).</summary>
         Task DesligarPessoasAsync(int userId, IReadOnlyCollection<int> pessoaIds);
+        /// <summary>Troca as partes do lançamento por estas; vazio desfaz a divisão (card #76, fase 3).</summary>
+        Task SubstituirPartesAsync(int itemId, IReadOnlyList<ExtratoItemParte> partes);
+        /// <summary>As pessoas dos pagamentos que abatem este lançamento.</summary>
+        Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId);
+        /// <summary>As pessoas usadas em partes de lançamentos do usuário.</summary>
+        Task<IEnumerable<int>> PessoasEmPartesAsync(int userId);
     }
 }

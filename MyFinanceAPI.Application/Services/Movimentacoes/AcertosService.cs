@@ -42,13 +42,14 @@ public class AcertosService(IExtratoBancarioItemRepository itens) : IAcertosServ
     public static AcertosDTO Montar(IEnumerable<ExtratoBancarioItem> lancamentos, DateOnly? inicio, DateOnly? fimExclusive, int? bancoId)
     {
         var todos = lancamentos
+            .SelectMany(PorPessoaDasPartes)
             .Where(i => i.PessoaMovimentacao is { } p && (p.EntraNosAcertos || p.EhTitular))
             .ToList();
 
         var compras = todos.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Saida).ToList();
         var pagamentos = todos.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Entrada).ToList();
         var pagoPorCompra = pagamentos.Where(p => p.AbateItemId != null)
-            .GroupBy(p => p.AbateItemId!.Value)
+            .GroupBy(p => (Compra: p.AbateItemId!.Value, Pessoa: p.PessoaMovimentacaoId))
             .ToDictionary(g => g.Key, g => g.Sum(p => p.Valor));
 
         bool NoPeriodo(ExtratoBancarioItem i) =>
@@ -88,7 +89,7 @@ public class AcertosService(IExtratoBancarioItemRepository itens) : IAcertosServ
                 ProximasParcelas = parcelas,
                 Compras = comprasNoPeriodo.Select(c =>
                 {
-                    var pago = pagoPorCompra.GetValueOrDefault(c.Id);
+                    var pago = pagoPorCompra.GetValueOrDefault((c.Id, c.PessoaMovimentacaoId));
                     return new AcertoCompraDTO
                     {
                         Id = c.Id, Data = c.DataMovimentacao, Descricao = c.Descricao, Valor = c.Valor, BancoId = c.BancoId,
@@ -127,6 +128,27 @@ public class AcertosService(IExtratoBancarioItemRepository itens) : IAcertosServ
     /// Parcelas que ainda vão vir. A mesma compra aparece uma vez por fatura importada; agrupa pela descrição sem
     /// números + valor + total de parcelas e parte da maior parcela já importada.
     /// </summary>
+    /// <summary>
+    /// Card #76, fase 3: uma compra dividida vale pela pessoa de cada parte (partes da mesma pessoa somam uma compra só);
+    /// parte sem pessoa é do dono e não entra. Devolve cópias: o Id continua o do lançamento, para o abatimento.
+    /// </summary>
+    private static IEnumerable<ExtratoBancarioItem> PorPessoaDasPartes(ExtratoBancarioItem item)
+    {
+        if (!item.Dividido || item.TipoLancamento != TipoLancamentoExtrato.Saida)
+            return [item];
+
+        return item.Partes
+            .Where(p => p.PessoaMovimentacao != null)
+            .GroupBy(p => p.PessoaMovimentacaoId)
+            .Select(g => new ExtratoBancarioItem
+            {
+                Id = item.Id, UsuarioId = item.UsuarioId, DataMovimentacao = item.DataMovimentacao, TipoLancamento = item.TipoLancamento,
+                Descricao = item.Descricao, BancoId = item.BancoId, Banco = item.Banco, NumeroFatura = item.NumeroFatura,
+                ParcelaAtual = item.ParcelaAtual, QuantidadeParcelas = item.QuantidadeParcelas, ChaveDescricao = item.ChaveDescricao,
+                Valor = g.Sum(p => p.Valor), PessoaMovimentacaoId = g.Key, PessoaMovimentacao = g.First().PessoaMovimentacao
+            });
+    }
+
     private static List<AcertoParcelaFuturaDTO> ProximasParcelas(IEnumerable<ExtratoBancarioItem> compras) =>
         compras
             // A última parcela também entra no grupo: importada, ela zera o que falta daquela compra.

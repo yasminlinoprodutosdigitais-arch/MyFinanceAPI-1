@@ -34,6 +34,7 @@ public class LimpezaPessoasServiceTests
     {
         _pessoas.Setup(r => r.ListarAsync(UserId)).ReturnsAsync(() => _cadastradas);
         _regras.Setup(r => r.ListarAsync(UserId)).ReturnsAsync([new RegraClassificacao { Id = 1, Texto = "PIX GIO", PessoaMovimentacaoId = 6 }]);
+        _itens.Setup(r => r.PessoasEmPartesAsync(UserId)).ReturnsAsync(new[] { 7 });
         _itens.Setup(r => r.ContarPorPessoaAsync(UserId)).ReturnsAsync(new Dictionary<int, int> { [1] = 12, [3] = 4 });
         _itens.Setup(r => r.DesligarPessoasAsync(UserId, It.IsAny<IReadOnlyCollection<int>>()))
             .Callback<int, IReadOnlyCollection<int>>((_, ids) => { _uow.Registrar("Desligar"); _desligadas = ids; })
@@ -50,7 +51,8 @@ public class LimpezaPessoasServiceTests
     {
         var candidatas = await Servico().CandidatasAsync(UserId);
 
-        Assert.Equal([(7, "AMAZON BR", 0), (1, "SHOPEE", 12)], candidatas.Select(c => (c.Id, c.NomePessoa, c.Lancamentos)));
+        // AMAZON BR (7) é usada em parte de lançamento dividido: fica.
+        Assert.Equal([(1, "SHOPEE", 12)], candidatas.Select(c => (c.Id, c.NomePessoa, c.Lancamentos)));
     }
 
     [Fact]
@@ -59,9 +61,9 @@ public class LimpezaPessoasServiceTests
         // 3 (acertos), 4 (com padrão) e 99 (não existe) são ignoradas.
         var quantidade = await Servico().RemoverAsync(UserId, [1, 3, 4, 7, 99]);
 
-        Assert.Equal(2, quantidade);
-        Assert.Equal([1, 7], _desligadas!.Order());
-        Assert.Equal([1, 7], _removidas!.Order());
+        Assert.Equal(1, quantidade);
+        Assert.Equal([1], _desligadas!.Order());
+        Assert.Equal([1], _removidas!.Order());
         Assert.Empty(_uow.Fora);
     }
 

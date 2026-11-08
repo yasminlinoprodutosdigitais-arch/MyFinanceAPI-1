@@ -130,7 +130,8 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
         if (!await _context.PessoasMovimentacao.AnyAsync(p => p.Id == id && p.UsuarioId == userId))
             return false;
 
-        return await _context.ItensExtratoBancario.AnyAsync(i => i.PessoaMovimentacaoId == id);
+        return await _context.ItensExtratoBancario.AnyAsync(i => i.PessoaMovimentacaoId == id)
+            || await _context.ExtratoItemPartes.AnyAsync(p => p.PessoaMovimentacaoId == id);
     }
 
     public async Task<IEnumerable<PessoaMovimentacao>> VerificaPossuiPessoa(string? nomePessoa, int userId)

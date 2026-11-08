@@ -40,7 +40,7 @@ public partial class ClassificacaoService(IRegraClassificacaoRepository regras, 
         return new PreviaRegraResultadoDTO
         {
             Total = batem.Count,
-            SemCategoria = batem.Count(i => i.CategoriaId == null),
+            SemCategoria = batem.Count(SemCategoria),
             Conflitos = conflitos.Count,
             Exemplos = batem
                 .OrderBy(i => i.CategoriaId == null ? 0 : 1)
@@ -58,7 +58,7 @@ public partial class ClassificacaoService(IRegraClassificacaoRepository regras, 
         // Ligada ou não: "aplicar de novo" é um pedido explícito.
         regra.Ativa = true;
         var alvos = (await itens.ListarParaClassificacaoAsync(userId))
-            .Where(i => i.CategoriaId == null && Bate(regra, i))
+            .Where(i => SemCategoria(i) && Bate(regra, i))
             .ToList();
         foreach (var item in alvos)
         {
@@ -82,7 +82,7 @@ public partial class ClassificacaoService(IRegraClassificacaoRepository regras, 
             return [];
 
         var todos = await itens.ListarParaClassificacaoAsync(userId);
-        return Sugerir(todos.Where(i => i.CategoriaId != null), todos.Where(i => ids.Contains(i.Id) && i.CategoriaId == null));
+        return Sugerir(todos.Where(i => i.CategoriaId != null), todos.Where(i => ids.Contains(i.Id) && SemCategoria(i)));
     }
 
     public async Task<IReadOnlyList<SugestaoRegraDTO>> SugestoesDeRegraAsync(int userId)
@@ -114,7 +114,7 @@ public partial class ClassificacaoService(IRegraClassificacaoRepository regras, 
                 .First());
 
         return lista
-            .Where(i => i.CategoriaId == null)
+            .Where(SemCategoria)
             .Where(i => ClassificadorRegras.Encontrar(ligadas, i.Descricao, i.NomePessoaTransacao, i.BancoId) == null)
             .GroupBy(i => RegraClassificacao.Normalizar(TextoSugerido(i.Descricao, i.NomePessoaTransacao)) ?? "")
             .Where(g => g.Key.Length >= 2 && g.Count() >= 2 && !textosComRegra.Contains(g.Key))
@@ -175,6 +175,9 @@ public partial class ClassificacaoService(IRegraClassificacaoRepository regras, 
             .Select(x => new SugestaoCategoriaDTO { ItemId = x.Item.Id, CategoriaId = x.Sugestao.CategoriaId, Vezes = x.Sugestao.Vezes })
             .ToList();
     }
+
+    /// <summary>Lançamento dividido já foi classificado pelas partes (card #76, fase 3).</summary>
+    private static bool SemCategoria(ExtratoBancarioItem i) => i.CategoriaId == null && !i.Dividido;
 
     private static bool Bate(RegraClassificacao regra, ExtratoBancarioItem item) =>
         ClassificadorRegras.Bate(regra, RegraClassificacao.Normalizar(item.Descricao),

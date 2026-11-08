@@ -35,7 +35,11 @@ public class DomainToDTOMappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             // A categoria vem por CategoriaId. Sem o Ignore, o ReverseMap desfaz o achatamento de CategoriaNome
             // (Categoria.Nome desde o [DB] P3) e cria uma Categoria vazia, que o EF tenta inserir ao gravar o item.
-            .ForMember(dest => dest.Categoria, opt => opt.Ignore());
+            .ForMember(dest => dest.Categoria, opt => opt.Ignore())
+            .ForMember(dest => dest.Partes, opt => opt.Ignore());
+        CreateMap<ExtratoItemParte, ExtratoItemParteDTO>()
+            .ForMember(d => d.CategoriaNome, o => o.MapFrom(s => s.Categoria != null ? s.Categoria.Nome : null))
+            .ForMember(d => d.PessoaNome, o => o.MapFrom(s => s.PessoaMovimentacao != null ? s.PessoaMovimentacao.NomePessoa : null));
         CreateMap<TipoCartao, TipoCartaoDTO>().ReverseMap();
         CreateMap<TipoMovimentacao, TipoMovimentacaoDTO>().ReverseMap();
         CreateMap<PessoaMovimentacao, PessoaMovimentacaoDTO>().ReverseMap();

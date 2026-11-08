@@ -23,6 +23,7 @@ namespace MyFinanceAPI.Data.Context
                 public DbSet<TipoMovimentacao> TiposMovimentacao { get; set; }
                 public DbSet<PessoaMovimentacao> PessoasMovimentacao { get; set; }
                 public DbSet<RegraClassificacao> RegrasClassificacao { get; set; }
+                public DbSet<ExtratoItemParte> ExtratoItemPartes { get; set; }
 
                 // 👇 DbSets do extrato
                 public DbSet<ExtratoBancario> ExtratosBancarios { get; set; }

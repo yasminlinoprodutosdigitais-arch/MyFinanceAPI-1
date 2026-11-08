@@ -44,6 +44,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public bool AlteraVinculoPessoa { get; set; }
         /// <summary>Compra (Saída da mesma pessoa) que este pagamento abate; nulo = saldo geral (card #45, parte 3).</summary>
         public int? AbateItemId { get; set; }
+        /// <summary>Partes do lançamento dividido (card #76, fase 3). Só leitura aqui: grava em /DividirExtratoBancarioItem.</summary>
+        public List<ExtratoItemParteDTO> Partes { get; set; } = new();
 
 
         public BancoDTO? Banco { get; set; }
