@@ -146,54 +146,27 @@ namespace MyFinanceAPI.Application.Services
             DateOnly? dataFim = null;
             decimal somaValores = 0;
 
-            using var reader = new StreamReader(
-                arquivoStream,
-                System.Text.Encoding.UTF8,
-                detectEncodingFromByteOrderMarks: true,
-                leaveOpen: false
-            );
-
-            var header = await reader.ReadLineAsync();
-            if (header == null)
+            // Card #76, fase 4: o formato vem do conteúdo; desconhecido é recusado sem gravar nada.
+            using var memoria = new MemoryStream();
+            await arquivoStream.CopyToAsync(memoria);
+            var arquivo = LeitorArquivoImportacao.Ler(memoria.ToArray());
+            if (arquivo.Vazio)
             {
-                return new ExtratoImportacaoResultadoDTO(
-                    0,
-                    0,
-                    0,
-                    0,
-                    "Arquivo vazio ou inválido."
-                );
+                return new ExtratoImportacaoResultadoDTO(0, 0, 0, 0, "Arquivo vazio ou inválido.");
             }
 
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            if (arquivo.Formato != "Nubank" && banco.TipoCartao is { } tipoConta && tipoConta.EhCredito != arquivo.EhFatura)
+                throw new RegraNegocioException(arquivo.EhFatura
+                    ? "Este arquivo é uma fatura: escolha uma conta de cartão de crédito."
+                    : "Este arquivo é um extrato: escolha uma conta que não seja de cartão de crédito.");
+
+            ignorados = arquivo.Invalidas;
+            foreach (var linhaLida in arquivo.Linhas)
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                var parts = line.Split(',', 4);
-                if (parts.Length < 4)
-                {
-                    ignorados++;
-                    continue;
-                }
-
-                var dataStr = parts[0].Trim();
-                var valorStr = parts[1].Trim();
-                var identificadorStr = parts[2].Trim();
-                var descricaoStr = parts[3].Trim();
-
-                if (!DateOnly.TryParseExact(dataStr, "dd/MM/yyyy", culturePtBr, DateTimeStyles.None, out var dataMov))
-                {
-                    ignorados++;
-                    continue;
-                }
-
-                if (!decimal.TryParse(valorStr, NumberStyles.Number, cultureDecimal, out var valor))
-                {
-                    ignorados++;
-                    continue;
-                }
+                var dataMov = linhaLida.Data;
+                var valor = linhaLida.Valor;
+                var identificadorStr = linhaLida.Identificador;
+                var descricaoStr = linhaLida.Descricao;
 
                 var chaveImportacao = GerarChaveImportacao(identificadorStr, dataMov, valor, descricaoStr);
                 if (!chavesExistentes.Add(chaveImportacao))
@@ -228,7 +201,11 @@ namespace MyFinanceAPI.Application.Services
                     
                     string? nomePessoa = null;
                     var encargo = EhEncargo(descricaoStr);
-                    if (!encargo && !string.IsNullOrWhiteSpace(descricaoStr))
+                    if (!encargo && !string.IsNullOrWhiteSpace(linhaLida.Nome))
+                    {
+                        nomePessoa = linhaLida.Nome.Trim().ToUpper();
+                    }
+                    else if (!encargo && !string.IsNullOrWhiteSpace(descricaoStr))
                     {
                         var partesDesc = descricaoStr.Split('-', StringSplitOptions.RemoveEmptyEntries);
                         if (partesDesc.Length >= 2)
@@ -293,6 +270,11 @@ namespace MyFinanceAPI.Application.Services
                         NomePessoaTransacao = nomePessoa,
                         Identificador = identificadorStr,
                         ChaveImportacao = chaveImportacao,
+                        NumeroFatura = linhaLida.NumeroFatura,
+                        ParcelaAtual = linhaLida.ParcelaAtual,
+                        QuantidadeParcelas = linhaLida.QuantidadeParcelas,
+                        EhParcelado = linhaLida.QuantidadeParcelas != null ? true : null,
+                        Observacao = linhaLida.Observacao,
                     };
 
                     listaItens.Add(item);
@@ -320,6 +302,7 @@ namespace MyFinanceAPI.Application.Services
                       + (corrigidos > 0 ? $", {corrigidos} corrigido(s) (centavos)" : "")
                       + (ignorados > 0 ? $", {ignorados} ignorado(s)." : ".")
                     : "Nenhum lançamento válido foi encontrado no arquivo.";
+                semNovos += arquivo.Aviso;
                 return new ExtratoImportacaoResultadoDTO(
                     0,
                     0,
@@ -360,14 +343,19 @@ namespace MyFinanceAPI.Application.Services
 
             var mensagem = $"Importação concluída. Criados: {criados}, já importados: {jaImportados}, "
                 + (corrigidos > 0 ? $"corrigidos (centavos): {corrigidos}, " : "")
-                + $"ignorados: {ignorados}.";
+                + $"ignorados: {ignorados}." + arquivo.Aviso;
+            // Fatura aparece no mês do vencimento, que pode não ser o das compras: a mensagem diz onde encontrar.
+            var mesDestino = arquivo.Linhas.FirstOrDefault(l => l.NumeroFatura != null)?.NumeroFatura
+                ?? dataFim?.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+            if (mesDestino != null)
+                mensagem += " Veja em " + DateOnly.ParseExact(mesDestino + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture).ToString("MMMM 'de' yyyy", culturePtBr) + ".";
             return new ExtratoImportacaoResultadoDTO(
                 extrato.Id,
                 criados,
                 ignorados,
                 somaValores,
                 mensagem
-            );
+            ) { MesDestino = mesDestino };
         }
 
         private async Task<Categoria> ObterCategoriaEncargosAsync(int userId) =>

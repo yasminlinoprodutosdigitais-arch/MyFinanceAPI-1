@@ -25,6 +25,7 @@ public class BancoRepository(ContextDB context) : RepositorioDoUsuario<Banco>(co
         existente.NumeroConta = entrada.NumeroConta;
         existente.TipoCartaoId = entrada.TipoCartaoId;
         existente.SaldoInicial = entrada.SaldoInicial;
+        existente.DiaVencimento = entrada.DiaVencimento;
         existente.Ativo = entrada.Ativo;
     }
 

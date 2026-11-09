@@ -12,6 +12,8 @@ public class BancoService(IBancoRepository bancoRepository, IMapper mapper)
     // UX_Banco_UserId_NomeBanco é exata; aqui a regra também ignora maiúsculas e espaços.
     protected override async Task ValidarGravacaoAsync(BancoDTO dto, int userId, int ignorarId)
     {
+        if (dto.DiaVencimento is < 1 or > 31)
+            throw new RegraNegocioException("O dia do vencimento tem que ser entre 1 e 31.");
         if (await bancoRepository.ExisteNomeAsync(userId, dto.NomeBanco ?? string.Empty, ignorarId))
             throw new RegraNegocioException($"Já existe um banco chamado {dto.NomeBanco?.Trim()}.");
     }

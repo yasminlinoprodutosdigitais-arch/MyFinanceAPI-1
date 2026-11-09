@@ -75,12 +75,16 @@ namespace MyFinanceAPI.Data.Repositories
 
             var start = new DateOnly(year, mon, 1);
             var end = start.AddMonths(1);
+            var mesFatura = start.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
 
             var extratos = await _context.ExtratosBancarios.AsNoTracking()
+                // Fatura aparece no mês dela (card #76, fase 4): a primeira compra pode ser de meses antes.
                 .Where(e => e.UsuarioId == userId
-                    && e.DataInicioPeriodo.HasValue
-                    && e.DataInicioPeriodo.Value >= start
-                    && e.DataInicioPeriodo.Value < end)
+                    && (e.Itens.Any(i => i.NumeroFatura == mesFatura)
+                        || (!e.Itens.Any(i => i.NumeroFatura != null)
+                            && e.DataInicioPeriodo.HasValue
+                            && e.DataInicioPeriodo.Value >= start
+                            && e.DataInicioPeriodo.Value < end)))
                 .Include(e => e.Itens)
                 .OrderByDescending(e => e.DataImportacao)
                 .ToListAsync();

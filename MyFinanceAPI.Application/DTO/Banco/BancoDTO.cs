@@ -14,6 +14,8 @@ public class BancoDTO
     [TextoAte(20)] public string? NumeroConta { get; set; }
     public int TipoCartaoId { get; set; }
     public decimal? SaldoInicial { get; set; }
+    /// <summary>Dia do vencimento da fatura (1 a 31), só para cartão de crédito.</summary>
+    public int? DiaVencimento { get; set; }
     public DateTime DataAlteracao { get; set;}
 
     public bool Ativo { get; set; }

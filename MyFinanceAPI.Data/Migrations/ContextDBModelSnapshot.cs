@@ -212,6 +212,10 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<int?>("DiaVencimento")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_vencimento");
+
                     b.Property<string>("NomeBanco")
                         .IsRequired()
                         .HasMaxLength(120)

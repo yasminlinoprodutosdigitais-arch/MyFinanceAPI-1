@@ -262,6 +262,7 @@ categoria.subcategoria
 banco.agencia
 banco.ativo
 banco.dataAlteracao
+banco.diaVencimento
 banco.id
 banco.nomeBanco
 banco.numeroConta
@@ -476,6 +477,7 @@ extratoBancario.itens.banco
 extratoBancario.itens.banco.agencia
 extratoBancario.itens.banco.ativo
 extratoBancario.itens.banco.dataAlteracao
+extratoBancario.itens.banco.diaVencimento
 extratoBancario.itens.banco.id
 extratoBancario.itens.banco.nomeBanco
 extratoBancario.itens.banco.numeroConta
@@ -591,6 +593,7 @@ extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.ba
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.agencia
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.ativo
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.dataAlteracao
+extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.diaVencimento
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.id
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.nomeBanco
 extratoBancario.itens.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.numeroConta
@@ -1028,6 +1031,7 @@ extratoBancarioItem.banco
 extratoBancarioItem.banco.agencia
 extratoBancarioItem.banco.ativo
 extratoBancarioItem.banco.dataAlteracao
+extratoBancarioItem.banco.diaVencimento
 extratoBancarioItem.banco.id
 extratoBancarioItem.banco.nomeBanco
 extratoBancarioItem.banco.numeroConta
@@ -1143,6 +1147,7 @@ extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banc
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.agencia
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.ativo
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.dataAlteracao
+extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.diaVencimento
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.id
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.nomeBanco
 extratoBancarioItem.pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.numeroConta
@@ -1570,6 +1575,7 @@ extratoBancarioItem.tipoMovimentacaoNome
 extratoBancarioItem.valor
 extratoImportacaoResultado.extratoId
 extratoImportacaoResultado.mensagem
+extratoImportacaoResultado.mesDestino
 extratoImportacaoResultado.quantidadeCriados
 extratoImportacaoResultado.quantidadeIgnorados
 extratoImportacaoResultado.valorTotal
@@ -1709,6 +1715,7 @@ movimentacaoDiaria.banco
 movimentacaoDiaria.banco.agencia
 movimentacaoDiaria.banco.ativo
 movimentacaoDiaria.banco.dataAlteracao
+movimentacaoDiaria.banco.diaVencimento
 movimentacaoDiaria.banco.id
 movimentacaoDiaria.banco.nomeBanco
 movimentacaoDiaria.banco.numeroConta
@@ -1808,6 +1815,7 @@ movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.agencia
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.ativo
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.dataAlteracao
+movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.diaVencimento
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.id
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.nomeBanco
 movimentacaoDiaria.tipoMovimentacao.extratoBancarioItem.banco.numeroConta
@@ -2264,6 +2272,7 @@ pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.agencia
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.ativo
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.dataAlteracao
+pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.diaVencimento
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.id
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.nomeBanco
 pessoaMovimentacao.tipoMovimentacao.extratoBancarioItem.banco.numeroConta
