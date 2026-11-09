@@ -194,7 +194,7 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.TipoMovimentacao)
                 .Include(i => i.Partes).ThenInclude(p => p.Categoria)
                 .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
-                .Include(i => i.NotaFiscal)
+                .Include(i => i.NotaFiscal).ThenInclude(n => n!.Itens)
                 .Where(ExtratoBancarioItemFiltros.DoMesOuDaFatura(userId, inicioInclusive, fimExclusive, numeroFatura, bancoId))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)

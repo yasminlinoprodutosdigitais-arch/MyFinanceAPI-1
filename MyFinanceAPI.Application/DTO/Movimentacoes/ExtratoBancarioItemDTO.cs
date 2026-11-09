@@ -48,6 +48,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public List<ExtratoItemParteDTO> Partes { get; set; } = new();
         /// <summary>O lançamento tem nota fiscal salva (card #76, fase 6).</summary>
         public bool TemNota { get; set; }
+        /// <summary>Nomes dos itens da nota, para a busca do Extrato achar o produto.</summary>
+        public List<string> ItensNota { get; set; } = new();
 
 
         public BancoDTO? Banco { get; set; }

@@ -32,6 +32,7 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<ExtratoBancario, ExtratoBancarioDTO>().ReverseMap();
         CreateMap<ExtratoBancarioItem, ExtratoBancarioItemDTO>()
             .ForMember(d => d.TemNota, o => o.MapFrom(s => s.NotaFiscal != null))
+            .ForMember(d => d.ItensNota, o => o.MapFrom(s => s.NotaFiscal != null ? s.NotaFiscal.Itens.Select(i => i.Nome).ToList() : new List<string>()))
             .ReverseMap()
             .ForMember(dest => dest.NotaFiscal, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())

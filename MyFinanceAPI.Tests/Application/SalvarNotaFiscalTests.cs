@@ -1,4 +1,5 @@
 using Moq;
+using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Services;
 using MyFinanceAPI.Domain.Entities;
@@ -98,6 +99,17 @@ public class SalvarNotaFiscalTests
 
         Assert.Null(_gravada);
         Assert.Null(_partes);
+    }
+
+    [Fact]
+    public void Lancamento_leva_os_nomes_dos_itens_para_a_busca()
+    {
+        var mapper = MapperFactory.Create();
+        Assert.Empty(mapper.Map<ExtratoBancarioItemDTO>(_lancamento).ItensNota);
+
+        _lancamento.NotaFiscal = new NotaFiscal { Itens = [new NotaFiscalItem { Nome = "Ração" }, new NotaFiscalItem { Nome = "Sabão" }] };
+
+        Assert.Equal(["Ração", "Sabão"], mapper.Map<ExtratoBancarioItemDTO>(_lancamento).ItensNota);
     }
 
     [Fact]

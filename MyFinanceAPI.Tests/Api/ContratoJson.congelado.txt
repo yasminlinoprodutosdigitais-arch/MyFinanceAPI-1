@@ -533,6 +533,7 @@ extratoBancario.itens.ehParcelado
 extratoBancario.itens.extratoBancarioId
 extratoBancario.itens.id
 extratoBancario.itens.identificador
+extratoBancario.itens.itensNota
 extratoBancario.itens.nomePessoaTransacao
 extratoBancario.itens.numeroFatura
 extratoBancario.itens.observacao
@@ -1088,6 +1089,7 @@ extratoBancarioItem.ehParcelado
 extratoBancarioItem.extratoBancarioId
 extratoBancarioItem.id
 extratoBancarioItem.identificador
+extratoBancarioItem.itensNota
 extratoBancarioItem.nomePessoaTransacao
 extratoBancarioItem.numeroFatura
 extratoBancarioItem.observacao
