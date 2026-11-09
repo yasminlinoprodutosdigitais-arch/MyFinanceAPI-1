@@ -18,21 +18,47 @@ namespace MyFinanceAPI.Api.Controllers
         private readonly IExtratoBancarioItemService _extratoBancarioItemService;
         private readonly IAcertosService _acertosService;
         private readonly IResumoCategoriasService _resumoCategorias;
+        private readonly INotaFiscalService _notaFiscal;
 
         public ExtratoBancarioItemController(
             IExtratoBancarioItemService extratoBancarioItemService,
             IAcertosService acertosService,
-            IResumoCategoriasService resumoCategorias)
+            IResumoCategoriasService resumoCategorias,
+            INotaFiscalService notaFiscal)
         {
             _extratoBancarioItemService = extratoBancarioItemService;
             _acertosService = acertosService;
             _resumoCategorias = resumoCategorias;
+            _notaFiscal = notaFiscal;
         }
 
         /// <summary>
         /// Acertos com pessoas (card #45, parte 3): quem me deve, por pessoa. inicio/fim em "AAAA-MM" (vazio = desde o
         /// início / até hoje); bancoId filtra as compras da conta ou do cartão e os pagamentos que as abatem.
         /// </summary>
+        /// <summary>Card #76, fase 6: lê a NFC-e do PR pelo link do QR Code. POST porque o link leva a chave da nota.</summary>
+        [HttpPost("/LerNotaFiscal")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.NotaFiscalDTO>> LerNotaFiscal([FromBody] MyFinanceAPI.Application.DTO.Movimentacoes.LerNotaFiscalDTO dto) =>
+            Ok(await _notaFiscal.LerAsync(UsuarioId, dto?.Link));
+
+        [HttpPut("/SalvarNotaFiscal/{itemId:int}")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.NotaSalvaDTO>> SalvarNotaFiscal(int itemId, [FromBody] MyFinanceAPI.Application.DTO.Movimentacoes.NotaFiscalDTO nota) =>
+            Ok(await _notaFiscal.SalvarAsync(UsuarioId, itemId, nota));
+
+        [HttpGet("/GetNotaFiscal/{itemId:int}")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.NotaFiscalDTO>> GetNotaFiscal(int itemId)
+        {
+            var nota = await _notaFiscal.ObterAsync(UsuarioId, itemId);
+            return nota is null ? NaoEncontrado("Este lançamento não tem nota.") : Ok(nota);
+        }
+
+        [HttpDelete("/DeleteNotaFiscal/{itemId:int}")]
+        public async Task<IActionResult> DeleteNotaFiscal(int itemId)
+        {
+            await _notaFiscal.RemoverAsync(UsuarioId, itemId);
+            return NoContent();
+        }
+
         [HttpGet("/GetResumoCategorias")]
         public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO>> GetResumoCategorias([FromQuery] string? month) =>
             Ok(await _resumoCategorias.ObterAsync(UsuarioId, month));

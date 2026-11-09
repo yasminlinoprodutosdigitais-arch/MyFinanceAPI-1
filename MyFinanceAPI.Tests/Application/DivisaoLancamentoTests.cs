@@ -48,6 +48,16 @@ public class DivisaoLancamentoTests
     }
 
     [Fact]
+    public async Task Recusa_categoria_de_outro_usuario_sem_gravar()
+    {
+        _itens.Setup(r => r.TemCategoriaForaDoUsuarioAsync(It.Is<IReadOnlyCollection<int>>(c => c.Contains(4)), UserId)).ReturnsAsync(true);
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Dividir(Parte(200), Parte(100, 4)));
+
+        Assert.Null(_gravadas);
+    }
+
+    [Fact]
     public async Task Lista_vazia_desfaz()
     {
         await Dividir();

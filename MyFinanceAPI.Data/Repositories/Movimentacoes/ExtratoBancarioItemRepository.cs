@@ -93,6 +93,12 @@ namespace MyFinanceAPI.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> TemCategoriaForaDoUsuarioAsync(IReadOnlyCollection<int> categoriaIds, int userId)
+        {
+            var ids = categoriaIds.Distinct().ToList();
+            return ids.Count > 0 && await _context.Set<Categoria>().CountAsync(c => ids.Contains(c.Id) && c.UsuarioId == userId) != ids.Count;
+        }
+
         public async Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId) =>
             await _context.ItensExtratoBancario.Where(i => i.AbateItemId == itemId).Select(i => i.PessoaMovimentacaoId).ToListAsync();
 
@@ -188,6 +194,7 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.TipoMovimentacao)
                 .Include(i => i.Partes).ThenInclude(p => p.Categoria)
                 .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
+                .Include(i => i.NotaFiscal)
                 .Where(ExtratoBancarioItemFiltros.DoMesOuDaFatura(userId, inicioInclusive, fimExclusive, numeroFatura, bancoId))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)

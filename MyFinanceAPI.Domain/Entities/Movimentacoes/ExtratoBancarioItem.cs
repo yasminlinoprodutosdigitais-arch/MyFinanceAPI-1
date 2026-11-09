@@ -53,6 +53,9 @@ namespace MyFinanceAPI.Domain.Entities
         /// <summary>Partes do lançamento dividido (card #76, fase 3); vazio = não dividido.</summary>
         public List<ExtratoItemParte> Partes { get; set; } = new();
         public bool Dividido => Partes.Count > 0;
+        /// <summary>Nota fiscal lançada neste lançamento (card #76, fase 6).</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public NotaFiscal? NotaFiscal { get; set; }
     }
 
 }

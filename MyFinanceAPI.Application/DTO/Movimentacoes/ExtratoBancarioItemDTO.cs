@@ -46,6 +46,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public int? AbateItemId { get; set; }
         /// <summary>Partes do lançamento dividido (card #76, fase 3). Só leitura aqui: grava em /DividirExtratoBancarioItem.</summary>
         public List<ExtratoItemParteDTO> Partes { get; set; } = new();
+        /// <summary>O lançamento tem nota fiscal salva (card #76, fase 6).</summary>
+        public bool TemNota { get; set; }
 
 
         public BancoDTO? Banco { get; set; }

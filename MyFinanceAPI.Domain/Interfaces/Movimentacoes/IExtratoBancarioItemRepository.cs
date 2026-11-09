@@ -47,6 +47,8 @@ namespace MyFinanceAPI.Domain.Interfaces
         Task SubstituirPartesAsync(int itemId, IReadOnlyList<ExtratoItemParte> partes);
         /// <summary>As pessoas dos pagamentos que abatem este lançamento.</summary>
         Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId);
+        /// <summary>True se algum id não é de uma categoria deste usuário.</summary>
+        Task<bool> TemCategoriaForaDoUsuarioAsync(IReadOnlyCollection<int> categoriaIds, int userId);
         /// <summary>As pessoas usadas em partes de lançamentos do usuário.</summary>
         Task<IEnumerable<int>> PessoasEmPartesAsync(int userId);
         /// <summary>Lançamentos do usuário, sem rastreio, com o necessário para o resumo por categoria (card #76, fase 5).</summary>

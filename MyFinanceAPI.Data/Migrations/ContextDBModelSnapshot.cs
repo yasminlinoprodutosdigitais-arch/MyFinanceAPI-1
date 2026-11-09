@@ -1086,6 +1086,132 @@ namespace MyFinanceAPI.Data.Migrations
                     b.ToTable("movimentacoes_diarias", (string)null);
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.NotaFiscal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Estabelecimento")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("estabelecimento");
+
+                    b.Property<int>("ExtratoBancarioItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("extrato_bancario_item_id");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("link");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("total");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notas_fiscais");
+
+                    b.HasIndex("ExtratoBancarioItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notas_fiscais_extrato_bancario_item_id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_notas_fiscais_usuario_id");
+
+                    b.ToTable("notas_fiscais", (string)null);
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.NotaFiscalItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoriaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("categoria_id");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
+
+                    b.Property<int>("NotaFiscalId")
+                        .HasColumnType("integer")
+                        .HasColumnName("nota_fiscal_id");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("integer")
+                        .HasColumnName("ordem");
+
+                    b.Property<decimal>("Quantidade")
+                        .HasPrecision(12, 4)
+                        .HasColumnType("numeric(12,4)")
+                        .HasColumnName("quantidade");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("valor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notas_fiscais_itens");
+
+                    b.HasIndex("CategoriaId")
+                        .HasDatabaseName("ix_notas_fiscais_itens_categoria_id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_notas_fiscais_itens_usuario_id");
+
+                    b.HasIndex("NotaFiscalId", "Ordem")
+                        .HasDatabaseName("ix_notas_fiscais_itens_nota_fiscal_id_ordem");
+
+                    b.ToTable("notas_fiscais_itens", (string)null);
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.OcorrenciaItemLista", b =>
                 {
                     b.Property<int>("Id")
@@ -1971,6 +2097,56 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.NotaFiscal", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", "ExtratoBancarioItem")
+                        .WithOne("NotaFiscal")
+                        .HasForeignKey("MyFinanceAPI.Domain.Entities.NotaFiscal", "ExtratoBancarioItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notas_fiscais_extrato_bancario_item_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notas_fiscais_asp_net_users_usuario_id");
+
+                    b.Navigation("ExtratoBancarioItem");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.NotaFiscalItem", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Categoria", "Categoria")
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_notas_fiscais_itens_categorias_categoria_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.NotaFiscal", "NotaFiscal")
+                        .WithMany("Itens")
+                        .HasForeignKey("NotaFiscalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notas_fiscais_itens_notas_fiscais_nota_fiscal_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notas_fiscais_itens_asp_net_users_usuario_id");
+
+                    b.Navigation("Categoria");
+
+                    b.Navigation("NotaFiscal");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.OcorrenciaItemLista", b =>
                 {
                     b.HasOne("MyFinanceAPI.Domain.Entities.ItemLista", null)
@@ -2127,7 +2303,14 @@ namespace MyFinanceAPI.Data.Migrations
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.ExtratoBancarioItem", b =>
                 {
+                    b.Navigation("NotaFiscal");
+
                     b.Navigation("Partes");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.NotaFiscal", b =>
+                {
+                    b.Navigation("Itens");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TipoMovimentacao", b =>

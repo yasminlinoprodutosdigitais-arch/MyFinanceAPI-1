@@ -58,6 +58,7 @@ namespace MyFinanceAPI.Application.Services
 
             // Escolhidos no formulário: prevalecem sobre o vínculo da pessoa; sem escolha, o item herda
             // o vínculo (decisão de 14/10/2026 — antes a escolha era descartada quando havia pessoa).
+            await ExigirCategoriasDoUsuarioAsync([dto.CategoriaId], userId);
             var categoriaEscolhida = dto.CategoriaId;
             var tipoEscolhido = dto.TipoMovimentacaoId;
 
@@ -139,6 +140,7 @@ namespace MyFinanceAPI.Application.Services
             existing.BancoId = dto.BancoId;
             existing.TipoCartaoId = dto.TipoCartaoId;
             existing.TipoMovimentacaoId = dto.TipoMovimentacaoId;
+            await ExigirCategoriasDoUsuarioAsync([dto.CategoriaId], userId);
             existing.CategoriaId = dto.CategoriaId;
             existing.NumeroFatura = dto.NumeroFatura;
 
@@ -204,6 +206,7 @@ namespace MyFinanceAPI.Application.Services
                 throw new UnauthorizedAccessException("Usuário não autorizado para alterar este item.");
 
             ValidarPartes(item, partes);
+            await ExigirCategoriasDoUsuarioAsync(partes.Select(p => p.CategoriaId), userId);
 
             static int? IdOuNulo(int? v) => v is > 0 ? v : null;
             var pessoas = partes.Select(p => IdOuNulo(p.PessoaMovimentacaoId)).OfType<int>().Distinct().ToList();
@@ -232,6 +235,12 @@ namespace MyFinanceAPI.Application.Services
         }
 
         /// <summary>Só saída se divide; 2 ou mais partes positivas cuja soma é o valor do lançamento (vazio = desfazer).</summary>
+        private async Task ExigirCategoriasDoUsuarioAsync(IEnumerable<int?> categorias, int userId)
+        {
+            if (await _itemRepository.TemCategoriaForaDoUsuarioAsync(categorias.Where(c => c is > 0).Select(c => c!.Value).ToList(), userId))
+                throw new RegraNegocioException("Categoria não encontrada.");
+        }
+
         public static void ValidarPartes(ExtratoBancarioItem item, IReadOnlyList<ExtratoItemParteDTO> partes)
         {
             if (partes.Count == 0)
