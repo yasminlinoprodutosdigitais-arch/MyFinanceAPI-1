@@ -9,6 +9,10 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         public string Mensagem { get; set; } = null!;
         /// <summary>Mês (AAAA-MM) em que os lançamentos aparecem: o da fatura ou o último do extrato. A tela vai para ele.</summary>
         public string? MesDestino { get; set; }
+        /// <summary>Linhas que já existiam (card #74).</summary>
+        public int QuantidadeJaImportados { get; set; }
+        /// <summary>Linhas desmarcadas na prévia (card #74).</summary>
+        public int QuantidadeDesmarcados { get; set; }
 
         public ExtratoImportacaoResultadoDTO() {}
 

@@ -34,6 +34,9 @@ public class ExtratoBancarioServiceTests
     private readonly List<ExtratoBancarioItem> _candidatosTruncados = new();
     private readonly List<PessoaMovimentacao> _pessoasCadastradas = new();
 
+    private readonly List<ImportacaoResumo> _importacoesAnteriores = new();
+    private readonly List<BancoDTO> _bancosDoUsuario = new();
+
     private ExtratoBancario? _extratoCriado;
     private List<ExtratoBancarioItem> _itensCriados = new();
     private readonly List<ExtratoBancarioItem> _itensAtualizados = new();
@@ -42,6 +45,8 @@ public class ExtratoBancarioServiceTests
     public ExtratoBancarioServiceTests()
     {
         _regrasRepo.Setup(r => r.ListarAtivasAsync(UserId)).ReturnsAsync(() => _regras);
+        _extratoRepo.Setup(r => r.ListarImportacoesAsync(UserId, null)).ReturnsAsync(() => _importacoesAnteriores);
+        _bancoService.Setup(s => s.ListarAsync(UserId)).ReturnsAsync(() => _bancosDoUsuario);
         _bancoService.Setup(s => s.ObterPorIdAsync(BancoId, UserId))
             .ReturnsAsync(new BancoDTO { Id = BancoId, NomeBanco = "Nubank", TipoCartaoId = TipoCartaoId });
 
@@ -69,6 +74,105 @@ public class ExtratoBancarioServiceTests
                 _pessoasCriadas.Add(p);
                 return p;
             });
+    }
+
+    private ExtratoBancarioService Servico() => new(
+        _extratoRepo.Object, _itemRepo.Object, _pessoaRepo.Object, _categoriaRepo.Object, _regrasRepo.Object, MapperFactory.Create(), _bancoService.Object, _uow);
+
+    private static MemoryStream Csv(string[] linhas) => new(Encoding.UTF8.GetBytes(string.Join("\n", linhas)));
+
+    private Task<MyFinanceAPI.Application.DTO.Movimentacoes.PreviaImportacaoDTO> Prever(int? banco, params string[] linhas) =>
+        Servico().PreverImportacaoAsync(Csv(linhas), UserId, banco);
+
+    private Task<ExtratoImportacaoResultadoDTO> ImportarCom(MyFinanceAPI.Application.DTO.Movimentacoes.OpcoesImportacao opcoes, params string[] linhas) =>
+        Servico().ImportarExtratoAsync(Csv(linhas), "NU_2026-10.csv", UserId, BancoId, opcoes);
+
+    private static string Chave(string id, string data, decimal valor, string descricao) =>
+        ExtratoBancarioService.GerarChaveImportacao(id, DateOnly.Parse(data), valor, descricao);
+
+    // ---------- prévia (card #74) ----------
+
+    [Fact]
+    public async Task Previa_nao_grava_e_marca_o_ja_importado()
+    {
+        _chavesExistentes.Add(Chave("a", "2026-10-01", -10.00m, "Compra - LOJA"));
+
+        var p = await Prever(BancoId, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA", "02/10/2026,25.50,b,Pix recebido - FULANO");
+
+        Assert.Null(_extratoCriado);
+        Assert.Empty(_itensCriados);
+        Assert.Equal((1, 1, 25.50m, 0m, "2026-10"), (p.Novos, p.Duplicados, p.Entradas, p.Saidas, p.MesReferencia));
+        Assert.Equal([true, false], p.Linhas.Select(l => l.Duplicado));
+        Assert.Equal("Entrada", p.Linhas[1].TipoLancamento);
+        Assert.False(p.BancoDetectado);
+    }
+
+    [Fact]
+    public async Task Previa_de_encargo_nao_cria_o_titular_nem_a_categoria()
+    {
+        await Prever(BancoId, Cabecalho, "01/10/2026,-3.50,a,IOF de compra internacional");
+
+        _pessoaRepo.Verify(r => r.ObterTitularAsync(It.IsAny<int>()), Times.Never);
+        _categoriaRepo.Verify(r => r.CriarAsync(It.IsAny<Categoria>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Previa_sem_banco_reconhece_pelo_formato_preferindo_o_tipo_certo()
+    {
+        _bancosDoUsuario.AddRange([
+            new BancoDTO { Id = 1, NomeBanco = "Caixa", Ativo = true },
+            new BancoDTO { Id = BancoId, NomeBanco = "Nubank", Ativo = true }
+        ]);
+
+        var p = await Prever(null, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA");
+
+        Assert.Equal((BancoId, true, "Nubank"), (p.BancoId, p.BancoDetectado, p.Formato));
+        Assert.Single(p.Linhas);
+    }
+
+    [Fact]
+    public async Task Previa_sem_banco_e_sem_reconhecer_devolve_vazia_para_a_tela_pedir()
+    {
+        var p = await Prever(null, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA");
+        Assert.Null(p.BancoId);
+        Assert.Empty(p.Linhas);
+    }
+
+    [Fact]
+    public async Task Previa_avisa_mes_ja_importado_e_ignora_importacao_desfeita()
+    {
+        var resumo = new ImportacaoResumo(9, BancoId, DateTime.UtcNow, "x.csv", new DateOnly(2026, 10, 1), 0, DateTime.UtcNow, null, null, 1, 0, 0, 0, null);
+        _importacoesAnteriores.Add(resumo);
+        Assert.False((await Prever(BancoId, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA")).MesJaImportado);
+
+        _importacoesAnteriores[0] = resumo with { DesfeitoEm = null };
+        Assert.True((await Prever(BancoId, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA")).MesJaImportado);
+    }
+
+    [Fact]
+    public async Task Confirmar_pula_as_desmarcadas_e_grava_a_categoria_escolhida()
+    {
+        _itemRepo.Setup(r => r.TemCategoriaForaDoUsuarioAsync(It.IsAny<IReadOnlyCollection<int>>(), UserId)).ReturnsAsync(false);
+        var opcoes = new MyFinanceAPI.Application.DTO.Movimentacoes.OpcoesImportacao
+        {
+            Pular = [Chave("b", "2026-10-02", -5.00m, "Compra - MERCADO")],
+            Categorias = new() { [Chave("a", "2026-10-01", -10.00m, "Compra - LOJA")] = 77 }
+        };
+
+        var r = await ImportarCom(opcoes, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA", "02/10/2026,-5.00,b,Compra - MERCADO");
+
+        Assert.Equal((1, 1), (r.QuantidadeCriados, r.QuantidadeDesmarcados));
+        Assert.Equal(77, _itensCriados.Single().CategoriaId);
+    }
+
+    [Fact]
+    public async Task Confirmar_com_categoria_de_outro_usuario_e_recusado_sem_gravar()
+    {
+        _itemRepo.Setup(r => r.TemCategoriaForaDoUsuarioAsync(It.IsAny<IReadOnlyCollection<int>>(), UserId)).ReturnsAsync(true);
+        var opcoes = new MyFinanceAPI.Application.DTO.Movimentacoes.OpcoesImportacao { Categorias = new() { ["x"] = 999 } };
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => ImportarCom(opcoes, Cabecalho, "01/10/2026,-10.00,a,Compra - LOJA"));
+        Assert.Null(_extratoCriado);
     }
 
     private Task<ExtratoImportacaoResultadoDTO> Importar(params string[] linhas)

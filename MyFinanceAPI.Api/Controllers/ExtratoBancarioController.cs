@@ -50,12 +50,28 @@ namespace MyFinanceAPI.Api.Controllers
         [HttpPost("/ImportExtratoBancario")]
         public async Task<ActionResult<ExtratoImportacaoResultadoDTO>> ImportExtratoBancario(
             [FromForm] IFormFile arquivo,
-            [FromForm] int bancoId)
+            [FromForm] int bancoId,
+            [FromForm] string? opcoes)
         {
             var userId = UsuarioId;
 
             if (arquivo == null || arquivo.Length == 0)
                 return ErroRequisicao("Nenhum arquivo foi enviado.");
+
+            // Card #74: linhas desmarcadas e categorias trocadas na prévia, em JSON.
+            OpcoesImportacao? escolhas = null;
+            if (!string.IsNullOrWhiteSpace(opcoes))
+            {
+                try
+                {
+                    escolhas = System.Text.Json.JsonSerializer.Deserialize<OpcoesImportacao>(opcoes,
+                        new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return ErroRequisicao("Opções de importação inválidas.");
+                }
+            }
 
             using var stream = arquivo.OpenReadStream();
 
@@ -63,10 +79,21 @@ namespace MyFinanceAPI.Api.Controllers
                 stream,
                 arquivo.FileName,
                 userId,
-                bancoId
+                bancoId,
+                escolhas
             );
 
             return Ok(resultadoImportacao);
+        }
+
+        // POST /PreviaImportacao — card #74: lê o arquivo e devolve o que entraria, sem gravar.
+        [HttpPost("/PreviaImportacao")]
+        public async Task<ActionResult<PreviaImportacaoDTO>> PreviaImportacao([FromForm] IFormFile arquivo, [FromForm] int? bancoId)
+        {
+            if (arquivo == null || arquivo.Length == 0)
+                return ErroRequisicao("Nenhum arquivo foi enviado.");
+            using var stream = arquivo.OpenReadStream();
+            return Ok(await _extratoBancarioService.PreverImportacaoAsync(stream, UsuarioId, bancoId));
         }
 
         // Card #75: histórico (meses vazio = todas), cobertura por conta e mês, vínculos e desfazer.

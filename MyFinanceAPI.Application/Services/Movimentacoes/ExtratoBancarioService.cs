@@ -103,19 +103,81 @@ namespace MyFinanceAPI.Application.Services
             Stream arquivoStream,
             string fileName,
             int userId,
-            int bancoId
-        ) => _unitOfWork.ExecuteAsync(() => ImportarExtratoNaOperacaoAsync(arquivoStream, fileName, userId, bancoId));
+            int bancoId,
+            OpcoesImportacao? opcoes = null
+        ) => _unitOfWork.ExecuteAsync(() => ImportarExtratoNaOperacaoAsync(arquivoStream, fileName, userId, bancoId, opcoes ?? new(), null));
+
+        /// <summary>Card #74: o que a importação faria, sem gravar. Sem banco, tenta reconhecer pelo formato.</summary>
+        public async Task<PreviaImportacaoDTO> PreverImportacaoAsync(Stream arquivoStream, int userId, int? bancoId)
+        {
+            var previa = new PreviaImportacaoDTO();
+            await ImportarExtratoNaOperacaoAsync(arquivoStream, "", userId, bancoId, new OpcoesImportacao(), previa);
+            return previa;
+        }
+
+        /// <summary>Banco do usuário pelo formato do arquivo, preferindo o tipo certo (fatura = cartão); null se nenhum.</summary>
+        private async Task<BancoDTO?> DetectarBancoAsync(ArquivoLido arquivo, int userId)
+        {
+            Func<string, bool>? casa = arquivo.Formato switch
+            {
+                var f when f.Contains("Nubank") => n => n.StartsWith("NU"),
+                var f when f.Contains("PicPay") => n => n.Contains("PICPAY"),
+                var f when f.Contains("Caixa") => n => n.Contains("CAIXA"),
+                _ => null
+            };
+            if (casa == null)
+                return null;
+            return (await _bancoService.ListarAsync(userId))
+                .Where(b => b.Ativo && casa(b.NomeBanco.ToUpperInvariant().Replace(" ", "")))
+                .OrderByDescending(b => b.TipoCartao?.EhCredito == arquivo.EhFatura)
+                .ThenBy(b => b.NomeBanco)
+                .FirstOrDefault();
+        }
+
+        private static LinhaPreviaImportacaoDTO LinhaDuplicada(LinhaImportada l, string chave) => new()
+        {
+            Chave = chave, Data = l.Data, Descricao = l.Descricao, Valor = Math.Abs(l.Valor), Duplicado = true,
+            TipoLancamento = l.Valor < 0 ? TipoLancamentoExtrato.Saida : TipoLancamentoExtrato.Entrada
+        };
 
         private async Task<ExtratoImportacaoResultadoDTO> ImportarExtratoNaOperacaoAsync(
             Stream arquivoStream,
             string fileName,
             int userId,
-            int bancoId
+            int? bancoId,
+            OpcoesImportacao opcoes,
+            PreviaImportacaoDTO? previa
         )
         {
+            // Card #76, fase 4: o formato vem do conteúdo; desconhecido é recusado sem gravar nada.
+            using var memoria = new MemoryStream();
+            await arquivoStream.CopyToAsync(memoria);
+            var arquivo = LeitorArquivoImportacao.Ler(memoria.ToArray());
+            if (previa != null)
+            {
+                if (arquivo.Vazio)
+                    throw new RegraNegocioException("Arquivo vazio ou sem lançamentos.");
+                previa.Formato = arquivo.Formato;
+                previa.EhFatura = arquivo.EhFatura;
+                previa.Aviso = arquivo.Aviso.Trim();
+            }
+
             // Banco inexistente ou de outro usuário: 404, não NullReferenceException (500).
-            var banco = await _bancoService.ObterPorIdAsync(bancoId, userId)
-                ?? throw new NaoEncontradoException("Banco não encontrado.");
+            var banco = bancoId is int id
+                ? await _bancoService.ObterPorIdAsync(id, userId) ?? throw new NaoEncontradoException("Banco não encontrado.")
+                : previa != null ? await DetectarBancoAsync(arquivo, userId) : throw new NaoEncontradoException("Banco não encontrado.");
+            if (banco == null)
+                return new ExtratoImportacaoResultadoDTO(); // prévia sem banco reconhecido: a tela pede para escolher
+            if (previa != null)
+            {
+                previa.BancoId = banco.Id;
+                previa.BancoDetectado = bancoId == null;
+            }
+
+            // Categoria escolhida na prévia precisa ser do usuário.
+            var escolhidas = opcoes.Categorias.Values.Where(c => c is > 0).Select(c => c!.Value).Distinct().ToList();
+            if (escolhidas.Count > 0 && await _extratoBancarioItemRepository.TemCategoriaForaDoUsuarioAsync(escolhidas, userId))
+                throw new RegraNegocioException("Categoria inválida.");
             var culturePtBr = new CultureInfo("pt-BR");
             var cultureDecimal = CultureInfo.InvariantCulture;
 
@@ -123,6 +185,7 @@ namespace MyFinanceAPI.Application.Services
             int ignorados = 0;
             int jaImportados = 0;
             int corrigidos = 0;
+            int desmarcados = 0;
 
             // Idempotência: linhas cuja chave já existe (ou repetidas no próprio arquivo) são puladas.
             var chavesExistentes = await _extratoBancarioItemRepository.ObterChavesImportacaoAsync(userId, banco.Id);
@@ -146,10 +209,6 @@ namespace MyFinanceAPI.Application.Services
             DateOnly? dataFim = null;
             decimal somaValores = 0;
 
-            // Card #76, fase 4: o formato vem do conteúdo; desconhecido é recusado sem gravar nada.
-            using var memoria = new MemoryStream();
-            await arquivoStream.CopyToAsync(memoria);
-            var arquivo = LeitorArquivoImportacao.Ler(memoria.ToArray());
             if (arquivo.Vazio)
             {
                 return new ExtratoImportacaoResultadoDTO(0, 0, 0, 0, "Arquivo vazio ou inválido.");
@@ -172,6 +231,13 @@ namespace MyFinanceAPI.Application.Services
                 if (!chavesExistentes.Add(chaveImportacao))
                 {
                     jaImportados++;
+                    previa?.Linhas.Add(LinhaDuplicada(linhaLida, chaveImportacao));
+                    continue;
+                }
+                // Desmarcada na prévia (card #74).
+                if (opcoes.Pular.Contains(chaveImportacao))
+                {
+                    desmarcados++;
                     continue;
                 }
 
@@ -182,6 +248,13 @@ namespace MyFinanceAPI.Application.Services
                         out var candidatos))
                 {
                     var truncado = candidatos.FirstOrDefault(c => c.Valor == Math.Truncate(valorSemSinal));
+                    if (truncado != null && previa != null)
+                    {
+                        // Na prévia, o item antigo (sem centavos) conta como já importado; ao gravar, ele é corrigido.
+                        jaImportados++;
+                        previa.Linhas.Add(LinhaDuplicada(linhaLida, chaveImportacao));
+                        continue;
+                    }
                     if (truncado != null)
                     {
                         candidatos.Remove(truncado);
@@ -216,15 +289,26 @@ namespace MyFinanceAPI.Application.Services
                     int? pessoaId = null;
                     var tipoMovimentacaoId = 0;
                     var categoriaId = 0;
+                    var entraNosAcertos = false;
 
                     if (encargo)
                     {
                         // Encargo fica com o dono: "Eu" + "Tarifas e encargos", sem criar pessoa pelo nome.
-                        titular ??= await _pessoaMovimentacaoRepository.ObterTitularAsync(userId);
-                        categoriaEncargos ??= await ObterCategoriaEncargosAsync(userId);
-                        pessoaId = titular.Id;
-                        nomePessoa = titular.NomePessoa;
-                        categoriaId = categoriaEncargos.Id;
+                        if (previa != null)
+                        {
+                            // A prévia não grava: não cria o "Eu" nem a categoria de encargos.
+                            nomePessoa = "EU";
+                            categoriaEncargos ??= await _categoriaRepository.ObterPorNomeAsync(userId, CategoriaEncargos, SubcategoriaDespesa);
+                            categoriaId = categoriaEncargos?.Id ?? 0;
+                        }
+                        else
+                        {
+                            titular ??= await _pessoaMovimentacaoRepository.ObterTitularAsync(userId);
+                            categoriaEncargos ??= await ObterCategoriaEncargosAsync(userId);
+                            pessoaId = titular.Id;
+                            nomePessoa = titular.NomePessoa;
+                            categoriaId = categoriaEncargos.Id;
+                        }
                     }
                     else if (ClassificadorRegras.Encontrar(regras, descricaoStr, nomePessoa, banco.Id) is { PessoaMovimentacaoId: not null } regraComPessoa)
                     {
@@ -233,6 +317,7 @@ namespace MyFinanceAPI.Application.Services
                         nomePessoa = regraComPessoa.PessoaMovimentacao?.NomePessoa ?? nomePessoa;
                         tipoMovimentacaoId = regraComPessoa.PessoaMovimentacao?.TipoMovimentacaoId ?? 0;
                         categoriaId = regraComPessoa.PessoaMovimentacao?.CategoriaId ?? 0;
+                        entraNosAcertos = regraComPessoa.PessoaMovimentacao is { EntraNosAcertos: true, EhTitular: false };
                     }
                     else if (!string.IsNullOrWhiteSpace(nomePessoa))
                     {
@@ -244,6 +329,7 @@ namespace MyFinanceAPI.Application.Services
                             pessoaId = pessoaCadastrada.First().Id;
                             tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
                             categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
+                            entraNosAcertos = pessoaCadastrada.First() is { EntraNosAcertos: true, EhTitular: false };
                         }
                     }
 
@@ -254,6 +340,12 @@ namespace MyFinanceAPI.Application.Services
                         regraUsada = regra.Id;
                         categoriaId = regra.CategoriaId ?? categoriaId;
                         tipoMovimentacaoId = regra.TipoMovimentacaoId ?? tipoMovimentacaoId;
+                    }
+                    // Categoria trocada na prévia vale sobre a sugerida (card #74).
+                    if (opcoes.Categorias.TryGetValue(chaveImportacao, out var escolhida))
+                    {
+                        categoriaId = escolhida ?? 0;
+                        regraUsada = null;
                     }
 
                     var item = new ExtratoBancarioItemDTO
@@ -278,6 +370,11 @@ namespace MyFinanceAPI.Application.Services
                     };
 
                     listaItens.Add(item);
+                    previa?.Linhas.Add(new LinhaPreviaImportacaoDTO
+                    {
+                        Chave = chaveImportacao, Data = dataMov, Descricao = descricaoStr, Valor = valorAbsoluto, TipoLancamento = tipoLancamento,
+                        CategoriaId = item.CategoriaId, NomePessoa = nomePessoa, EntraNosAcertos = entraNosAcertos
+                    });
                     criados++;
                     if (regraUsada is int usada)
                         usoRegras[usada] = usoRegras.GetValueOrDefault(usada) + 1;
@@ -295,11 +392,29 @@ namespace MyFinanceAPI.Application.Services
                 }
             }
 
+            if (previa != null)
+            {
+                var mes = ImportacoesService.MesDaFatura(arquivo.Linhas.Select(l => l.NumeroFatura).FirstOrDefault(n => n != null))
+                    ?? (arquivo.Linhas.Count > 0 ? new DateOnly(arquivo.Linhas.Min(l => l.Data).Year, arquivo.Linhas.Min(l => l.Data).Month, 1) : null);
+                previa.MesReferencia = mes?.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+                previa.DataInicio = arquivo.Linhas.Count > 0 ? arquivo.Linhas.Min(l => l.Data) : null;
+                previa.DataFim = arquivo.Linhas.Count > 0 ? arquivo.Linhas.Max(l => l.Data) : null;
+                previa.Novos = listaItens.Count;
+                previa.Duplicados = jaImportados;
+                previa.Invalidas = ignorados;
+                previa.Entradas = listaItens.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Entrada).Sum(i => i.Valor);
+                previa.Saidas = listaItens.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Saida).Sum(i => i.Valor);
+                previa.MesJaImportado = mes != null && (await _extratoBancarioRepository.ListarImportacoesAsync(userId, null))
+                    .Any(i => i.BancoId == banco.Id && i.DesfeitoEm == null && i.MesReferencia == mes);
+                return new ExtratoImportacaoResultadoDTO();
+            }
+
             if (!listaItens.Any())
             {
                 var semNovos = jaImportados + corrigidos > 0
                     ? $"Nenhum lançamento novo: {jaImportados} já importado(s)"
                       + (corrigidos > 0 ? $", {corrigidos} corrigido(s) (centavos)" : "")
+                      + (desmarcados > 0 ? $", {desmarcados} desmarcado(s)" : "")
                       + (ignorados > 0 ? $", {ignorados} ignorado(s)." : ".")
                     : "Nenhum lançamento válido foi encontrado no arquivo.";
                 semNovos += arquivo.Aviso;
@@ -309,7 +424,7 @@ namespace MyFinanceAPI.Application.Services
                     ignorados,
                     0,
                     semNovos
-                );
+                ) { QuantidadeJaImportados = jaImportados, QuantidadeDesmarcados = desmarcados };
             }
 
             var extrato = new ExtratoBancario
@@ -346,6 +461,7 @@ namespace MyFinanceAPI.Application.Services
 
             var mensagem = $"Importação concluída. Criados: {criados}, já importados: {jaImportados}, "
                 + (corrigidos > 0 ? $"corrigidos (centavos): {corrigidos}, " : "")
+                + (desmarcados > 0 ? $"desmarcados: {desmarcados}, " : "")
                 + $"ignorados: {ignorados}." + arquivo.Aviso;
             // Fatura aparece no mês do vencimento, que pode não ser o das compras: a mensagem diz onde encontrar.
             var mesDestino = arquivo.Linhas.FirstOrDefault(l => l.NumeroFatura != null)?.NumeroFatura
@@ -358,7 +474,7 @@ namespace MyFinanceAPI.Application.Services
                 ignorados,
                 somaValores,
                 mensagem
-            ) { MesDestino = mesDestino };
+            ) { MesDestino = mesDestino, QuantidadeJaImportados = jaImportados, QuantidadeDesmarcados = desmarcados };
         }
 
         private async Task<Categoria> ObterCategoriaEncargosAsync(int userId) =>

@@ -18,8 +18,12 @@ namespace MyFinanceAPI.Application.Interfaces
             Stream arquivoStream,
             string fileName,
             int userId,
-            int banco
+            int banco,
+            OpcoesImportacao? opcoes = null
         );
+
+        /// <summary>Card #74: o que a importação faria, sem gravar.</summary>
+        Task<PreviaImportacaoDTO> PreverImportacaoAsync(Stream arquivoStream, int userId, int? bancoId);
 
         Task Remove(int id, int userId);
     }
