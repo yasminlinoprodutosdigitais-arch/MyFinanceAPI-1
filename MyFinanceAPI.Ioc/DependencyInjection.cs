@@ -65,6 +65,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IRegraClassificacaoService, RegraClassificacaoService>();
             services.AddScoped<IClassificacaoService, ClassificacaoService>();
             services.AddScoped<ILimpezaPessoasService, LimpezaPessoasService>();
+            services.AddScoped<IResumoCategoriasService, ResumoCategoriasService>();
 
 
             // Registro do repositório IUsuarioRepository

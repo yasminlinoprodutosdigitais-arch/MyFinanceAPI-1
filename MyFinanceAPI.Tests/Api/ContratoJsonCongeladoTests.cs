@@ -56,6 +56,8 @@ public class ContratoJsonCongeladoTests
         ("pessoaMovimentacao", typeof(PessoaMovimentacaoDTO)),
         ("pessoaEstabelecimento", typeof(PessoaEstabelecimentoDTO)),
         ("pessoasRemovidas", typeof(PessoasRemovidasDTO)),
+        ("resumoCategorias", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO)),
+        ("resumoCategoriaLinha", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriaLinhaDTO)),
         ("regraClassificacao", typeof(RegraClassificacaoDTO)),
         ("extratoItemParte", typeof(MyFinanceAPI.Application.DTO.Extrato.ExtratoItemParteDTO)),
         ("sugestaoCategoria", typeof(SugestaoCategoriaDTO)),

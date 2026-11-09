@@ -17,19 +17,26 @@ namespace MyFinanceAPI.Api.Controllers
 
         private readonly IExtratoBancarioItemService _extratoBancarioItemService;
         private readonly IAcertosService _acertosService;
+        private readonly IResumoCategoriasService _resumoCategorias;
 
         public ExtratoBancarioItemController(
             IExtratoBancarioItemService extratoBancarioItemService,
-            IAcertosService acertosService)
+            IAcertosService acertosService,
+            IResumoCategoriasService resumoCategorias)
         {
             _extratoBancarioItemService = extratoBancarioItemService;
             _acertosService = acertosService;
+            _resumoCategorias = resumoCategorias;
         }
 
         /// <summary>
         /// Acertos com pessoas (card #45, parte 3): quem me deve, por pessoa. inicio/fim em "AAAA-MM" (vazio = desde o
         /// início / até hoje); bancoId filtra as compras da conta ou do cartão e os pagamentos que as abatem.
         /// </summary>
+        [HttpGet("/GetResumoCategorias")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO>> GetResumoCategorias([FromQuery] string? month) =>
+            Ok(await _resumoCategorias.ObterAsync(UsuarioId, month));
+
         [HttpGet("/GetAcertos")]
         public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.AcertosDTO>> GetAcertos(
             [FromQuery] string? inicio, [FromQuery] string? fim, [FromQuery] int? bancoId)

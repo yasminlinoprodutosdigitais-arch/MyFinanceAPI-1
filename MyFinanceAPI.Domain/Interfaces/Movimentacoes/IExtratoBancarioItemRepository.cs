@@ -49,5 +49,7 @@ namespace MyFinanceAPI.Domain.Interfaces
         Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId);
         /// <summary>As pessoas usadas em partes de lançamentos do usuário.</summary>
         Task<IEnumerable<int>> PessoasEmPartesAsync(int userId);
+        /// <summary>Lançamentos do usuário, sem rastreio, com o necessário para o resumo por categoria (card #76, fase 5).</summary>
+        Task<List<ExtratoBancarioItem>> ListarParaResumoAsync(int userId);
     }
 }

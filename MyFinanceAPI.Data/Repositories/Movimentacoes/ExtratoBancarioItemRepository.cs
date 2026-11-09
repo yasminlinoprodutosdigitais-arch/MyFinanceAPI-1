@@ -96,6 +96,14 @@ namespace MyFinanceAPI.Data.Repositories
         public async Task<IEnumerable<int?>> PessoasQueAbatemAsync(int itemId) =>
             await _context.ItensExtratoBancario.Where(i => i.AbateItemId == itemId).Select(i => i.PessoaMovimentacaoId).ToListAsync();
 
+        public Task<List<ExtratoBancarioItem>> ListarParaResumoAsync(int userId) =>
+            _context.ItensExtratoBancario.AsNoTracking()
+                .Include(i => i.TipoCartao).Include(i => i.Categoria).Include(i => i.PessoaMovimentacao)
+                .Include(i => i.Partes).ThenInclude(p => p.Categoria)
+                .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
+                .Where(i => i.UsuarioId == userId)
+                .ToListAsync();
+
         public async Task<IEnumerable<int>> PessoasEmPartesAsync(int userId) =>
             await _context.ExtratoItemPartes.Where(p => p.UsuarioId == userId && p.PessoaMovimentacaoId != null)
                 .Select(p => p.PessoaMovimentacaoId!.Value).Distinct().ToListAsync();
