@@ -15,6 +15,7 @@ public class ResumoCategoriasService(IExtratoBancarioItemRepository itens) : IRe
     private const int MesesDeComparacao = 3;
     /** Mês com menos lançamentos que isto é histórico incompleto: compará-lo daria percentuais sem sentido. */
     private const int MinimoDeLancamentosNoMes = 5;
+    private const int MaximoMesesEvolucao = 24;
     private static readonly string[] CategoriasFora = ["CARTAO DE CREDITO", "TRANSFERENCIA ENTRE CONTAS"];
 
     private sealed record Pedaco(string Mes, int? CategoriaId, string Nome, decimal Valor, bool DeOutraPessoa, bool Fora);
@@ -25,6 +26,42 @@ public class ResumoCategoriasService(IExtratoBancarioItemRepository itens) : IRe
             || !DateOnly.TryParseExact(mes.Trim() + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
             throw new RegraNegocioException("Mês inválido: use AAAA-MM.");
         return Montar(await itens.ListarParaResumoAsync(userId), mes.Trim());
+    }
+
+    public async Task<EvolucaoExtratosDTO> ObterEvolucaoAsync(int userId, string? mes, int meses)
+    {
+        if (string.IsNullOrWhiteSpace(mes)
+            || !DateOnly.TryParseExact(mes.Trim() + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            throw new RegraNegocioException("Mês inválido: use AAAA-MM.");
+        if (meses is < 1 or > MaximoMesesEvolucao)
+            throw new RegraNegocioException($"Informe de 1 a {MaximoMesesEvolucao} meses.");
+        return MontarEvolucao(await itens.ListarParaResumoAsync(userId), mes.Trim(), meses);
+    }
+
+    /// <summary>Puro, para testar: mesmo mês e mesmas categorias de fora do resumo por categoria.</summary>
+    public static EvolucaoExtratosDTO MontarEvolucao(IEnumerable<ExtratoBancarioItem> lancamentos, string ateMes, int meses)
+    {
+        var fim = DateOnly.ParseExact(ateMes + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var validos = lancamentos
+            .SelectMany(i => Pedacos(i).Where(p => !p.Fora).Select(p => new
+            {
+                p.Mes,
+                p.Valor,
+                Entrada = string.Equals(i.TipoLancamento, TipoLancamentoExtrato.Entrada, StringComparison.OrdinalIgnoreCase)
+            }))
+            .ToList();
+
+        return new EvolucaoExtratosDTO
+        {
+            Meses = Enumerable.Range(0, meses).Select(n =>
+            {
+                var mes = fim.AddMonths(n - meses + 1).ToString("yyyy-MM", CultureInfo.InvariantCulture);
+                var doMes = validos.Where(v => v.Mes == mes).ToList();
+                var entradas = doMes.Where(v => v.Entrada).Sum(v => v.Valor);
+                var saidas = doMes.Where(v => !v.Entrada).Sum(v => v.Valor);
+                return new EvolucaoExtratosMesDTO { Mes = mes, Entradas = entradas, Saidas = saidas, Resultado = entradas - saidas };
+            }).ToList()
+        };
     }
 
     /// <summary>Puro, para testar. Os lançamentos vêm com tipo de cartão, categoria, pessoa e partes carregados.</summary>

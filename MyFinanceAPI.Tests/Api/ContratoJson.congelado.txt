@@ -2723,6 +2723,15 @@ resumoCategoriaLinha.nome
 resumoCategoriaLinha.percentual
 resumoCategoriaLinha.valor
 resumoCategoriaLinha.variacao
+evolucaoExtratos.meses
+evolucaoExtratos.meses.entradas
+evolucaoExtratos.meses.mes
+evolucaoExtratos.meses.resultado
+evolucaoExtratos.meses.saidas
+evolucaoExtratosMes.entradas
+evolucaoExtratosMes.mes
+evolucaoExtratosMes.resultado
+evolucaoExtratosMes.saidas
 notaFiscal.estabelecimento
 notaFiscal.itens
 notaFiscal.itens.categoriaId

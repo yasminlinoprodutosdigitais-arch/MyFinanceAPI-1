@@ -55,6 +55,44 @@ public class ResumoCategoriasServiceTests
     }
 
     [Fact]
+    public void Evolucao_tira_pagamento_de_fatura_e_devolve_os_meses_em_ordem_mesmo_vazios()
+    {
+        var compra = Item("2026-09-28", 50, Comida);
+        compra.TipoCartao = Credito;
+        compra.NumeroFatura = "2026-10";
+
+        var r = ResumoCategoriasService.MontarEvolucao([
+            compra, Item("2026-10-05", 500, Fatura), Item("2026-10-06", 1000, null, TipoLancamentoExtrato.Entrada),
+            Item("2026-08-06", 10, Comida), Item("2026-11-01", 77, Comida)
+        ], "2026-10", 3);
+
+        Assert.Equal([("2026-08", 0m, 10m, -10m), ("2026-09", 0m, 0m, 0m), ("2026-10", 1000m, 50m, 950m)],
+            r.Meses.Select(m => (m.Mes, m.Entradas, m.Saidas, m.Resultado)));
+    }
+
+    [Fact]
+    public void Evolucao_de_dividido_tira_so_a_parte_de_fatura()
+    {
+        var d = Item("2026-10-05", 300);
+        d.Partes.AddRange([
+            new ExtratoItemParte { Valor = 200, CategoriaId = 1, Categoria = Comida },
+            new ExtratoItemParte { Valor = 100, CategoriaId = 3, Categoria = Fatura }
+        ]);
+
+        Assert.Equal(200, ResumoCategoriasService.MontarEvolucao([d], "2026-10", 1).Meses.Single().Saidas);
+    }
+
+    [Theory]
+    [InlineData("2026-13", 6)]
+    [InlineData("2026-10", 0)]
+    [InlineData("2026-10", 25)]
+    public async Task Evolucao_recusa_mes_ou_janela_invalidos(string mes, int meses)
+    {
+        var servico = new ResumoCategoriasService(null!);
+        await Assert.ThrowsAsync<RegraNegocioException>(() => servico.ObterEvolucaoAsync(1, mes, meses));
+    }
+
+    [Fact]
     public void Dividido_conta_pelas_partes()
     {
         var d = Item("2026-10-05", 300);

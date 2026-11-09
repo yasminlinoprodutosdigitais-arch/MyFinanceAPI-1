@@ -17,6 +17,20 @@ public class ResumoCategoriasDTO
     public List<ResumoCategoriaLinhaDTO> Categorias { get; set; } = [];
 }
 
+/// <summary>Entradas × saídas mês a mês, sem pagamento de fatura e transferência entre contas (card #62).</summary>
+public class EvolucaoExtratosDTO
+{
+    public List<EvolucaoExtratosMesDTO> Meses { get; set; } = [];
+}
+
+public class EvolucaoExtratosMesDTO
+{
+    public string Mes { get; set; } = "";
+    public decimal Entradas { get; set; }
+    public decimal Saidas { get; set; }
+    public decimal Resultado { get; set; }
+}
+
 public class ResumoCategoriaLinhaDTO
 {
     /// <summary>null = sem categoria.</summary>

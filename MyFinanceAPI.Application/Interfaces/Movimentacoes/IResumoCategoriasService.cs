@@ -6,4 +6,6 @@ namespace MyFinanceAPI.Application.Interfaces;
 public interface IResumoCategoriasService
 {
     Task<ResumoCategoriasDTO> ObterAsync(int userId, string? mes);
+    /// <summary>Evolução até o mês informado, do mais antigo ao mais recente (card #62).</summary>
+    Task<EvolucaoExtratosDTO> ObterEvolucaoAsync(int userId, string? mes, int meses);
 }
