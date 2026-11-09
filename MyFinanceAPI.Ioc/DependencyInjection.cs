@@ -67,6 +67,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ILimpezaPessoasService, LimpezaPessoasService>();
             services.AddScoped<IResumoCategoriasService, ResumoCategoriasService>();
             services.AddScoped<INotaFiscalService, NotaFiscalService>();
+            services.AddScoped<IImportacoesService, ImportacoesService>();
             services.AddScoped<INotaFiscalRepository, NotaFiscalRepository>();
 
 

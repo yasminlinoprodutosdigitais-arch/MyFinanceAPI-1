@@ -17,6 +17,36 @@ namespace MyFinanceAPI.Data.Repositories
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
+        public async Task<IReadOnlyList<ImportacaoResumo>> ListarImportacoesAsync(int userId, DateTime? desde) =>
+            await _context.ExtratosBancarios.AsNoTracking()
+                .Where(e => e.UsuarioId == userId && (desde == null || e.DataImportacao >= desde))
+                .OrderByDescending(e => e.DataImportacao)
+                .Select(e => new ImportacaoResumo(
+                    e.Id, e.BancoId, e.DataImportacao, e.NomeArquivoOrigem, e.MesReferencia, e.QuantidadeDuplicados,
+                    e.DesfeitoEm, e.MotivoDesfazer, e.DataInicioPeriodo, e.Itens.Count(),
+                    e.Itens.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Entrada).Sum(i => (decimal?)i.Valor) ?? 0,
+                    e.Itens.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Saida).Sum(i => (decimal?)i.Valor) ?? 0,
+                    e.Itens.Count(i => i.CategoriaId == null && !i.Partes.Any()),
+                    e.Itens.Where(i => i.NumeroFatura != null).Select(i => i.NumeroFatura).FirstOrDefault()))
+                .ToListAsync();
+
+        public async Task<VinculosImportacao?> ObterVinculosAsync(int id, int userId)
+        {
+            if (!await _context.ExtratosBancarios.AnyAsync(e => e.Id == id && e.UsuarioId == userId))
+                return null;
+
+            var itens = _context.ItensExtratoBancario.AsNoTracking().Where(i => i.ExtratoBancarioId == id);
+            var ids = itens.Select(i => i.Id);
+            var pessoasDiretas = itens.Where(i => !i.Partes.Any() && i.PessoaMovimentacao != null && i.PessoaMovimentacao.EntraNosAcertos).Select(i => i.PessoaMovimentacao!.NomePessoa);
+            var pessoasDasPartes = itens.SelectMany(i => i.Partes).Where(p => p.PessoaMovimentacao != null && p.PessoaMovimentacao.EntraNosAcertos).Select(p => p.PessoaMovimentacao!.NomePessoa);
+            return new VinculosImportacao(
+                await itens.CountAsync(),
+                await itens.CountAsync(i => i.Partes.Any()),
+                await itens.CountAsync(i => i.NotaFiscal != null),
+                await _context.ItensExtratoBancario.CountAsync(i => i.AbateItemId != null && ids.Contains(i.AbateItemId.Value) && i.ExtratoBancarioId != id),
+                (await pessoasDiretas.Union(pessoasDasPartes).ToListAsync()).OrderBy(n => n).ToList());
+        }
+
         public async Task<ExtratoBancario> CreateAsync(ExtratoBancario extrato)
         {
             if (extrato == null)
@@ -79,7 +109,7 @@ namespace MyFinanceAPI.Data.Repositories
 
             var extratos = await _context.ExtratosBancarios.AsNoTracking()
                 // Fatura aparece no mês dela (card #76, fase 4): a primeira compra pode ser de meses antes.
-                .Where(e => e.UsuarioId == userId
+                .Where(e => e.UsuarioId == userId && e.DesfeitoEm == null
                     && (e.Itens.Any(i => i.NumeroFatura == mesFatura)
                         || (!e.Itens.Any(i => i.NumeroFatura != null)
                             && e.DataInicioPeriodo.HasValue

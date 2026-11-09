@@ -13,11 +13,14 @@ namespace MyFinanceAPI.Api.Controllers
     public class ExtratoBancarioController : ApiControllerBase
     {
         private readonly IExtratoBancarioService _extratoBancarioService;
+        private readonly IImportacoesService _importacoes;
 
         public ExtratoBancarioController(
-            IExtratoBancarioService extratoBancarioService)
+            IExtratoBancarioService extratoBancarioService,
+            IImportacoesService importacoes)
         {
             _extratoBancarioService = extratoBancarioService;
+            _importacoes = importacoes;
         }
 
         // GET /GetExtratoBancario
@@ -64,6 +67,26 @@ namespace MyFinanceAPI.Api.Controllers
             );
 
             return Ok(resultadoImportacao);
+        }
+
+        // Card #75: histórico (meses vazio = todas), cobertura por conta e mês, vínculos e desfazer.
+        [HttpGet("/GetImportacoes")]
+        public async Task<ActionResult<IEnumerable<ImportacaoDTO>>> GetImportacoes([FromQuery] int? meses, [FromQuery] Paginacao paginacao) =>
+            Lista(await _importacoes.ListarAsync(UsuarioId, meses), paginacao);
+
+        [HttpGet("/GetCoberturaImportacoes")]
+        public async Task<ActionResult<CoberturaImportacoesDTO>> GetCoberturaImportacoes([FromQuery] int meses = 12) =>
+            Ok(await _importacoes.CoberturaAsync(UsuarioId, meses));
+
+        [HttpGet("/GetVinculosImportacao/{id:int}")]
+        public async Task<ActionResult<VinculosImportacaoDTO>> GetVinculosImportacao(int id) =>
+            Ok(await _importacoes.VinculosAsync(UsuarioId, id));
+
+        [HttpPost("/DesfazerImportacao/{id:int}")]
+        public async Task<IActionResult> DesfazerImportacao(int id, [FromBody] DesfazerImportacaoDTO corpo)
+        {
+            await _importacoes.DesfazerAsync(UsuarioId, id, corpo.Motivo);
+            return NoContent();
         }
 
         // DELETE /DeleteExtratoBancario/123 — inexistente: o serviço lança KeyNotFoundException → 404.

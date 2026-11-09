@@ -24,6 +24,12 @@ namespace MyFinanceAPI.Domain.Entities
         public string? NomeArquivoOrigem { get; set; }
         public string Situacao { get; set; } = "Concluido";
 
+        // Card #75: o histórico de importações. Duplicados e mês são null em importação antiga.
+        public int? QuantidadeDuplicados { get; set; }
+        public DateOnly? MesReferencia { get; set; }
+        public DateTime? DesfeitoEm { get; set; }
+        public string? MotivoDesfazer { get; set; }
+
         // Relação reversa
         public ICollection<ExtratoBancarioItem> Itens { get; set; } = null!;
     }

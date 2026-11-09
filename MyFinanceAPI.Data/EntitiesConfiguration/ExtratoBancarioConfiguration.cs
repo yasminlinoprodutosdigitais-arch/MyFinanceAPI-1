@@ -37,6 +37,8 @@ public class ExtratoBancarioConfiguration : IEntityTypeConfiguration<ExtratoBanc
             .HasForeignKey(e => e.TipoCartaoId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Property(e => e.MotivoDesfazer).HasMaxLength(200);
+
         builder.HasMany(e => e.Itens)
             .WithOne(i => i.ExtratoBancario)
             .HasForeignKey(i => i.ExtratoBancarioId)

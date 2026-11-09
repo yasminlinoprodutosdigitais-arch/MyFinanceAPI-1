@@ -322,6 +322,9 @@ namespace MyFinanceAPI.Application.Services
                 QuantidadeLancamentos = listaItens.Count,
                 ValorTotal = somaValores,
                 Situacao = "Concluido",
+                QuantidadeDuplicados = jaImportados,
+                MesReferencia = ImportacoesService.MesDaFatura(listaItens.Select(i => i.NumeroFatura).FirstOrDefault(n => n != null))
+                    ?? (dataInicio is { } inicio ? new DateOnly(inicio.Year, inicio.Month, 1) : null),
                 NomeArquivoOrigem = fileName,
                 LoteImportacaoId = Guid.NewGuid(),
                 UsuarioId = userId

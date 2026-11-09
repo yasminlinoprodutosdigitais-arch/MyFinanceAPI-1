@@ -9,6 +9,10 @@ namespace MyFinanceAPI.Domain.Interfaces
     {
         // ----- CREATE / UPDATE / DELETE -----
 
+        /// <summary>Importações do usuário com os totais, da mais recente à mais antiga (card #75).</summary>
+        Task<IReadOnlyList<ImportacaoResumo>> ListarImportacoesAsync(int userId, DateTime? desde);
+        /// <summary>O que desfazer esta importação atinge; null se ela não existe ou é de outro usuário.</summary>
+        Task<VinculosImportacao?> ObterVinculosAsync(int id, int userId);
         Task<ExtratoBancario> CreateAsync(ExtratoBancario extrato);
         Task UpdateAsync(ExtratoBancario extrato);
         Task DeleteAsync(int id, int userId);      // só remove se o extrato for do usuário (BE-P2-04)

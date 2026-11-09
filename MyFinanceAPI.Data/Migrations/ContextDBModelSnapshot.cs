@@ -462,9 +462,22 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("date")
                         .HasColumnName("data_inicio_periodo");
 
+                    b.Property<DateTime?>("DesfeitoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("desfeito_em");
+
                     b.Property<Guid>("LoteImportacaoId")
                         .HasColumnType("uuid")
                         .HasColumnName("lote_importacao_id");
+
+                    b.Property<DateOnly?>("MesReferencia")
+                        .HasColumnType("date")
+                        .HasColumnName("mes_referencia");
+
+                    b.Property<string>("MotivoDesfazer")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("motivo_desfazer");
 
                     b.Property<string>("NomeArquivo")
                         .HasMaxLength(260)
@@ -475,6 +488,10 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasMaxLength(260)
                         .HasColumnType("character varying(260)")
                         .HasColumnName("nome_arquivo_origem");
+
+                    b.Property<int?>("QuantidadeDuplicados")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantidade_duplicados");
 
                     b.Property<int>("QuantidadeLancamentos")
                         .ValueGeneratedOnAdd()
