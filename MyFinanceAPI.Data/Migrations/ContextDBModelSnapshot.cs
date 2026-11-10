@@ -206,11 +206,23 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("ativo");
 
+                    b.Property<bool>("Compartilhado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("compartilhado");
+
+                    b.Property<bool>("ConviteCompartilharDispensado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("convite_compartilhar_dispensado");
+
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_alteracao")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("DiaFechamento")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_fechamento");
 
                     b.Property<int?>("DiaVencimento")
                         .HasColumnType("integer")
@@ -253,6 +265,25 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasDatabaseName("ix_bancos_usuario_id_nome_banco");
 
                     b.ToTable("bancos", (string)null);
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.BancoPessoa", b =>
+                {
+                    b.Property<int>("BancoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("banco_id");
+
+                    b.Property<int>("PessoaMovimentacaoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pessoa_movimentacao_id");
+
+                    b.HasKey("BancoId", "PessoaMovimentacaoId")
+                        .HasName("pk_bancos_pessoas");
+
+                    b.HasIndex("PessoaMovimentacaoId")
+                        .HasDatabaseName("ix_bancos_pessoas_pessoa_movimentacao_id");
+
+                    b.ToTable("bancos_pessoas", (string)null);
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Categoria", b =>
@@ -1843,6 +1874,27 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.BancoPessoa", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Banco", "Banco")
+                        .WithMany("Pessoas")
+                        .HasForeignKey("BancoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bancos_pessoas_bancos_banco_id");
+
+                    b.HasOne("MyFinanceAPI.Domain.Entities.PessoaMovimentacao", "PessoaMovimentacao")
+                        .WithMany()
+                        .HasForeignKey("PessoaMovimentacaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bancos_pessoas_pessoas_movimentacao_pessoa_movimentacao_id");
+
+                    b.Navigation("Banco");
+
+                    b.Navigation("PessoaMovimentacao");
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Categoria", b =>
                 {
                     b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
@@ -2304,6 +2356,11 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("Conta");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Banco", b =>
+                {
+                    b.Navigation("Pessoas");
                 });
 
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Conta", b =>

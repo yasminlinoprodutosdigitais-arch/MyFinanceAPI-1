@@ -19,17 +19,20 @@ namespace MyFinanceAPI.Api.Controllers
         private readonly IAcertosService _acertosService;
         private readonly IResumoCategoriasService _resumoCategorias;
         private readonly INotaFiscalService _notaFiscal;
+        private readonly IResumoContasService _resumoContas;
 
         public ExtratoBancarioItemController(
             IExtratoBancarioItemService extratoBancarioItemService,
             IAcertosService acertosService,
             IResumoCategoriasService resumoCategorias,
-            INotaFiscalService notaFiscal)
+            INotaFiscalService notaFiscal,
+            IResumoContasService resumoContas)
         {
             _extratoBancarioItemService = extratoBancarioItemService;
             _acertosService = acertosService;
             _resumoCategorias = resumoCategorias;
             _notaFiscal = notaFiscal;
+            _resumoContas = resumoContas;
         }
 
         /// <summary>
@@ -58,6 +61,11 @@ namespace MyFinanceAPI.Api.Controllers
             await _notaFiscal.RemoverAsync(UsuarioId, itemId);
             return NoContent();
         }
+
+        /// <summary>Card #77: números por conta no mês, os mesmos na listagem e no detalhe.</summary>
+        [HttpGet("/GetResumoContas")]
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoContasDTO>> GetResumoContas([FromQuery] string? month) =>
+            Ok(await _resumoContas.ObterAsync(UsuarioId, month));
 
         [HttpGet("/GetResumoCategorias")]
         public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO>> GetResumoCategorias([FromQuery] string? month) =>

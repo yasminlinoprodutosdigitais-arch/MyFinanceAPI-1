@@ -15,7 +15,10 @@ public class DomainToDTOMappingProfile : Profile
             // 💡 SOLUÇÃO: Ignora a propriedade de navegação 'Category' ao mapear DTO -> Entidade
             .ForMember(dest => dest.Categoria, opt => opt.Ignore());
         CreateMap<Transacao, TransacaoDTO>().ReverseMap();
-        CreateMap<Banco, BancoDTO>().ReverseMap();
+        CreateMap<Banco, BancoDTO>()
+                .ForMember(d => d.PessoasIds, o => o.MapFrom(s => s.Pessoas.Select(p => p.PessoaMovimentacaoId)))
+                .ReverseMap()
+                .ForMember(e => e.Pessoas, o => o.MapFrom(d => d.PessoasIds.Distinct().Select(id => new BancoPessoa { PessoaMovimentacaoId = id })));
         // Resumo é calculado na listagem; arquivada_em, feito_em, série e origens são gravados pelo serviço, não pela entrada.
         CreateMap<Lista, ListaDTO>()
             .ForMember(d => d.Resumo, o => o.Ignore())

@@ -129,6 +129,8 @@ public class ResumoCategoriasService(IExtratoBancarioItemRepository itens) : IRe
             CategoriasFora.Contains(RegraClassificacao.Normalizar(nome) ?? ""));
 
     /// <summary>O mês em que o lançamento aparece no Extrato: cartão de crédito pela fatura, o resto pela data.</summary>
+    public static string? MesDoLancamento(ExtratoBancarioItem i) => MesDo(i);
+
     private static string? MesDo(ExtratoBancarioItem i) =>
         i.TipoCartao is { EhCredito: true } ? i.NumeroFatura : i.DataMovimentacao.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 }

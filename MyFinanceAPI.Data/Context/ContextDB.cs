@@ -15,6 +15,7 @@ namespace MyFinanceAPI.Data.Context
                 public DbSet<Categoria> Categorias { get; set; }
                 public DbSet<Transacao> Transacoes { get; set; }
                 public DbSet<Banco> Bancos { get; set; }
+                public DbSet<BancoPessoa> BancosPessoas { get; set; }
                 public DbSet<Lista> Listas { get; set; }
                 public DbSet<ItemLista> ItensLista { get; set; }
                 public DbSet<OcorrenciaItemLista> ItensListaOcorrencias { get; set; }

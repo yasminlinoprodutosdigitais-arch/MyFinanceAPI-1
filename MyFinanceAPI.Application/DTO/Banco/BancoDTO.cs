@@ -16,6 +16,13 @@ public class BancoDTO
     public decimal? SaldoInicial { get; set; }
     /// <summary>Dia do vencimento da fatura (1 a 31), só para cartão de crédito.</summary>
     public int? DiaVencimento { get; set; }
+    /// <summary>Dia do fechamento da fatura (1 a 31), só para cartão de crédito (card #77).</summary>
+    public int? DiaFechamento { get; set; }
+    /// <summary>Outras pessoas usam este cartão (card #77).</summary>
+    public bool Compartilhado { get; set; }
+    public bool ConviteCompartilharDispensado { get; set; }
+    /// <summary>Pessoas cadastradas que usam o cartão; o "Eu" não entra.</summary>
+    public List<int> PessoasIds { get; set; } = [];
     public DateTime DataAlteracao { get; set;}
 
     public bool Ativo { get; set; }

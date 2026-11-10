@@ -59,6 +59,14 @@ namespace MyFinanceAPI.Api.Controllers
             return Ok(BancoDTO);
         }
 
+        // Card #77: o switch do detalhe muda só o compartilhamento, sem reenviar o cadastro inteiro.
+        [HttpPut("/CompartilharBanco/{id:int}")]
+        public async Task<IActionResult> CompartilharBanco(int id, [FromBody] MyFinanceAPI.Application.DTO.Movimentacoes.CompartilhamentoDTO dto)
+        {
+            await _BancoService.DefinirCompartilhamentoAsync(id, UsuarioId, dto);
+            return NoContent();
+        }
+
         [HttpDelete("/DeleteBanco/{id}")]
         public async Task<IActionResult> DeleteBanco(int id)
         {

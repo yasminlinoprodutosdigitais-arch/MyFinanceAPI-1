@@ -107,7 +107,7 @@ public class ConvencaoDeNomesTests
         var tabelas = Modelo().GetEntityTypes().Select(e => e.GetTableName()).Where(t => !t!.StartsWith("asp_net_"));
 
         Assert.Equal(
-            new[] { "bancos", "categorias", "contas", "contas_vencimento", "extrato_item_partes", "extratos_bancarios", "itens_extrato_bancario",
+            new[] { "bancos", "bancos_pessoas", "categorias", "contas", "contas_vencimento", "extrato_item_partes", "extratos_bancarios", "itens_extrato_bancario",
                     "itens_lista", "itens_lista_ocorrencias", "listas", "movimentacoes_diarias", "notas_fiscais", "notas_fiscais_itens", "pessoas_movimentacao", "regras_classificacao", "tipos_cartao",
                     "tipos_movimentacao", "transacoes" },
             tabelas.Order(StringComparer.Ordinal));
