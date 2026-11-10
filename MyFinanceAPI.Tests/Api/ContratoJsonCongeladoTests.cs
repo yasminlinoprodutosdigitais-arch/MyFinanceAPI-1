@@ -63,6 +63,7 @@ public class ContratoJsonCongeladoTests
         ("opcoesImportacao", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.OpcoesImportacao)),
         ("previaImportacao", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.PreviaImportacaoDTO)),
         ("linhaPreviaImportacao", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.LinhaPreviaImportacaoDTO)),
+        ("buscaResultado", typeof(BuscaResultadoDTO)),
         ("resumoContas", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.ResumoContasDTO)),
         ("resumoConta", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.ResumoContaDTO)),
         ("resumoContaPessoa", typeof(MyFinanceAPI.Application.DTO.Movimentacoes.ResumoContaPessoaDTO)),

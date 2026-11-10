@@ -67,6 +67,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<ILimpezaPessoasService, LimpezaPessoasService>();
             services.AddScoped<IResumoCategoriasService, ResumoCategoriasService>();
             services.AddScoped<IResumoContasService, ResumoContasService>();
+            services.AddScoped<IBuscaService, BuscaService>();
             services.AddScoped<INotaFiscalService, NotaFiscalService>();
             services.AddScoped<IImportacoesService, ImportacoesService>();
             services.AddScoped<INotaFiscalRepository, NotaFiscalRepository>();
@@ -81,6 +82,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IContaRepository, ContaRepository>();
             
             services.AddScoped<IBancoRepository, BancoRepository>();
+            services.AddScoped<IBuscaRepository, BuscaRepository>();
             services.AddScoped<ITipoCartaoRepository, TipoCartaoRepository>();
             services.AddScoped<IMovimentacaoDiariaRepository, MovimentacaoDiariaRepository>();
             services.AddScoped<IExtratoBancarioRepository, ExtratoBancarioRepository>();

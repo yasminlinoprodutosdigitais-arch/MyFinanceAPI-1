@@ -2796,6 +2796,11 @@ linhaPreviaImportacao.entraNosAcertos
 linhaPreviaImportacao.nomePessoa
 linhaPreviaImportacao.tipoLancamento
 linhaPreviaImportacao.valor
+buscaResultado.detalhe
+buscaResultado.id
+buscaResultado.listaId
+buscaResultado.tipo
+buscaResultado.titulo
 resumoContas.contas
 resumoContas.contas.agencia
 resumoContas.contas.ativo
