@@ -9,11 +9,11 @@ using MyFinanceAPI.Domain.Interfaces;
 namespace MyFinanceAPI.Application.Services;
 
 /// <summary>
-/// Card #50. Quem se cadastra entra com o e-mail como login e perfil Pessoa, e só consegue entrar depois de
-/// confirmar o e-mail. Cadastro com e-mail que já tem conta não cria nada: o dono recebe um aviso (ou o link
-/// de confirmação de novo, se ainda não confirmou).
+/// Card #50. Quem se cadastra escolhe um nome de usuário (card #84), entra com ele ou com o e-mail, tem perfil
+/// Pessoa e só consegue entrar depois de confirmar o e-mail. Cadastro com e-mail que já tem conta não cria nada:
+/// o dono recebe um aviso (ou o link de confirmação de novo, se ainda não confirmou).
 /// </summary>
-public class AcessoService(
+public partial class AcessoService(
     IUsuarioRepository usuarios,
     ITokensUsuarioService tokens,
     IEnvioEmail email,
@@ -21,15 +21,20 @@ public class AcessoService(
     TimeProvider relogio) : IAcessoService
 {
     private const string MensagemSenhaFraca = "A senha precisa ter pelo menos 8 caracteres, com letras e números.";
+    private const string MensagemUsuarioInvalido =
+        "O nome de usuário precisa ter de 3 a 30 caracteres, começar por letra e usar só letras sem acento, números, ponto, _ ou -.";
 
     public async Task CadastrarAsync(CadastroDto dados)
     {
         var nome = dados.Nome?.Trim() ?? "";
         if (nome.Length == 0)
             throw new ArgumentException("Informe seu nome.");
+        var login = UsuarioValido(dados.Usuario);
         var endereco = EmailValido(dados.Email);
         ValidarSenha(dados.Senha);
 
+        // O e-mail vem antes do usuário: com e-mail já cadastrado a resposta é a de sempre, e o "já em uso"
+        // do usuário não serve para descobrir se um e-mail tem conta.
         var existente = await usuarios.BuscarPorEmailAsync(endereco);
         if (existente != null)
         {
@@ -40,10 +45,14 @@ public class AcessoService(
             return;
         }
 
+        if (await usuarios.LoginEmUsoAsync(login))
+            throw new RegraNegocioException("Este nome de usuário já está em uso. Escolha outro.");
+
         var agora = relogio.GetUtcNow().UtcDateTime;
-        var usuario = new Usuario(endereco, dados.Senha, nome, Perfis.Pessoa, true, agora, agora)
+        var usuario = new Usuario(login, dados.Senha, nome, Perfis.Pessoa, true, agora, agora)
         {
-            NormalizedUserName = endereco.ToUpperInvariant(),
+            Email = endereco,
+            NormalizedUserName = login.ToUpperInvariant(),
             NormalizedEmail = endereco.ToUpperInvariant(),
             EmailConfirmed = false,
             SecurityStamp = Guid.NewGuid().ToString("N"),
@@ -125,6 +134,16 @@ public class AcessoService(
         var valido = MailAddress.TryCreate(limpo, out var lido) && lido.Address == limpo && lido.Host.Contains('.');
         return valido ? limpo : throw new ArgumentException("Informe um e-mail válido.");
     }
+
+    /// <summary>Card #84: gravado em minúsculas; sem "@", para nunca ser confundido com um e-mail no login.</summary>
+    private static string UsuarioValido(string? usuario)
+    {
+        var limpo = usuario?.Trim().ToLowerInvariant() ?? "";
+        return RegraUsuario().IsMatch(limpo) ? limpo : throw new ArgumentException(MensagemUsuarioInvalido);
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex("^[a-z][a-z0-9._-]{2,29}$")]
+    private static partial System.Text.RegularExpressions.Regex RegraUsuario();
 
     private static void ValidarSenha(string? senha)
     {

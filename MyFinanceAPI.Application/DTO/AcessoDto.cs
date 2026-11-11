@@ -2,8 +2,10 @@ using MyFinanceAPI.Application.Utils;
 
 namespace MyFinanceAPI.Application.DTO;
 
-/// <summary>Autocadastro (card #50). O perfil não vem daqui: quem se cadastra é sempre Pessoa.</summary>
-public sealed record CadastroDto([TextoAte(120)] string Nome, [TextoAte(256)] string Email, [TextoAte(128)] string Senha);
+/// <summary>
+/// Autocadastro (card #50; nome de usuário no card #84). O perfil não vem daqui: quem se cadastra é sempre Pessoa.
+/// </summary>
+public sealed record CadastroDto([TextoAte(120)] string Nome, [TextoAte(30)] string Usuario, [TextoAte(256)] string Email, [TextoAte(128)] string Senha);
 
 /// <summary>Pedidos que levam só o e-mail: reenviar a confirmação e "esqueci a senha".</summary>
 public sealed record EmailDto([TextoAte(256)] string Email);

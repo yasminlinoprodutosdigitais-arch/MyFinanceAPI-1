@@ -65,6 +65,18 @@ public sealed class UsuarioRepositoryTests : IDisposable
         Assert.Equal(ana.Id, (await new UsuarioRepository(_contexto).BuscarUsuario("ana"))?.Id);
     }
 
+    /// <summary>Card #84: o usuário não diferencia maiúsculas, no login e na checagem de "já em uso".</summary>
+    [Fact]
+    public async Task Usuario_nao_diferencia_maiusculas()
+    {
+        var ana = Gravar("ana.lima", "ana@exemplo.com");
+        var repo = new UsuarioRepository(_contexto);
+
+        Assert.Equal(ana.Id, (await repo.BuscarUsuario("Ana.Lima"))?.Id);
+        Assert.True(await repo.LoginEmUsoAsync("ANA.LIMA"));
+        Assert.False(await repo.LoginEmUsoAsync("bia"));
+    }
+
     [Fact]
     public async Task Inexistente_devolve_null()
     {

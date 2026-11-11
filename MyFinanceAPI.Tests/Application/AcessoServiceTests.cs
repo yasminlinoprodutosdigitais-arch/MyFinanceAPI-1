@@ -38,12 +38,13 @@ public class AcessoServiceTests
     // ---------- Cadastro ----------
 
     [Fact]
-    public async Task Cadastro_cria_Pessoa_com_o_email_como_login_e_manda_o_link()
+    public async Task Cadastro_cria_Pessoa_com_o_usuario_escolhido_e_manda_o_link()
     {
-        await Servico().CadastrarAsync(new CadastroDto("  Ana Lima ", " Ana@Exemplo.COM ", "Senha123"));
+        await Servico().CadastrarAsync(new CadastroDto("  Ana Lima ", " Ana.Lima ", " Ana@Exemplo.COM ", "Senha123"));
 
         Assert.NotNull(_cadastrado);
-        Assert.Equal("ana@exemplo.com", _cadastrado!.UserName);
+        Assert.Equal("ana.lima", _cadastrado!.UserName);
+        Assert.Equal("ANA.LIMA", _cadastrado.NormalizedUserName);
         Assert.Equal("ana@exemplo.com", _cadastrado.Email);
         Assert.Equal("ANA@EXEMPLO.COM", _cadastrado.NormalizedEmail);
         Assert.Equal("Ana Lima", _cadastrado.NomeUsuario);
@@ -63,7 +64,7 @@ public class AcessoServiceTests
     [InlineData("12345678")]
     public async Task Senha_fraca_e_recusada(string senha)
     {
-        var erro = await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("Ana", "ana@exemplo.com", senha)));
+        var erro = await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("Ana", "ana.lima", "ana@exemplo.com", senha)));
 
         Assert.Equal("A senha precisa ter pelo menos 8 caracteres, com letras e números.", erro.Message);
         Assert.Null(_cadastrado);
@@ -75,13 +76,67 @@ public class AcessoServiceTests
     [InlineData("")]
     public async Task Email_invalido_e_recusado(string email)
     {
-        await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("Ana", email, "Senha123")));
+        await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("Ana", "ana.lima", email, "Senha123")));
+    }
+
+    /// <summary>Card #84: de 3 a 30, começando por letra; só letras sem acento, números, ".", "_" e "-".</summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData("ab")]
+    [InlineData("1ana")]
+    [InlineData("ana@lima")]
+    [InlineData("ana lima")]
+    [InlineData("anã")]
+    [InlineData("a123456789012345678901234567890")]
+    public async Task Nome_de_usuario_fora_das_regras_e_recusado(string usuario)
+    {
+        var erro = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Servico().CadastrarAsync(new CadastroDto("Ana", usuario, "ana@exemplo.com", "Senha123")));
+
+        Assert.StartsWith("O nome de usuário", erro.Message);
+        Assert.Null(_cadastrado);
+    }
+
+    [Theory]
+    [InlineData("ana")]
+    [InlineData("ana.lima_2-b")]
+    [InlineData("a12345678901234567890123456789")]
+    public async Task Nome_de_usuario_dentro_das_regras_e_aceito(string usuario)
+    {
+        await Servico().CadastrarAsync(new CadastroDto("Ana", usuario, "ana@exemplo.com", "Senha123"));
+
+        Assert.Equal(usuario, _cadastrado?.UserName);
+    }
+
+    [Fact]
+    public async Task Nome_de_usuario_em_uso_e_recusado_sem_criar_nem_mandar_email()
+    {
+        _usuarios.Setup(r => r.LoginEmUsoAsync("ana.lima")).ReturnsAsync(true);
+
+        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() =>
+            Servico().CadastrarAsync(new CadastroDto("Ana", "Ana.Lima", "ana@exemplo.com", "Senha123")));
+
+        Assert.Equal("Este nome de usuário já está em uso. Escolha outro.", erro.Message);
+        Assert.Null(_cadastrado);
+        Assert.Empty(_enviados);
+    }
+
+    /// <summary>E-mail já cadastrado responde igual de sempre, mesmo com o usuário em uso: a tela não revela o e-mail.</summary>
+    [Fact]
+    public async Task Email_ja_cadastrado_tem_prioridade_sobre_usuario_em_uso()
+    {
+        _usuarios.Setup(r => r.BuscarPorEmailAsync("ana@exemplo.com")).ReturnsAsync(Existente(confirmado: true));
+        _usuarios.Setup(r => r.LoginEmUsoAsync("ana.lima")).ReturnsAsync(true);
+
+        await Servico().CadastrarAsync(new CadastroDto("Ana", "ana.lima", "ana@exemplo.com", "Senha123"));
+
+        Assert.Equal("Você já tem uma conta no Kanfy", Assert.Single(_enviados).Assunto);
     }
 
     [Fact]
     public async Task Nome_vazio_e_recusado()
     {
-        await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("  ", "ana@exemplo.com", "Senha123")));
+        await Assert.ThrowsAsync<ArgumentException>(() => Servico().CadastrarAsync(new CadastroDto("  ", "ana.lima", "ana@exemplo.com", "Senha123")));
     }
 
     [Fact]
@@ -89,7 +144,7 @@ public class AcessoServiceTests
     {
         _usuarios.Setup(r => r.BuscarPorEmailAsync("ana@exemplo.com")).ReturnsAsync(Existente(confirmado: true));
 
-        await Servico().CadastrarAsync(new CadastroDto("Outra", "ana@exemplo.com", "Senha123"));
+        await Servico().CadastrarAsync(new CadastroDto("Outra", "outra", "ana@exemplo.com", "Senha123"));
 
         Assert.Null(_cadastrado);
         var email = Assert.Single(_enviados);
@@ -102,7 +157,7 @@ public class AcessoServiceTests
     {
         _usuarios.Setup(r => r.BuscarPorEmailAsync("ana@exemplo.com")).ReturnsAsync(Existente(confirmado: false));
 
-        await Servico().CadastrarAsync(new CadastroDto("Ana", "ana@exemplo.com", "Senha123"));
+        await Servico().CadastrarAsync(new CadastroDto("Ana", "ana.lima", "ana@exemplo.com", "Senha123"));
 
         Assert.Null(_cadastrado);
         _tokens.Verify(t => t.GerarAsync(7, TipoTokenUsuario.ConfirmarEmail));

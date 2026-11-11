@@ -33,7 +33,7 @@ public class AcessoControllerTests
     [Fact]
     public async Task Cadastro_responde_202()
     {
-        var dados = new CadastroDto("Ana", "ana@exemplo.com", "Senha123");
+        var dados = new CadastroDto("Ana", "ana.lima", "ana@exemplo.com", "Senha123");
 
         var resposta = await Controller().Cadastrar(dados);
 

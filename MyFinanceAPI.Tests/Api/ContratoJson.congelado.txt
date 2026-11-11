@@ -3041,6 +3041,7 @@ usuario.senha
 cadastro.email
 cadastro.nome
 cadastro.senha
+cadastro.usuario
 email.email
 link.token
 redefinirSenha.senha

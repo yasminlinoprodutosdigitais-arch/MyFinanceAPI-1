@@ -15,13 +15,20 @@ namespace MyFinanceAPI.Data.Repositories
         }
 
         /// <summary>
-        /// Pelo usuário e, se não achar, pelo e-mail sem diferenciar maiúsculas (card #70; o NormalizedEmail
-        /// não é preenchido pelo cadastro). A senha é conferida no UsuarioService, contra o hash (BE-P3-10).
+        /// Pelo usuário e, se não achar, pelo e-mail, os dois sem diferenciar maiúsculas (cards #70 e #84; o
+        /// Normalized* não é preenchido nos usuários antigos). A senha é conferida no UsuarioService (BE-P3-10).
         /// </summary>
         public async Task<Usuario?> BuscarUsuario(string login)
         {
-            var porUsuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.UserName == login);
+            var maiusculo = login.ToUpper();
+            var porUsuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.UserName != null && u.UserName.ToUpper() == maiusculo);
             return porUsuario ?? await BuscarPorEmailAsync(login);
+        }
+
+        public Task<bool> LoginEmUsoAsync(string login)
+        {
+            var maiusculo = login.ToUpper();
+            return _context.Usuarios.AnyAsync(u => u.UserName != null && u.UserName.ToUpper() == maiusculo);
         }
 
         public Task<Usuario?> BuscarPorEmailAsync(string email)
