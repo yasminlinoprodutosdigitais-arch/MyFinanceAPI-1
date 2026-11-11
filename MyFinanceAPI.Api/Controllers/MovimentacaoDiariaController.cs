@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.DTO.Movimentacoes;
 using MyFinanceAPI.Application.Interfaces;
@@ -14,7 +15,7 @@ namespace MyFinanceAPI.Api.Controllers
     /// Nenhuma tela usa este módulo hoje — a tela de movimentações usa ExtratoBancario —, mas ele fica
     /// por decisão de 14/10/2026 (BE-P3-02): é onde vive a lógica de saldo bancário.
     /// </summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class MovimentacaoDiariaController : ApiControllerBase
     {
         public const string RotaPorId = "GetMovimentacaoDiaria";

@@ -5,12 +5,13 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class ExtratoBancarioItemController : ApiControllerBase
     {
         public const string RotaPorId = "GetExtratoBancarioItemById";

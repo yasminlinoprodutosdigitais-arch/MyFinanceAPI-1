@@ -3038,6 +3038,13 @@ token.dataExpiracao
 token.token
 usuario.login
 usuario.senha
+cadastro.email
+cadastro.nome
+cadastro.senha
+email.email
+link.token
+redefinirSenha.senha
+redefinirSenha.token
 preferenciasNotificacao.acertos
 preferenciasNotificacao.acertos.ativo
 preferenciasNotificacao.acertos.diasEmAberto

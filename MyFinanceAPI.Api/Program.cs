@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Api.Erros;
 using MyFinanceAPI.Application.Utils;
 using MyFinanceAPI.Domain.Entities;
@@ -67,7 +68,8 @@ builder.Services.AddAuthentication(o =>
     };
 });
 
-builder.Services.AddAuthorization(o => o.AddPolicy("Admin", p => p.RequireRole("Admin", "Empresa")));
+builder.Services.AddAuthorization(Politicas.Configurar);
+builder.Services.AddRateLimiter(LimitesAcesso.Configurar);
 
 builder.Services.AddHealthChecks();
 
@@ -118,6 +120,9 @@ app.UseCors(DependencyInjection.CorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Depois do CORS: o 429 também precisa dos cabeçalhos de CORS para o front ler a mensagem.
+app.UseRateLimiter();
 
 app.MapControllers();
 

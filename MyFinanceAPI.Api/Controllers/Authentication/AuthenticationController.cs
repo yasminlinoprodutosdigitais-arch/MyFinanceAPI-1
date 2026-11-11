@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
@@ -9,7 +11,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
     [Produces("application/json")]
     public class AuthenticationController : ApiControllerBase
     {
-        private static readonly string[] RolesPermitidas = { "Admin", "Empresa" };
+        private static readonly string[] RolesPermitidas = { Perfis.Admin, Perfis.Empresa, Perfis.Pessoa };
 
         private readonly ITokenService _tokenService;
         private readonly IUsuarioService _usuarioService;
@@ -20,6 +22,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
             _usuarioService = usuarioService;
         }
 
+        [EnableRateLimiting(LimitesAcesso.Politica)]
         [HttpPost("/Autenticar")]
         public async Task<IActionResult> Autenticar([FromBody] UsuarioDto command)
         {
@@ -28,6 +31,10 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
             var usuario = await _usuarioService.BuscarUsuario(command.Login, command.Senha);
             if (usuario == null)
                 return NaoAutorizado("Usuário/e-mail ou senha incorretos.");
+
+            // Card #50: com a senha certa, já dá para dizer que falta confirmar (a tela oferece reenviar o link).
+            if (!usuario.EmailConfirmed)
+                return Proibido("Confirme seu e-mail para entrar.");
 
             var tokenDto = _tokenService.CreateToken(usuario);
 
@@ -48,7 +55,7 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         // Exige usuário autenticado (BE-P0-02): antes era anônimo e aceitava qualquer Role do body,
         // o que dava acesso total à API a quem se cadastrasse.
         // Sem tela no front: é a forma de criar usuário (via Swagger, logado), por isso fica (BE-P3-02).
-        [Authorize(Policy = "Admin")]
+        [Authorize(Policy = Politicas.Admin)]
         [HttpPost("/CadastrarUsuario")]
         public IActionResult Cadastrar([FromBody] CadastrarUsuarioDto request)
         {

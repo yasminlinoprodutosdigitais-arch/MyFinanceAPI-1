@@ -37,7 +37,7 @@ public class RotasTests
     [Fact]
     public void Encontra_os_controllers_da_api()
     {
-        Assert.Equal(18, Controllers.Length);
+        Assert.Equal(19, Controllers.Length);
     }
 
     [Theory]

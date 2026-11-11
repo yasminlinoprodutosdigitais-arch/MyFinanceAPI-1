@@ -1628,6 +1628,56 @@ namespace MyFinanceAPI.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TokenUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("ExpiraEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_em");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("hash");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo");
+
+                    b.Property<DateTime?>("UsadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("usado_em");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tokens_usuario");
+
+                    b.HasIndex("Hash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tokens_usuario_hash");
+
+                    b.HasIndex("UsuarioId", "Tipo")
+                        .HasDatabaseName("ix_tokens_usuario_usuario_id_tipo");
+
+                    b.ToTable("tokens_usuario", (string)null);
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.Transacao", b =>
                 {
                     b.Property<int>("Id")
@@ -2371,6 +2421,18 @@ namespace MyFinanceAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_tipos_movimentacao_asp_net_users_usuario_id");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.TokenUsuario", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tokens_usuario_asp_net_users_usuario_id");
 
                     b.Navigation("Usuario");
                 });

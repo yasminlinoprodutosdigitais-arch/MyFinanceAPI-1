@@ -43,7 +43,11 @@ namespace MyFinanceAPI.Application.Services
                 true,
                 DateTime.UtcNow,
                 DateTime.UtcNow
-            );
+            )
+            {
+                // Criado pelo Admin: não recebe link de confirmação, então já nasce confirmado (card #50).
+                EmailConfirmed = true,
+            };
 
             _usuarioRepository.Cadastrar(usuario);
             return usuario;

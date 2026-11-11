@@ -23,7 +23,7 @@ public class AutenticacaoTests
     private readonly Mock<IUsuarioRepository> _repo = new();
 
     private static Usuario Ana() =>
-        new("ana", "senha-certa", "Ana", "Admin", true, DateTime.UtcNow, DateTime.UtcNow) { Id = 12 };
+        new("ana", "senha-certa", "Ana", "Admin", true, DateTime.UtcNow, DateTime.UtcNow) { Id = 12, EmailConfirmed = true };
 
     // ---------- Login ----------
 
@@ -92,6 +92,7 @@ public class AutenticacaoTests
         Assert.Same(gravado, criado);
         Assert.Equal("bia", criado.UserName);
         Assert.NotEqual("s3nh@", criado.PasswordHash);
+        Assert.True(criado.EmailConfirmed);   // card #50: criado pelo Admin, entra sem link
     }
 
     // ---------- Controller ----------
@@ -112,6 +113,24 @@ public class AutenticacaoTests
 
         Assert.IsType<OkObjectResult>(resposta);
         tokens.Verify(t => t.CreateToken(ana), Times.Once);
+    }
+
+    /// <summary>Card #50: senha certa com e-mail ainda não confirmado não entra, e a tela oferece reenviar o link.</summary>
+    [Fact]
+    public async Task Autenticar_com_email_nao_confirmado_responde_403_sem_token()
+    {
+        var ana = Ana();
+        ana.EmailConfirmed = false;
+        var usuarios = new Mock<IUsuarioService>();
+        usuarios.Setup(s => s.BuscarUsuario("ana", "senha-certa")).ReturnsAsync(ana);
+        var tokens = new Mock<ITokenService>();
+
+        var resposta = await Controller(usuarios, tokens).Autenticar(new UsuarioDto("ana", "senha-certa"));
+
+        var objeto = Assert.IsAssignableFrom<ObjectResult>(resposta);
+        Assert.Equal(StatusCodes.Status403Forbidden, objeto.StatusCode);
+        Assert.Equal("Confirme seu e-mail para entrar.", Assert.IsType<MyFinanceAPI.Api.Erros.MensagemErro>(objeto.Value).Message);
+        tokens.Verify(t => t.CreateToken(It.IsAny<Usuario>()), Times.Never);
     }
 
     [Fact]

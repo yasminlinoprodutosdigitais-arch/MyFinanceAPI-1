@@ -109,7 +109,7 @@ public class ConvencaoDeNomesTests
         Assert.Equal(
             new[] { "bancos", "bancos_pessoas", "categorias", "contas", "contas_vencimento", "extrato_item_partes", "extratos_bancarios", "itens_extrato_bancario",
                     "itens_lista", "itens_lista_ocorrencias", "listas", "movimentacoes_diarias", "notas_fiscais", "notas_fiscais_itens", "pessoas_movimentacao", "preferencias_notificacao", "regras_classificacao", "tipos_cartao",
-                    "tipos_movimentacao", "transacoes" },
+                    "tipos_movimentacao", "tokens_usuario", "transacoes" },
             tabelas.Order(StringComparer.Ordinal));
     }
 }

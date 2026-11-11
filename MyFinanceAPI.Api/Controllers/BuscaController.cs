@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers;
 
 /// <summary>Busca rápida do menu (card #72).</summary>
-[Authorize(Policy = "Admin")]
+[Authorize(Policy = Politicas.Usuario)]
 public class BuscaController(IBuscaService busca) : ApiControllerBase
 {
     /// <summary>Planejamentos, itens, categorias e contas fixas do usuário; menos de 2 letras devolve lista vazia.</summary>

@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Api.Controllers
 {
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class TipoMovimentacaoController : ApiControllerBase
     {
         public const string RotaPorId = "GetTipoMovimentacao";

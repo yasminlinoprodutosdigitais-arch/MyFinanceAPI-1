@@ -1,5 +1,6 @@
 // Controllers/CategoriesController.cs
 
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MyFinanceAPI.Api.Controllers
 {
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class CategoriasController : ApiControllerBase
     {
         public const string RotaPorId = "GetCategory";

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyFinanceAPI.Application.Email;
 using MyFinanceAPI.Application.Interfaces;
 using MyFinanceAPI.Application.Services;
 using MyFinanceAPI.Data;
@@ -16,6 +17,34 @@ namespace MyFinanceAPI.Ioc
     public static class DependencyInjection
     {
         public const string CorsPolicy = "Front";
+
+        /// <summary>
+        /// Envio de e-mail (card #50) pela seção "Email": Provedor "Brevo" em produção, arquivo .html no resto.
+        /// Brevo sem remetente, chave ou endereço do front não sobe: o erro apareceria só no primeiro cadastro.
+        /// </summary>
+        public static void RegistrarEmail(IServiceCollection services, IConfiguration configuration)
+        {
+            var secao = configuration.GetSection("Email");
+            services.Configure<EmailSettings>(secao);
+            var email = secao.Get<EmailSettings>() ?? new EmailSettings();
+
+            if (!string.Equals(email.Provedor, "Brevo", StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddScoped<IEnvioEmail, EnvioEmailArquivo>();
+                return;
+            }
+
+            var faltando = new[]
+            {
+                (Valor: email.Remetente, Nome: "Email__Remetente"),
+                (Valor: email.BrevoApiKey, Nome: "Email__BrevoApiKey"),
+                (Valor: email.UrlFront, Nome: "Email__UrlFront"),
+            }.Where(c => string.IsNullOrWhiteSpace(c.Valor)).Select(c => c.Nome).ToList();
+            if (faltando.Count > 0)
+                throw new InvalidOperationException($"Email:Provedor é Brevo, mas falta configurar: {string.Join(", ", faltando)}.");
+
+            services.AddHttpClient<IEnvioEmail, EnvioEmailBrevo>(c => c.Timeout = TimeSpan.FromSeconds(15));
+        }
 
         public static IServiceCollection RegisterService(this IServiceCollection services, IConfiguration configuration, bool ambienteLocal)
         {
@@ -41,6 +70,8 @@ namespace MyFinanceAPI.Ioc
                            // Total das listas paginadas (BE-P4-16); sem isso o navegador esconde o cabeçalho do front.
                            .WithExposedHeaders("X-Total-Count"));
             });
+
+            RegistrarEmail(services, configuration);
 
             // Registrar os serviços
             services.AddScoped<IValidadorToken, ValidadorToken>();
@@ -74,6 +105,9 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IImportacoesService, ImportacoesService>();
             services.AddScoped<INotaFiscalRepository, NotaFiscalRepository>();
             services.AddScoped<IPreferenciaNotificacaoRepository, PreferenciaNotificacaoRepository>();
+            services.AddScoped<ITokenUsuarioRepository, TokenUsuarioRepository>();
+            services.AddScoped<ITokensUsuarioService, TokensUsuarioService>();
+            services.AddScoped<IAcessoService, AcessoService>();
 
 
             // Registro do repositório IUsuarioRepository

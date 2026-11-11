@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
     /// <summary>Listas com campos configuráveis (card #67). Arquivar é a forma de guardar; excluir apaga a lista e os itens.</summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class ListasController(IListaService listaService) : ApiControllerBase
     {
         public const string RotaPorId = "GetLista";

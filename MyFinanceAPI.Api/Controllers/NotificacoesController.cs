@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO.Notificacoes;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
     /// <summary>Avisos do sino (card #73): calculados na hora; só o "lido até" é gravado.</summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class NotificacoesController(INotificacaoService notificacoes) : ApiControllerBase
     {
         [HttpGet("/notificacoes")]

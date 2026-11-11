@@ -35,6 +35,9 @@ namespace MyFinanceAPI.Api.Controllers
         /// <summary>401 com <c>{ message }</c>.</summary>
         protected UnauthorizedObjectResult NaoAutorizado(string mensagem) => Unauthorized(new MensagemErro(mensagem));
 
+        /// <summary>403 com <c>{ message }</c>.</summary>
+        protected ObjectResult Proibido(string mensagem) => StatusCode(StatusCodes.Status403Forbidden, new MensagemErro(mensagem));
+
         /// <summary>404 com <c>{ message }</c>.</summary>
         protected NotFoundObjectResult NaoEncontrado(string mensagem) => NotFound(new MensagemErro(mensagem));
 

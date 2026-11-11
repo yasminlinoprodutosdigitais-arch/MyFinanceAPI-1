@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO.Notificacoes;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
     /// <summary>Preferências do usuário (card #73): por enquanto, só as de notificação.</summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class PreferenciasController(IPreferenciaNotificacaoService preferencias) : ApiControllerBase
     {
         [HttpGet("/preferencias/notificacoes")]

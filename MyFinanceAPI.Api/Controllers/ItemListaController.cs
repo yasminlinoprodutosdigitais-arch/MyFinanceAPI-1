@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 
@@ -9,7 +10,7 @@ namespace MyFinanceAPI.Api.Controllers
     /// Itens de uma lista (card #67), sempre aninhados em /listas/{id}. As ações em lote são uma operação
     /// só e respondem <c>{ afetados }</c>.
     /// </summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class ItemListaController(IItemListaService itemListaService) : ApiControllerBase
     {
         /// <summary>Não há GET de um item só: o Location do 201 aponta para os itens da lista.</summary>

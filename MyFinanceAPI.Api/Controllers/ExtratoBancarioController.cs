@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.DTO.Extrato;
 using MyFinanceAPI.Application.DTO.Movimentacoes;
@@ -9,7 +10,7 @@ using MyFinanceAPI.Domain.Entities;
 
 namespace MyFinanceAPI.Api.Controllers
 {
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class ExtratoBancarioController : ApiControllerBase
     {
         private readonly IExtratoBancarioService _extratoBancarioService;

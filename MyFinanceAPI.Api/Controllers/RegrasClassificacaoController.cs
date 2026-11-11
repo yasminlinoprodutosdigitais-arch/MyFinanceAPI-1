@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
     /// <summary>Regras de classificação (card #76, fase 1): "a descrição contém X" → categoria, tipo e pessoa.</summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class RegrasClassificacaoController(IRegraClassificacaoService regras, IClassificacaoService classificacao) : ApiControllerBase
     {
         public const string RotaPorId = "GetRegraClassificacaoById";

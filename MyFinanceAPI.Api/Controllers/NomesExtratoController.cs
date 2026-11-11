@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyFinanceAPI.Api.Autorizacao;
 using MyFinanceAPI.Application.DTO;
 using MyFinanceAPI.Application.Interfaces;
 
 namespace MyFinanceAPI.Api.Controllers
 {
     /// <summary>Card #79 — "Nomes do extrato": classificar o nome que vem no extrato ("CIRCUITO") e juntar parecidos.</summary>
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = Politicas.Usuario)]
     public class NomesExtratoController(INomesExtratoService nomes) : ApiControllerBase
     {
         [HttpGet("/GetNomesExtrato")]

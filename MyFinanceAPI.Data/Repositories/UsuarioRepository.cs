@@ -21,11 +21,22 @@ namespace MyFinanceAPI.Data.Repositories
         public async Task<Usuario?> BuscarUsuario(string login)
         {
             var porUsuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.UserName == login);
-            if (porUsuario != null)
-                return porUsuario;
+            return porUsuario ?? await BuscarPorEmailAsync(login);
+        }
 
-            var email = login.ToUpper();
-            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToUpper() == email);
+        public Task<Usuario?> BuscarPorEmailAsync(string email)
+        {
+            var maiusculo = email.ToUpper();
+            return _context.Usuarios.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToUpper() == maiusculo);
+        }
+
+        public Task<Usuario?> ObterPorIdAsync(int id) => _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
+
+        public async Task AtualizarAsync(Usuario usuario)
+        {
+            usuario.DataAlteracao = DateTime.UtcNow;
+            _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
         }
 
         public void Cadastrar(Usuario entidade)
