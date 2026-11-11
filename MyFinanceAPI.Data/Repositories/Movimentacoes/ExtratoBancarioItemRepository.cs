@@ -57,10 +57,9 @@ namespace MyFinanceAPI.Data.Repositories
                 .Include(i => i.Banco)
                 .Include(i => i.Partes).ThenInclude(p => p.PessoaMovimentacao)
                 .Where(i => i.UsuarioId == userId
-                            && ((!i.Partes.Any() && i.PessoaMovimentacao != null
-                                    && (i.PessoaMovimentacao.EntraNosAcertos || i.PessoaMovimentacao.EhTitular))
-                                || i.Partes.Any(p => p.PessoaMovimentacao != null
-                                    && (p.PessoaMovimentacao.EntraNosAcertos || p.PessoaMovimentacao.EhTitular))))
+                            // Card #79: toda pessoa cadastrada entra nos acertos (estabelecimento não é mais pessoa).
+                            && ((!i.Partes.Any() && i.PessoaMovimentacaoId != null)
+                                || i.Partes.Any(p => p.PessoaMovimentacaoId != null)))
                 .OrderBy(i => i.DataMovimentacao)
                 .ThenBy(i => i.Id)
                 .ToListAsync();

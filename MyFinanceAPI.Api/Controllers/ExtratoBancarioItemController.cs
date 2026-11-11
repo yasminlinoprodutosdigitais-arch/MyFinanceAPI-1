@@ -68,8 +68,8 @@ namespace MyFinanceAPI.Api.Controllers
             Ok(await _resumoContas.ObterAsync(UsuarioId, month));
 
         [HttpGet("/GetResumoCategorias")]
-        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO>> GetResumoCategorias([FromQuery] string? month) =>
-            Ok(await _resumoCategorias.ObterAsync(UsuarioId, month));
+        public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.ResumoCategoriasDTO>> GetResumoCategorias([FromQuery] string? month, [FromQuery] int? bancoId) =>
+            Ok(await _resumoCategorias.ObterAsync(UsuarioId, month, bancoId));
 
         [HttpGet("/GetEvolucaoExtratos")]
         public async Task<ActionResult<MyFinanceAPI.Application.DTO.Movimentacoes.EvolucaoExtratosDTO>> GetEvolucaoExtratos(

@@ -58,7 +58,9 @@ public static class CamposRegra
     public const string DescricaoOuPessoa = "descricao_ou_pessoa";
     public const string Descricao = "descricao";
     public const string Pessoa = "pessoa";
-    public static readonly string[] Todos = [DescricaoOuPessoa, Descricao, Pessoa];
+    /// <summary>Card #79: o nome que veio no extrato ("CIRCUITO"), o mesmo texto sugerido pelas regras.</summary>
+    public const string NomeExtrato = "nome_extrato";
+    public static readonly string[] Todos = [DescricaoOuPessoa, Descricao, Pessoa, NomeExtrato];
 }
 
 /// <summary>Como a regra compara o texto.</summary>

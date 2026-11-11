@@ -15,7 +15,6 @@ public class PessoaMovimentacaoDTO
     public string? MesAtualizacao{ get; set; }
     /// <summary>É a pessoa "Eu". Só a API define; o que vier do front é ignorado.</summary>
     public bool EhTitular { get; set; }
-    public bool EntraNosAcertos { get; set; }
 
     public Categoria? Categoria{ get; set; }
     public TipoMovimentacao? TipoMovimentacao { get; set; }

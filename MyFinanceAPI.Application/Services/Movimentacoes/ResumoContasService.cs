@@ -69,7 +69,7 @@ public class ResumoContasService(
     private static bool SemCategoria(ExtratoBancarioItem i) =>
         i.Dividido ? i.Partes.Any(p => p.CategoriaId == null) : i.CategoriaId == null;
 
-    private static bool DeOutraPessoa(PessoaMovimentacao? p) => p is { EntraNosAcertos: true, EhTitular: false };
+    private static bool DeOutraPessoa(PessoaMovimentacao? p) => p is { EhTitular: false };
 
     private static ResumoContaDTO MontarConta(
         Banco banco, List<ExtratoBancarioItem> daConta, List<ImportacaoResumo> importacoes,

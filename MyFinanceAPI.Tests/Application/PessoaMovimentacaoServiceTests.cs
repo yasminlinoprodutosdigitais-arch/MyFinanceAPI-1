@@ -70,13 +70,12 @@ public class PessoaMovimentacaoServiceTests
     }
 
     [Fact]
-    public async Task Pessoa_nova_nunca_nasce_titular_e_guarda_o_entra_nos_acertos()
+    public async Task Pessoa_nova_nunca_nasce_titular()
     {
         var criada = await Servico().AdicionarAsync(
-            new PessoaMovimentacaoDTO { NomePessoa = "Ágatha", EhTitular = true, EntraNosAcertos = true }, UserId);
+            new PessoaMovimentacaoDTO { NomePessoa = "Ágatha", EhTitular = true }, UserId);
 
         Assert.False(criada.EhTitular);
-        Assert.True(criada.EntraNosAcertos);
     }
 
     // ---------- modelo ----------
@@ -87,15 +86,15 @@ public class PessoaMovimentacaoServiceTests
         return contexto.GetService<IDesignTimeModel>().Model.GetEntityTypes().Single(e => e.GetTableName() == "pessoas_movimentacao");
     }
 
-    [Theory]
-    [InlineData("eh_titular")]
-    [InlineData("entra_nos_acertos")]
-    public void Tabela_tem_as_colunas_novas_com_padrao_falso(string coluna)
+    [Fact]
+    public void Tabela_tem_eh_titular_com_padrao_falso_e_nao_tem_mais_entra_nos_acertos()
     {
-        var propriedade = Pessoas().GetProperties().Single(p => p.GetColumnName() == coluna);
+        var propriedade = Pessoas().GetProperties().Single(p => p.GetColumnName() == "eh_titular");
 
         Assert.False(propriedade.IsNullable);
         Assert.Equal(false, propriedade.GetDefaultValue());
+        // Card #79: toda pessoa (menos o "Eu") entra nos acertos.
+        Assert.DoesNotContain(Pessoas().GetProperties(), p => p.GetColumnName() == "entra_nos_acertos");
     }
 
     [Fact]

@@ -64,7 +64,7 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IPessoaMovimentacaoService, PessoaMovimentacaoService>();
             services.AddScoped<IRegraClassificacaoService, RegraClassificacaoService>();
             services.AddScoped<IClassificacaoService, ClassificacaoService>();
-            services.AddScoped<ILimpezaPessoasService, LimpezaPessoasService>();
+            services.AddScoped<INomesExtratoService, NomesExtratoService>();
             services.AddScoped<IResumoCategoriasService, ResumoCategoriasService>();
             services.AddScoped<IResumoContasService, ResumoContasService>();
             services.AddScoped<IBuscaService, BuscaService>();

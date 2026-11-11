@@ -27,7 +27,6 @@ public class PessoaMovimentacaoRepository(ContextDB context) : RepositorioDoUsua
             ?? throw new RegraNegocioException("O nome da pessoa é obrigatório.");
         existente.CategoriaId = entrada.CategoriaId;
         existente.TipoMovimentacaoId = entrada.TipoMovimentacaoId;
-        existente.EntraNosAcertos = entrada.EntraNosAcertos;
         // EhTitular nunca muda por edição: só o ObterTitularAsync marca a pessoa "Eu".
     }
 

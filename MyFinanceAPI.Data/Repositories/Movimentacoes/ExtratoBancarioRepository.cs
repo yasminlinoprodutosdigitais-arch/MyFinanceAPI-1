@@ -37,8 +37,8 @@ namespace MyFinanceAPI.Data.Repositories
 
             var itens = _context.ItensExtratoBancario.AsNoTracking().Where(i => i.ExtratoBancarioId == id);
             var ids = itens.Select(i => i.Id);
-            var pessoasDiretas = itens.Where(i => !i.Partes.Any() && i.PessoaMovimentacao != null && i.PessoaMovimentacao.EntraNosAcertos).Select(i => i.PessoaMovimentacao!.NomePessoa);
-            var pessoasDasPartes = itens.SelectMany(i => i.Partes).Where(p => p.PessoaMovimentacao != null && p.PessoaMovimentacao.EntraNosAcertos).Select(p => p.PessoaMovimentacao!.NomePessoa);
+            var pessoasDiretas = itens.Where(i => !i.Partes.Any() && i.PessoaMovimentacao != null && !i.PessoaMovimentacao.EhTitular).Select(i => i.PessoaMovimentacao!.NomePessoa);
+            var pessoasDasPartes = itens.SelectMany(i => i.Partes).Where(p => p.PessoaMovimentacao != null && !p.PessoaMovimentacao.EhTitular).Select(p => p.PessoaMovimentacao!.NomePessoa);
             return new VinculosImportacao(
                 await itens.CountAsync(),
                 await itens.CountAsync(i => i.Partes.Any()),

@@ -83,7 +83,7 @@ public class SalvarNotaFiscalTests
     public async Task Pessoa_dos_acertos_continua_nas_partes()
     {
         _lancamento.PessoaMovimentacaoId = 5;
-        _pessoas.Setup(r => r.ObterPorIdAsync(5, UserId)).ReturnsAsync(new PessoaMovimentacao { Id = 5, EntraNosAcertos = true });
+        _pessoas.Setup(r => r.ObterPorIdAsync(5, UserId)).ReturnsAsync(new PessoaMovimentacao { Id = 5 });
 
         await Servico().SalvarAsync(UserId, 10, Nota(200, (150, 8), (50, 9)));
 

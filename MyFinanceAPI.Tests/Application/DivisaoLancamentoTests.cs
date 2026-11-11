@@ -106,7 +106,7 @@ public class DivisaoLancamentoTests
 
     // ---------- acertos ----------
 
-    private static PessoaMovimentacao P(int id, string nome) => new() { Id = id, NomePessoa = nome, EntraNosAcertos = true };
+    private static PessoaMovimentacao P(int id, string nome) => new() { Id = id, NomePessoa = nome };
 
     [Fact]
     public void Acertos_valem_pela_pessoa_de_cada_parte_e_somam_as_da_mesma_pessoa()
@@ -145,6 +145,7 @@ public class DivisaoLancamentoTests
         _pessoas.Setup(r => r.VerificaPossuiPessoa(It.IsAny<string?>(), UserId)).ReturnsAsync([]);
         _itens.Setup(r => r.CreateAsync(It.IsAny<ExtratoBancarioItem>())).ReturnsAsync((ExtratoBancarioItem i) => i);
         _regras.Setup(r => r.ListarAtivasAsync(UserId)).ReturnsAsync([]);
+        _pessoas.Setup(r => r.ObterPorIdAsync(It.IsAny<int>(), UserId)).ReturnsAsync((int id, int _) => P(id, "X"));
 
         ExtratoBancarioItemDTO Pagamento(int pessoa) => new()
         {

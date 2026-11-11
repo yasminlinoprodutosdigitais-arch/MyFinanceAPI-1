@@ -63,39 +63,51 @@ public class ExtratoBancarioItemServiceTests
         _pessoasCadastradas.Add(new PessoaMovimentacao { Id = 88, NomePessoa = nome, CategoriaId = categoriaId, TipoMovimentacaoId = tipoId });
 
     [Fact]
-    public async Task Pessoa_existente_com_categoria_escolhida_usa_a_escolhida_e_mantem_o_tipo_do_vinculo()
+    public async Task Nome_digitado_igual_a_uma_pessoa_nao_liga_nem_herda_o_padrao()
     {
-        PessoaComVinculo("DALLE PIZZA CIC", Mercado, Lanche);
+        // Card #79: o nome é o do estabelecimento; a pessoa só vem pelo id.
+        PessoaComVinculo("CARLOS", Mercado, Lanche);
 
-        await Criar(Lancamento("DALLE PIZZA CIC", Outros));
+        await Criar(Lancamento("CARLOS", null));
 
-        Assert.Equal(88, _itemCriado!.PessoaMovimentacaoId);
-        Assert.Equal(Outros, _itemCriado.CategoriaId);
-        Assert.Equal(Lanche, _itemCriado.TipoMovimentacaoId);
+        Assert.Null(_itemCriado!.PessoaMovimentacaoId);
+        Assert.Equal("CARLOS", _itemCriado.NomePessoaTransacao);
+        Assert.Null(_itemCriado.CategoriaId);
+        Assert.Null(_itemCriado.TipoMovimentacaoId);
     }
 
     [Fact]
-    public async Task Pessoa_existente_sem_categoria_escolhida_herda_o_vinculo()
+    public async Task Pessoa_pelo_id_liga_e_mantem_o_nome_e_a_categoria_escolhida()
     {
-        PessoaComVinculo("DALLE PIZZA CIC", Mercado, Lanche);
-
-        await Criar(Lancamento("DALLE PIZZA CIC", null));
-
-        Assert.Equal(Mercado, _itemCriado!.CategoriaId);
-        Assert.Equal(Lanche, _itemCriado.TipoMovimentacaoId);
-    }
-
-    [Fact]
-    public async Task Pessoa_existente_tipo_escolhido_tambem_prevalece()
-    {
-        PessoaComVinculo("DALLE PIZZA CIC", Mercado, Lanche);
-        var dto = Lancamento("DALLE PIZZA CIC", null);
-        dto.TipoMovimentacaoId = 3;
+        _pessoaRepo.Setup(r => r.ObterPorIdAsync(88, UserId)).ReturnsAsync(new PessoaMovimentacao { Id = 88, NomePessoa = "CARLOS" });
+        var dto = Lancamento("CIRCUITO", Outros);
+        dto.PessoaMovimentacaoId = 88;
 
         await Criar(dto);
 
-        Assert.Equal(3, _itemCriado!.TipoMovimentacaoId);
-        Assert.Equal(Mercado, _itemCriado.CategoriaId);
+        Assert.Equal(88, _itemCriado!.PessoaMovimentacaoId);
+        Assert.Equal("CIRCUITO", _itemCriado.NomePessoaTransacao);
+        Assert.Equal(Outros, _itemCriado.CategoriaId);
+    }
+
+    [Fact]
+    public async Task Pessoa_de_outro_usuario_e_recusada()
+    {
+        var dto = Lancamento("CIRCUITO", Outros);
+        dto.PessoaMovimentacaoId = 99;
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => Criar(dto));
+    }
+
+    [Fact]
+    public async Task Manual_com_nome_parecido_com_regra_igual_classifica_por_semelhanca()
+    {
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "BAR DOIS IRMAOS", Campo = CamposRegra.NomeExtrato, Operador = OperadoresRegra.Igual, CategoriaId = Lanche, Ativa = true });
+
+        await Criar(Lancamento("BARDOISIRMAOS", null));
+
+        Assert.Equal(Lanche, _itemCriado!.CategoriaId);
+        Assert.True(_itemCriado.ClassificadoPorSemelhanca);
     }
 
     [Fact]
@@ -121,16 +133,17 @@ public class ExtratoBancarioItemServiceTests
     }
 
     [Fact]
-    public async Task Pessoa_enviada_como_objeto_com_categoria_escolhida_usa_a_escolhida()
+    public async Task Pessoa_enviada_como_objeto_liga_pelo_id_sem_herdar_o_padrao()
     {
+        _pessoaRepo.Setup(r => r.ObterPorIdAsync(88, UserId)).ReturnsAsync(new PessoaMovimentacao { Id = 88, NomePessoa = "CARLOS" });
         var dto = Lancamento(null, Outros);
-        dto.PessoaMovimentacao = new PessoaMovimentacaoDTO { Id = 88, NomePessoa = "DALLE PIZZA CIC", CategoriaId = Mercado, TipoMovimentacaoId = Lanche };
+        dto.PessoaMovimentacao = new PessoaMovimentacaoDTO { Id = 88, NomePessoa = "CARLOS", CategoriaId = Mercado, TipoMovimentacaoId = Lanche };
 
         await Criar(dto);
 
         Assert.Equal(88, _itemCriado!.PessoaMovimentacaoId);
         Assert.Equal(Outros, _itemCriado.CategoriaId);
-        Assert.Equal(Lanche, _itemCriado.TipoMovimentacaoId);
+        Assert.Null(_itemCriado.TipoMovimentacaoId);
     }
 
     [Fact]
@@ -156,14 +169,14 @@ public class ExtratoBancarioItemServiceTests
     // ---------- regras no lançamento manual (card #76, fase 1) ----------
 
     [Fact]
-    public async Task Manual_sem_categoria_escolhida_usa_a_regra_antes_do_padrao_da_pessoa()
+    public async Task Manual_sem_categoria_escolhida_usa_a_regra()
     {
-        PessoaComVinculo("DALLE PIZZA CIC", Mercado, Lanche);
-        _regras.Add(new RegraClassificacao { Id = 1, Texto = "PIZZA", CategoriaId = Outros, Ativa = true });
+        _regras.Add(new RegraClassificacao { Id = 1, Texto = "PIZZA", CategoriaId = Outros, TipoMovimentacaoId = Lanche, Ativa = true });
 
         await Criar(Lancamento("DALLE PIZZA CIC", null));
 
         Assert.Equal((Outros, Lanche), (_itemCriado!.CategoriaId, _itemCriado.TipoMovimentacaoId));
+        Assert.False(_itemCriado.ClassificadoPorSemelhanca);
     }
 
     [Fact]
@@ -218,15 +231,38 @@ public class ExtratoBancarioItemServiceTests
     }
 
     [Fact]
-    public async Task Editar_com_nome_de_pessoa_cadastrada_sem_id_liga_pelo_nome()
+    public async Task Editar_com_nome_de_pessoa_cadastrada_sem_id_nao_liga()
     {
+        // Card #79: pessoa só pelo id.
         PessoaComVinculo("GIOVANNE", Mercado, Lanche);
 
         await Editar("GIOVANNE", null, Outros);
 
-        Assert.Equal(88, _existente.PessoaMovimentacaoId);
-        Assert.Equal(Outros, _existente.CategoriaId);   // o padrão da pessoa não sobrescreve a edição
+        Assert.Null(_existente.PessoaMovimentacaoId);
         Assert.Empty(_pessoasCriadas);
+    }
+
+    [Fact]
+    public async Task Editar_a_pessoa_de_um_importado_nao_muda_o_nome_do_extrato()
+    {
+        _existente.ChaveImportacao = "abc";
+        _existente.NomePessoaTransacao = "CIRCUITO";
+
+        await Editar("CARLOS", 88, Outros);
+
+        Assert.Equal(88, _existente.PessoaMovimentacaoId);
+        Assert.Equal("CIRCUITO", _existente.NomePessoaTransacao);
+    }
+
+    [Fact]
+    public async Task Trocar_a_categoria_tira_o_por_semelhanca()
+    {
+        _existente.CategoriaId = Mercado;
+        _existente.ClassificadoPorSemelhanca = true;
+
+        await Editar(null, null, Outros);
+
+        Assert.False(_existente.ClassificadoPorSemelhanca);
     }
 
     // ---------- pagamento que abate uma compra (card #45, parte 3) ----------
@@ -313,11 +349,11 @@ public class ExtratoBancarioItemServiceTests
     }
 
     [Fact]
-    public async Task Editar_sem_nome_tira_a_pessoa()
+    public async Task Editar_sem_id_tira_a_pessoa()
     {
         _existente.PessoaMovimentacaoId = 88;
 
-        await Editar("  ", 88, Outros);
+        await Editar("PADARIA", null, Outros);
 
         Assert.Null(_existente.PessoaMovimentacaoId);
     }

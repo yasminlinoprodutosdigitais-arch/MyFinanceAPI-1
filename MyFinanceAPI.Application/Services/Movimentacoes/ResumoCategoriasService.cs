@@ -20,12 +20,14 @@ public class ResumoCategoriasService(IExtratoBancarioItemRepository itens) : IRe
 
     private sealed record Pedaco(string Mes, int? CategoriaId, string Nome, decimal Valor, bool DeOutraPessoa, bool Fora);
 
-    public async Task<ResumoCategoriasDTO> ObterAsync(int userId, string? mes)
+    public async Task<ResumoCategoriasDTO> ObterAsync(int userId, string? mes, int? bancoId = null)
     {
         if (string.IsNullOrWhiteSpace(mes)
             || !DateOnly.TryParseExact(mes.Trim() + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
             throw new RegraNegocioException("Mês inválido: use AAAA-MM.");
-        return Montar(await itens.ListarParaResumoAsync(userId), mes.Trim());
+        // Card #81: com uma conta aberta no Extrato, só os lançamentos dela.
+        var lancamentos = (await itens.ListarParaResumoAsync(userId)).Where(i => bancoId is not > 0 || i.BancoId == bancoId);
+        return Montar(lancamentos, mes.Trim());
     }
 
     public async Task<EvolucaoExtratosDTO> ObterEvolucaoAsync(int userId, string? mes, int meses)
@@ -125,7 +127,7 @@ public class ResumoCategoriasService(IExtratoBancarioItemRepository itens) : IRe
     }
 
     private static Pedaco CriarPedaco(string mes, int? categoriaId, string? nome, decimal valor, PessoaMovimentacao? pessoa) =>
-        new(mes, categoriaId, nome ?? "Sem categoria", valor, pessoa is { EntraNosAcertos: true, EhTitular: false },
+        new(mes, categoriaId, nome ?? "Sem categoria", valor, pessoa is { EhTitular: false },
             CategoriasFora.Contains(RegraClassificacao.Normalizar(nome) ?? ""));
 
     /// <summary>O mês em que o lançamento aparece no Extrato: cartão de crédito pela fatura, o resto pela data.</summary>

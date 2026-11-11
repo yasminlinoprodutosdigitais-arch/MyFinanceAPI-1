@@ -80,13 +80,32 @@ public static class ClassificadorRegras
         {
             CamposRegra.Descricao => [descricaoNormalizada],
             CamposRegra.Pessoa => [pessoaNormalizada],
+            CamposRegra.NomeExtrato => [NomeExtrato.Chave(descricaoNormalizada, pessoaNormalizada)],
             _ => [descricaoNormalizada, pessoaNormalizada]
         };
-        return alvos.OfType<string>().Any(a => regra.Operador switch
+        return alvos.OfType<string>().Where(a => a.Length > 0).Any(a => regra.Operador switch
         {
             OperadoresRegra.ComecaCom => a.StartsWith(regra.Texto, StringComparison.Ordinal),
             OperadoresRegra.Igual => a == regra.Texto,
             _ => a.Contains(regra.Texto, StringComparison.Ordinal)
         });
+    }
+
+    /// <summary>
+    /// Card #79: sem regra que bata, a primeira regra ligada "é igual a" (nome do extrato ou pessoa) cujo texto é
+    /// <see cref="NomeExtrato.Parecidos"/> com o nome do extrato deste lançamento. Aplica sozinha e marca "por semelhança".
+    /// </summary>
+    public static RegraClassificacao? EncontrarPorSemelhanca(IEnumerable<RegraClassificacao> regras, string? descricao, string? nomePessoa, int? bancoId)
+    {
+        var chave = NomeExtrato.Chave(descricao, nomePessoa);
+        if (chave.Length == 0)
+            return null;
+
+        return regras
+            .Where(r => r.Ativa && r.Operador == OperadoresRegra.Igual && !string.IsNullOrEmpty(r.Texto)
+                && r.Campo is CamposRegra.NomeExtrato or CamposRegra.Pessoa
+                && (r.BancoId == null || r.BancoId == bancoId))
+            .OrderBy(r => r.Ordem).ThenBy(r => r.Id)
+            .FirstOrDefault(r => NomeExtrato.Parecidos(r.Texto, chave));
     }
 }

@@ -43,7 +43,7 @@ public class AcertosService(IExtratoBancarioItemRepository itens) : IAcertosServ
     {
         var todos = lancamentos
             .SelectMany(PorPessoaDasPartes)
-            .Where(i => i.PessoaMovimentacao is { } p && (p.EntraNosAcertos || p.EhTitular))
+            .Where(i => i.PessoaMovimentacao != null)
             .ToList();
 
         var compras = todos.Where(i => i.TipoLancamento == TipoLancamentoExtrato.Saida).ToList();

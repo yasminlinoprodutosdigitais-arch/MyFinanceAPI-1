@@ -17,7 +17,7 @@ using MyFinanceAPI.Domain.Interfaces;
 
 namespace MyFinanceAPI.Application.Services
 {
-    public class ExtratoBancarioService : IExtratoBancarioService
+    public partial class ExtratoBancarioService : IExtratoBancarioService
     {
         private readonly IExtratoBancarioRepository _extratoBancarioRepository;
         private readonly IExtratoBancarioItemRepository _extratoBancarioItemRepository;
@@ -225,9 +225,11 @@ namespace MyFinanceAPI.Application.Services
                 var dataMov = linhaLida.Data;
                 var valor = linhaLida.Valor;
                 var identificadorStr = linhaLida.Identificador;
-                var descricaoStr = linhaLida.Descricao;
+                // Card #79: o banco manda "Z&amp;A"; grava "Z&A".
+                var descricaoStr = DecodificarHtml(linhaLida.Descricao);
 
-                var chaveImportacao = GerarChaveImportacao(identificadorStr, dataMov, valor, descricaoStr);
+                // As chaves usam o texto como veio no arquivo: reimportar um arquivo antigo com "&amp;" não duplica.
+                var chaveImportacao = GerarChaveImportacao(identificadorStr, dataMov, valor, linhaLida.Descricao);
                 if (!chavesExistentes.Add(chaveImportacao))
                 {
                     jaImportados++;
@@ -244,7 +246,7 @@ namespace MyFinanceAPI.Application.Services
                 var valorSemSinal = Math.Abs(valor);
                 if (valorSemSinal != Math.Truncate(valorSemSinal)
                     && truncados.TryGetValue(
-                        ChaveLegado(identificadorStr, dataMov, valor < 0 ? TipoLancamentoExtrato.Saida : TipoLancamentoExtrato.Entrada, descricaoStr),
+                        ChaveLegado(identificadorStr, dataMov, valor < 0 ? TipoLancamentoExtrato.Saida : TipoLancamentoExtrato.Entrada, linhaLida.Descricao),
                         out var candidatos))
                 {
                     var truncado = candidatos.FirstOrDefault(c => c.Valor == Math.Truncate(valorSemSinal));
@@ -276,7 +278,7 @@ namespace MyFinanceAPI.Application.Services
                     var encargo = EhEncargo(descricaoStr);
                     if (!encargo && !string.IsNullOrWhiteSpace(linhaLida.Nome))
                     {
-                        nomePessoa = linhaLida.Nome.Trim().ToUpper();
+                        nomePessoa = DecodificarHtml(linhaLida.Nome).Trim().ToUpper();
                     }
                     else if (!encargo && !string.IsNullOrWhiteSpace(descricaoStr))
                     {
@@ -317,35 +319,33 @@ namespace MyFinanceAPI.Application.Services
                         nomePessoa = regraComPessoa.PessoaMovimentacao?.NomePessoa ?? nomePessoa;
                         tipoMovimentacaoId = regraComPessoa.PessoaMovimentacao?.TipoMovimentacaoId ?? 0;
                         categoriaId = regraComPessoa.PessoaMovimentacao?.CategoriaId ?? 0;
-                        entraNosAcertos = regraComPessoa.PessoaMovimentacao is { EntraNosAcertos: true, EhTitular: false };
+                        entraNosAcertos = regraComPessoa.PessoaMovimentacao is { EhTitular: false };
                     }
-                    else if (!string.IsNullOrWhiteSpace(nomePessoa))
-                    {
-                        // Card #76, fase 2: só liga a uma pessoa já cadastrada. Nome novo (estabelecimento, Pix de alguém
-                        // ainda não cadastrado) fica só no lançamento; a categoria vem das regras.
-                        var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(nomePessoa, userId);
-                        if (pessoaCadastrada.Any())
-                        {
-                            pessoaId = pessoaCadastrada.First().Id;
-                            tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
-                            categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
-                            entraNosAcertos = pessoaCadastrada.First() is { EntraNosAcertos: true, EhTitular: false };
-                        }
-                    }
+                    // Card #79: o nome do extrato ("CIRCUITO") nunca vira nem liga pessoa; pessoa só por regra, à mão
+                    // ou o "Eu" dos encargos. A categoria vem das regras.
 
-                    // Ordem (card #76): encargo > regra > padrão da pessoa.
+                    // Ordem (card #76/#79): encargo > regra > semelhança com uma regra "igual a".
                     int? regraUsada = null;
+                    var porSemelhanca = false;
                     if (!encargo && ClassificadorRegras.Encontrar(regras, descricaoStr, nomePessoa, banco.Id) is { } regra)
                     {
                         regraUsada = regra.Id;
                         categoriaId = regra.CategoriaId ?? categoriaId;
                         tipoMovimentacaoId = regra.TipoMovimentacaoId ?? tipoMovimentacaoId;
                     }
+                    else if (!encargo && ClassificadorRegras.EncontrarPorSemelhanca(regras, descricaoStr, nomePessoa, banco.Id) is { } parecida)
+                    {
+                        regraUsada = parecida.Id;
+                        porSemelhanca = parecida.CategoriaId != null || parecida.TipoMovimentacaoId != null;
+                        categoriaId = parecida.CategoriaId ?? categoriaId;
+                        tipoMovimentacaoId = parecida.TipoMovimentacaoId ?? tipoMovimentacaoId;
+                    }
                     // Categoria trocada na prévia vale sobre a sugerida (card #74).
                     if (opcoes.Categorias.TryGetValue(chaveImportacao, out var escolhida))
                     {
                         categoriaId = escolhida ?? 0;
                         regraUsada = null;
+                        porSemelhanca = false;
                     }
 
                     var item = new ExtratoBancarioItemDTO
@@ -367,6 +367,7 @@ namespace MyFinanceAPI.Application.Services
                         QuantidadeParcelas = linhaLida.QuantidadeParcelas,
                         EhParcelado = linhaLida.QuantidadeParcelas != null ? true : null,
                         Observacao = linhaLida.Observacao,
+                        ClassificadoPorSemelhanca = porSemelhanca,
                     };
 
                     listaItens.Add(item);
@@ -507,6 +508,13 @@ namespace MyFinanceAPI.Application.Services
         private static string ChaveLegado(string identificador, DateOnly data, string tipoLancamento, string? descricao) =>
             string.Join('|', identificador.Trim(), data.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 tipoLancamento, (descricao ?? string.Empty).Trim());
+
+        /// <summary>Card #79: "Z&amp;AMP;A" e "Z&amp;amp;A" viram "Z&amp;A" (a entidade em maiúsculas também).</summary>
+        public static string DecodificarHtml(string? texto) =>
+            string.IsNullOrEmpty(texto) ? texto ?? "" : System.Net.WebUtility.HtmlDecode(EntidadeMaiuscula().Replace(texto, m => m.Value.ToLowerInvariant()));
+
+        [GeneratedRegex("&(AMP|LT|GT|QUOT|APOS|NBSP);")]
+        private static partial Regex EntidadeMaiuscula();
 
         public static string GerarChaveDescricao(string? descricao)
         {

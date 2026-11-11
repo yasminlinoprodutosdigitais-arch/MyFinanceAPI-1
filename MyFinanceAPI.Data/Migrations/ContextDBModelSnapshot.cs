@@ -599,6 +599,10 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("chave_importacao");
 
+                    b.Property<bool>("ClassificadoPorSemelhanca")
+                        .HasColumnType("boolean")
+                        .HasColumnName("classificado_por_semelhanca");
+
                     b.Property<DateTime>("DataAlteracao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1348,12 +1352,6 @@ namespace MyFinanceAPI.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("eh_titular");
-
-                    b.Property<bool>("EntraNosAcertos")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("entra_nos_acertos");
 
                     b.Property<string>("NomePessoa")
                         .IsRequired()

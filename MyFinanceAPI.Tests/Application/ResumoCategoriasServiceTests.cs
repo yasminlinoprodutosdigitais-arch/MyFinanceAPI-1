@@ -1,3 +1,4 @@
+using Moq;
 using MyFinanceAPI.Application.Services;
 using MyFinanceAPI.Domain.Entities;
 
@@ -45,9 +46,9 @@ public class ResumoCategoriasServiceTests
     public void De_outra_pessoa_e_pagamento_de_fatura_ficam_a_parte()
     {
         var doCarlos = Item("2026-10-05", 40, Comida);
-        doCarlos.PessoaMovimentacao = new PessoaMovimentacao { EntraNosAcertos = true };
+        doCarlos.PessoaMovimentacao = new PessoaMovimentacao();
         var meu = Item("2026-10-05", 10, Comida);
-        meu.PessoaMovimentacao = new PessoaMovimentacao { EhTitular = true, EntraNosAcertos = true };
+        meu.PessoaMovimentacao = new PessoaMovimentacao { EhTitular = true };
 
         var r = ResumoCategoriasService.Montar([doCarlos, meu, Item("2026-10-05", 500, Fatura)], "2026-10");
 
@@ -98,7 +99,7 @@ public class ResumoCategoriasServiceTests
         var d = Item("2026-10-05", 300);
         d.Partes.AddRange([
             new ExtratoItemParte { Valor = 200, CategoriaId = 1, Categoria = Comida },
-            new ExtratoItemParte { Valor = 100, CategoriaId = 2, Categoria = Beleza, PessoaMovimentacao = new PessoaMovimentacao { EntraNosAcertos = true } }
+            new ExtratoItemParte { Valor = 100, CategoriaId = 2, Categoria = Beleza, PessoaMovimentacao = new PessoaMovimentacao() }
         ]);
 
         var r = ResumoCategoriasService.Montar([d], "2026-10");
@@ -141,6 +142,22 @@ public class ResumoCategoriasServiceTests
 
         itens.AddRange(Mes("2026-09", Comida));
         Assert.Equal(3, ResumoCategoriasService.Montar(itens, "2026-10").MesesComparados);
+    }
+
+    [Fact]
+    public async Task Com_conta_aberta_soma_so_os_lancamentos_dela()
+    {
+        // Card #81: no Extrato de uma conta, o Resumo era o do mês inteiro (todas as contas).
+        var daCaixa = Item("2026-10-05", 100, Comida);
+        daCaixa.BancoId = 15;
+        var doPicPay = Item("2026-10-06", 40, Comida);
+        doPicPay.BancoId = 20;
+        var repo = new Moq.Mock<MyFinanceAPI.Domain.Interfaces.IExtratoBancarioItemRepository>();
+        repo.Setup(r => r.ListarParaResumoAsync(1)).ReturnsAsync([daCaixa, doPicPay]);
+        var service = new ResumoCategoriasService(repo.Object);
+
+        Assert.Equal(100m, (await service.ObterAsync(1, "2026-10", 15)).Total);
+        Assert.Equal(140m, (await service.ObterAsync(1, "2026-10", null)).Total);
     }
 
     [Fact]

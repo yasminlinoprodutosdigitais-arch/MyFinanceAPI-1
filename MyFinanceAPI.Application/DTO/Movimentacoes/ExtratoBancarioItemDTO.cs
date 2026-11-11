@@ -42,6 +42,8 @@ namespace MyFinanceAPI.Application.DTO.Extrato
         [TextoAte(64)] public string? ChaveImportacao { get; set; }
 
         public bool AlteraVinculoPessoa { get; set; }
+        /// <summary>Card #79: a categoria veio de uma regra com nome parecido. Só leitura (a API decide).</summary>
+        public bool ClassificadoPorSemelhanca { get; set; }
         /// <summary>Compra (Saída da mesma pessoa) que este pagamento abate; nulo = saldo geral (card #45, parte 3).</summary>
         public int? AbateItemId { get; set; }
         /// <summary>Partes do lançamento dividido (card #76, fase 3). Só leitura aqui: grava em /DividirExtratoBancarioItem.</summary>

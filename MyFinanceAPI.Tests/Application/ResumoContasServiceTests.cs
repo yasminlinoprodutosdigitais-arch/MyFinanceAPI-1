@@ -10,9 +10,8 @@ public class ResumoContasServiceTests
     private static readonly TipoCartao Credito = new() { Id = 2, NomeTipoCartao = "Cartão de crédito", EhCredito = true };
     private static readonly Categoria Comida = new() { Id = 1, Nome = "Alimentação" };
     private static readonly Categoria Fatura = new() { Id = 3, Nome = "Cartão de crédito" };
-    private static readonly PessoaMovimentacao Carlos = new() { Id = 20, NomePessoa = "CARLOS", EntraNosAcertos = true };
-    private static readonly PessoaMovimentacao Eu = new() { Id = 21, NomePessoa = "EU", EhTitular = true, EntraNosAcertos = true };
-    private static readonly PessoaMovimentacao Loja = new() { Id = 22, NomePessoa = "MERCADO X" };
+    private static readonly PessoaMovimentacao Carlos = new() { Id = 20, NomePessoa = "CARLOS" };
+    private static readonly PessoaMovimentacao Eu = new() { Id = 21, NomePessoa = "EU", EhTitular = true };
     private static readonly DateOnly Hoje = new(2026, 11, 20);
     private static readonly Dictionary<int, (decimal, decimal)> SemAcertos = new();
 
@@ -76,7 +75,7 @@ public class ResumoContasServiceTests
         var r = ResumoContasService.Montar("2026-11", [banco], [
             doCarlos,
             Item(2, "2026-10-29", 20, c: Comida, p: Eu, fatura: "2026-11"),
-            Item(2, "2026-10-30", 10, c: Comida, p: Loja, fatura: "2026-11")
+            Item(2, "2026-10-30", 10, c: Comida, fatura: "2026-11")
         ], [], compras, Hoje);
 
         var nu = r.Contas.Single();

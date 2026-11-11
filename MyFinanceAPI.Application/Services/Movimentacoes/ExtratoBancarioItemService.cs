@@ -62,32 +62,18 @@ namespace MyFinanceAPI.Application.Services
             var categoriaEscolhida = dto.CategoriaId;
             var tipoEscolhido = dto.TipoMovimentacaoId;
 
-            var pessoaCadastrada = await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(entity.NomePessoaTransacao, userId);
-            if(dto.PessoaMovimentacao != null)
-            {
-                entity.PessoaMovimentacaoId = dto.PessoaMovimentacao.Id;
-                entity.NomePessoaTransacao = dto.PessoaMovimentacao.NomePessoa;
-                entity.TipoMovimentacaoId = dto.PessoaMovimentacao.TipoMovimentacaoId;
-                entity.CategoriaId = dto.PessoaMovimentacao.CategoriaId;
-            } else if (pessoaCadastrada != null && pessoaCadastrada.Count() > 0)            {
-                var pessoaId = pessoaCadastrada.First().Id;
-                var tipoMovimentacaoId = pessoaCadastrada.First().TipoMovimentacaoId ?? 0;
-                var categoriaId = pessoaCadastrada.First().CategoriaId ?? 0;
+            // Card #79: a pessoa (quem usou o cartão) vem só pelo id; o nome digitado é o do estabelecimento e não liga
+            // nem cria pessoa.
+            entity.PessoaMovimentacaoId = await PessoaDoUsuarioAsync(dto.PessoaMovimentacaoId ?? dto.PessoaMovimentacao?.Id, userId);
 
-                entity.PessoaMovimentacaoId = pessoaId;
-                entity.TipoMovimentacaoId = tipoMovimentacaoId != 0 ? tipoMovimentacaoId : null;
-                entity.CategoriaId = categoriaId != 0 ? categoriaId : null;
-            }
-            else
-            {
-                // Sem nome, ou nome que não é pessoa cadastrada (card #76, fase 2): o nome fica só no lançamento.
-                entity.PessoaMovimentacaoId = null;
-            }
-
-            // Card #76: sem escolha no formulário, a regra vem antes do padrão da pessoa.
-            var regra = ClassificadorRegras.Encontrar(await _regraRepository.ListarAtivasAsync(userId), entity.Descricao, entity.NomePessoaTransacao, entity.BancoId);
-            entity.CategoriaId = categoriaEscolhida ?? regra?.CategoriaId ?? entity.CategoriaId;
-            entity.TipoMovimentacaoId = tipoEscolhido ?? regra?.TipoMovimentacaoId ?? entity.TipoMovimentacaoId;
+            // Sem escolha no formulário: regra que bate, senão uma regra "igual a" com nome parecido.
+            var ativas = await _regraRepository.ListarAtivasAsync(userId);
+            var regra = ClassificadorRegras.Encontrar(ativas, entity.Descricao, entity.NomePessoaTransacao, entity.BancoId);
+            var parecida = regra == null ? ClassificadorRegras.EncontrarPorSemelhanca(ativas, entity.Descricao, entity.NomePessoaTransacao, entity.BancoId) : null;
+            regra ??= parecida;
+            entity.CategoriaId = categoriaEscolhida ?? regra?.CategoriaId;
+            entity.TipoMovimentacaoId = tipoEscolhido ?? regra?.TipoMovimentacaoId;
+            entity.ClassificadoPorSemelhanca = parecida != null && categoriaEscolhida == null && parecida.CategoriaId != null;
             entity.AbateItemId = dto.AbateItemId;
             await ValidarAbatimentoAsync(entity, userId);
 
@@ -135,43 +121,37 @@ namespace MyFinanceAPI.Application.Services
             existing.TipoLancamento = dto.TipoLancamento;
             existing.Descricao = dto.Descricao;
             existing.Observacao = dto.Observacao;
-            existing.NomePessoaTransacao = dto.NomePessoaTransacao;
+            // Card #79: o nome que veio no extrato não se edita; no lançamento manual, é o que foi digitado.
+            if (existing.ChaveImportacao == null)
+                existing.NomePessoaTransacao = dto.NomePessoaTransacao;
             existing.Identificador = dto.Identificador;
             existing.BancoId = dto.BancoId;
             existing.TipoCartaoId = dto.TipoCartaoId;
             existing.TipoMovimentacaoId = dto.TipoMovimentacaoId;
             await ExigirCategoriasDoUsuarioAsync([dto.CategoriaId], userId);
+            // Trocar a categoria tira o "por semelhança": passou a ser escolha.
+            if (existing.CategoriaId != dto.CategoriaId)
+                existing.ClassificadoPorSemelhanca = false;
             existing.CategoriaId = dto.CategoriaId;
             existing.NumeroFatura = dto.NumeroFatura;
 
+            // Card #79: a pessoa vem só pelo id (sem id = sem pessoa) e não mexe no nome do extrato nem na categoria.
             if (dto.AlteraVinculoPessoa)
-            {
-                if (string.IsNullOrWhiteSpace(dto.NomePessoaTransacao))
-                {
-                    // Sem nome de pessoa → item sem pessoa.
-                    existing.PessoaMovimentacaoId = null;
-                }
-                else
-                {
-                    var pessoaId = dto.PessoaMovimentacaoId ?? 0;
-                    var pessoaMovimentacao = pessoaId == 0
-                        ? null
-                        : await _pessoaMovimentacaoRepository.ObterPorIdAsync(pessoaId, userId);
-
-                    // Card #76, fase 2: sem id, liga pelo nome a uma pessoa já cadastrada; nome novo fica só no lançamento.
-                    pessoaMovimentacao ??= (await _pessoaMovimentacaoRepository.VerificaPossuiPessoa(dto.NomePessoaTransacao, userId))
-                        .FirstOrDefault();
-
-                    // Card #45, parte 2: trocar a pessoa de um lançamento não reescreve mais a categoria/tipo
-                    // padrão dela (antes a edição sobrescrevia sem avisar). O padrão muda em Configurar pessoas.
-                    existing.PessoaMovimentacaoId = pessoaMovimentacao?.Id;
-                }
-            }
+                existing.PessoaMovimentacaoId = await PessoaDoUsuarioAsync(dto.PessoaMovimentacaoId, userId);
 
             existing.AbateItemId = dto.AbateItemId;
             await ValidarAbatimentoAsync(existing, userId);
 
             await _itemRepository.UpdateAsync(existing);
+        }
+
+        /// <summary>Card #79: id de pessoa só vale se a pessoa é do usuário; sem id, sem pessoa.</summary>
+        private async Task<int?> PessoaDoUsuarioAsync(int? pessoaId, int userId)
+        {
+            if (pessoaId is not > 0)
+                return null;
+            return (await _pessoaMovimentacaoRepository.ObterPorIdAsync(pessoaId.Value, userId))?.Id
+                ?? throw new RegraNegocioException("Pessoa não encontrada.");
         }
 
         /// <summary>

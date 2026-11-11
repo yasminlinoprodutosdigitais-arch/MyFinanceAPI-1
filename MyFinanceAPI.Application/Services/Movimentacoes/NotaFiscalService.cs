@@ -117,7 +117,7 @@ public partial class NotaFiscalService(
 
         // Quem entra nos acertos continua devendo: a divisão não pode apagar a pessoa do lançamento.
         var pessoa = item.PessoaMovimentacaoId is int id ? await pessoas.ObterPorIdAsync(id, userId) : null;
-        var pessoaDasPartes = pessoa is { EntraNosAcertos: true } ? pessoa.Id : (int?)null;
+        var pessoaDasPartes = pessoa is { EhTitular: false } ? pessoa.Id : (int?)null;
         await itens.SubstituirPartesAsync(item.Id, grupos.Select((g, n) => new ExtratoItemParte
         {
             ExtratoBancarioItemId = item.Id, UsuarioId = userId, Valor = g.Valor, CategoriaId = g.Categoria, PessoaMovimentacaoId = pessoaDasPartes, Ordem = n

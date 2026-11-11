@@ -17,9 +17,8 @@ public class AcertosServiceTests
     private const int Cartao = 3;
     private const int Conta = 5;
 
-    private static readonly PessoaMovimentacao Carlos = new() { Id = 10, NomePessoa = "CARLOS", EntraNosAcertos = true };
-    private static readonly PessoaMovimentacao Agatha = new() { Id = 11, NomePessoa = "ÁGATHA", EntraNosAcertos = true };
-    private static readonly PessoaMovimentacao Mercado = new() { Id = 12, NomePessoa = "MERCADO X", EntraNosAcertos = false };
+    private static readonly PessoaMovimentacao Carlos = new() { Id = 10, NomePessoa = "CARLOS" };
+    private static readonly PessoaMovimentacao Agatha = new() { Id = 11, NomePessoa = "ÁGATHA" };
     private static readonly PessoaMovimentacao Eu = new() { Id = 1, NomePessoa = "EU", EhTitular = true };
 
     private int _id = 100;
@@ -56,18 +55,19 @@ public class AcertosServiceTests
     }
 
     [Fact]
-    public void So_pessoas_que_entram_nos_acertos_e_o_Eu_a_parte()
+    public void Toda_pessoa_cadastrada_entra_e_o_Eu_a_parte()
     {
+        // Card #79: pessoa é só quem usou o cartão, cadastrada à mão; sem pessoa (o mercado) fica de fora.
         var itens = new[]
         {
-            Item(Carlos, S, 100, "2026-10-03"), Item(Mercado, S, 300, "2026-10-04"), Item(null, S, 20, "2026-10-04"),
+            Item(Carlos, S, 100, "2026-10-03"), Item(Agatha, S, 300, "2026-10-04"), Item(null, S, 20, "2026-10-04"),
             Item(Eu, S, 12, "2026-10-04", descricao: "IOF")
         };
 
         var acertos = AcertosService.Montar(itens, null, null, null);
 
-        Assert.Equal([Carlos.Id], acertos.Pessoas.Select(p => p.PessoaId));
-        Assert.Equal(100m, acertos.Totais.Devido);
+        Assert.Equal([Carlos.Id, Agatha.Id], acertos.Pessoas.Select(p => p.PessoaId).Order());
+        Assert.Equal(400m, acertos.Totais.Devido);
         Assert.NotNull(acertos.Eu);
         Assert.Equal(12m, acertos.Eu!.Devido);
         Assert.Equal("Eu", acertos.Eu.Nome);

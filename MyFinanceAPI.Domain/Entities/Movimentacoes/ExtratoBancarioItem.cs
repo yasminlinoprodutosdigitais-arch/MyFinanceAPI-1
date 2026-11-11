@@ -40,6 +40,10 @@ namespace MyFinanceAPI.Domain.Entities
         public TipoMovimentacao? TipoMovimentacao { get; set; }
         public string? ChaveDescricao { get; set; }
         /// <summary>
+        /// Card #79: a categoria veio de uma regra com nome parecido (não igual). Some quando a categoria é trocada.
+        /// </summary>
+        public bool ClassificadoPorSemelhanca { get; set; }
+        /// <summary>
         /// Hash da linha do arquivo importado (idempotência da importação). Gravado só na importação,
         /// nunca editado; nulo em itens lançados à mão.
         /// </summary>

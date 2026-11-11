@@ -361,8 +361,9 @@ public class ExtratoBancarioServiceTests
     // ---------- pessoa da movimentação ----------
 
     [Fact]
-    public async Task Pessoa_ja_cadastrada_e_reaproveitada_com_categoria_e_tipo()
+    public async Task Nome_do_extrato_igual_a_uma_pessoa_nao_liga_a_pessoa()
     {
+        // Card #79: o nome do extrato não é pessoa; pessoa só por regra, à mão ou o "Eu".
         _pessoasCadastradas.Add(new PessoaMovimentacao
         {
             Id = 15, NomePessoa = "PADARIA", CategoriaId = 4, TipoMovimentacaoId = 9, UsuarioId = UserId,
@@ -371,11 +372,33 @@ public class ExtratoBancarioServiceTests
         await Importar(Cabecalho, "01/10/2026,-12.50,a,Compra no débito - Padaria");
 
         var item = Assert.Single(_itensCriados);
-        Assert.Equal(15, item.PessoaMovimentacaoId);
+        Assert.Null(item.PessoaMovimentacaoId);
         Assert.Equal("PADARIA", item.NomePessoaTransacao);
-        Assert.Equal(4, item.CategoriaId);
-        Assert.Equal(9, item.TipoMovimentacaoId);
+        Assert.Null(item.CategoriaId);
         Assert.Empty(_pessoasCriadas);
+    }
+
+    [Fact]
+    public async Task Nome_parecido_com_regra_igual_entra_classificado_por_semelhanca()
+    {
+        _regras.Add(new RegraClassificacao { Id = 3, Texto = "BAR DOIS IRMAOS", Campo = CamposRegra.NomeExtrato, Operador = OperadoresRegra.Igual, CategoriaId = 8, TipoMovimentacaoId = 2, Ativa = true });
+
+        await Importar(Cabecalho, "01/10/2026,-40.00,a,Compra no débito - BARDOISIRMAOS", "02/10/2026,-40.00,b,Compra no débito - BAR DOIS IRMAOS");
+
+        var parecido = _itensCriados.Single(i => i.Identificador == "a");
+        Assert.Equal((8, 2, true), (parecido.CategoriaId, parecido.TipoMovimentacaoId, parecido.ClassificadoPorSemelhanca));
+        var igual = _itensCriados.Single(i => i.Identificador == "b");
+        Assert.Equal((8, false), (igual.CategoriaId, igual.ClassificadoPorSemelhanca));
+    }
+
+    [Fact]
+    public async Task Entidade_html_do_banco_e_decodificada_sem_mudar_a_chave()
+    {
+        await Importar(Cabecalho, "01/10/2026,-40.00,a,Compra no débito - AGENCIA Z&AMP;A");
+
+        var item = Assert.Single(_itensCriados);
+        Assert.Equal("Compra no débito - AGENCIA Z&A", item.Descricao);
+        Assert.Equal("AGENCIA Z&A", item.NomePessoaTransacao);
     }
 
     [Fact]
@@ -585,9 +608,8 @@ public class ExtratoBancarioServiceTests
     // ---------- regras de classificação (card #76, fase 1) ----------
 
     [Fact]
-    public async Task Regra_classifica_na_importacao_e_vence_o_padrao_da_pessoa()
+    public async Task Regra_classifica_na_importacao()
     {
-        _pessoasCadastradas.Add(new PessoaMovimentacao { Id = 30, NomePessoa = "IFOOD", CategoriaId = 1, TipoMovimentacaoId = 2 });
         _regras.Add(new RegraClassificacao { Id = 1, Texto = "IFOOD", CategoriaId = 8, Ativa = true });
         _regras.Add(new RegraClassificacao { Id = 2, Texto = "UBER", CategoriaId = 9, TipoMovimentacaoId = 4, Ativa = true });
 
@@ -597,7 +619,7 @@ public class ExtratoBancarioServiceTests
             "03/10/2026,-5.00,c,Compra no débito - PADARIA");
 
         var ifood = _itensCriados.Single(i => i.Identificador == "a");
-        Assert.Equal((8, 2, 30), (ifood.CategoriaId, ifood.TipoMovimentacaoId, ifood.PessoaMovimentacaoId)); // tipo sem regra: o da pessoa
+        Assert.Equal((8, (int?)null, (int?)null), (ifood.CategoriaId, ifood.TipoMovimentacaoId, ifood.PessoaMovimentacaoId));
         var uber = _itensCriados.Single(i => i.Identificador == "b");
         Assert.Equal((9, 4), (uber.CategoriaId, uber.TipoMovimentacaoId));
         Assert.Null(_itensCriados.Single(i => i.Identificador == "c").CategoriaId);
