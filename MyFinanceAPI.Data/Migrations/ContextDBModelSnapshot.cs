@@ -1388,6 +1388,41 @@ namespace MyFinanceAPI.Data.Migrations
                     b.ToTable("pessoas_movimentacao", (string)null);
                 });
 
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.PreferenciaNotificacao", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("config")
+                        .HasDefaultValueSql("'{}'::jsonb");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_alteracao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("LidasAte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lidas_ate");
+
+                    b.HasKey("UsuarioId")
+                        .HasName("pk_preferencias_notificacao");
+
+                    b.ToTable("preferencias_notificacao", (string)null);
+                });
+
             modelBuilder.Entity("MyFinanceAPI.Domain.Entities.RegraClassificacao", b =>
                 {
                     b.Property<int>("Id")
@@ -2257,6 +2292,18 @@ namespace MyFinanceAPI.Data.Migrations
                     b.Navigation("Categoria");
 
                     b.Navigation("TipoMovimentacao");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MyFinanceAPI.Domain.Entities.PreferenciaNotificacao", b =>
+                {
+                    b.HasOne("MyFinanceAPI.Domain.Entities.Usuario", "Usuario")
+                        .WithOne()
+                        .HasForeignKey("MyFinanceAPI.Domain.Entities.PreferenciaNotificacao", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_preferencias_notificacao_asp_net_users_usuario_id");
 
                     b.Navigation("Usuario");
                 });

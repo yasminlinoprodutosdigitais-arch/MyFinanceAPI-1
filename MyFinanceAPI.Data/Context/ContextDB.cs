@@ -27,6 +27,7 @@ namespace MyFinanceAPI.Data.Context
                 public DbSet<ExtratoItemParte> ExtratoItemPartes { get; set; }
                 public DbSet<NotaFiscal> NotasFiscais { get; set; }
                 public DbSet<NotaFiscalItem> NotasFiscaisItens { get; set; }
+                public DbSet<PreferenciaNotificacao> PreferenciasNotificacao { get; set; }
 
                 // 👇 DbSets do extrato
                 public DbSet<ExtratoBancario> ExtratosBancarios { get; set; }

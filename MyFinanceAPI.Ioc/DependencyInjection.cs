@@ -69,8 +69,11 @@ namespace MyFinanceAPI.Ioc
             services.AddScoped<IResumoContasService, ResumoContasService>();
             services.AddScoped<IBuscaService, BuscaService>();
             services.AddScoped<INotaFiscalService, NotaFiscalService>();
+            services.AddScoped<IPreferenciaNotificacaoService, PreferenciaNotificacaoService>();
+            services.AddScoped<INotificacaoService, NotificacaoService>();
             services.AddScoped<IImportacoesService, ImportacoesService>();
             services.AddScoped<INotaFiscalRepository, NotaFiscalRepository>();
+            services.AddScoped<IPreferenciaNotificacaoRepository, PreferenciaNotificacaoRepository>();
 
 
             // Registro do repositório IUsuarioRepository

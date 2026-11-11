@@ -95,6 +95,12 @@ public class ContratoJsonCongeladoTests
         ("usuarioCadastrado", typeof(UsuarioCadastradoDto)),
         ("token", typeof(TokenDto)),
         ("usuario", typeof(UsuarioDto)),
+        ("preferenciasNotificacao", typeof(MyFinanceAPI.Application.DTO.Notificacoes.PreferenciasNotificacaoDTO)),
+        ("avisoComAntecedencia", typeof(MyFinanceAPI.Application.DTO.Notificacoes.AvisoComAntecedenciaDTO)),
+        ("avisoVencidas", typeof(MyFinanceAPI.Application.DTO.Notificacoes.AvisoVencidasDTO)),
+        ("avisoAcertos", typeof(MyFinanceAPI.Application.DTO.Notificacoes.AvisoAcertosDTO)),
+        ("notificacoes", typeof(MyFinanceAPI.Application.DTO.Notificacoes.NotificacoesDTO)),
+        ("aviso", typeof(MyFinanceAPI.Application.DTO.Notificacoes.AvisoDTO)),
     ];
 
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web)
