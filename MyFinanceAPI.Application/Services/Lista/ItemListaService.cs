@@ -137,18 +137,45 @@ public class ItemListaService(
 
     public async Task<List<OcorrenciaDTO>> ListarPeriodoAsync(int listaId, DateOnly de, DateOnly ate, int userId)
     {
+        ValidarPeriodo(de, ate);
+        await ConferirListaAsync(listaId, userId);
+        return await OcorrenciasAsync(await itemListaRepository.ListarDaListaAsync(listaId, userId), de, ate, userId, null);
+    }
+
+    /// <summary>
+    /// Card #71: a agenda de todas as listas com campo Data (não arquivadas) no período, com o nome da lista — o
+    /// "Hoje na agenda" da Home numa chamada só.
+    /// </summary>
+    public async Task<List<OcorrenciaDTO>> ListarAgendaAsync(DateOnly de, DateOnly ate, int userId)
+    {
+        ValidarPeriodo(de, ate);
+        var comData = (await listaRepository.ListarComResumoAsync(userId, false, DateOnly.FromDateTime(Agora)))
+            .Select(l => l.Lista).Where(l => l.UsaData).ToDictionary(l => l.Id, l => l.Nome);
+        if (comData.Count == 0)
+            return [];
+        var itens = await itemListaRepository.ListarDasListasAsync(comData.Keys.ToList(), userId);
+        return await OcorrenciasAsync(itens, de, ate, userId, comData);
+    }
+
+    private static void ValidarPeriodo(DateOnly de, DateOnly ate)
+    {
         if (ate < de)
             throw new RegraNegocioException("O fim do período não pode ser antes do início.");
         if (ate.DayNumber - de.DayNumber + 1 > DiasNoPeriodo)
             throw new RegraNegocioException($"O período vai até {DiasNoPeriodo} dias.");
-        await ConferirListaAsync(listaId, userId);
+    }
 
-        var itens = (await itemListaRepository.ListarDaListaAsync(listaId, userId)).Where(i => i.Data is not null).ToList();
+    private async Task<List<OcorrenciaDTO>> OcorrenciasAsync(
+        IEnumerable<ItemLista> daLista, DateOnly de, DateOnly ate, int userId, IReadOnlyDictionary<int, string>? nomes)
+    {
+        var itens = daLista.Where(i => i.Data is not null).ToList();
         var repetem = itens.Where(i => i.Repeticao != RepeticaoItem.Nenhuma).Select(i => i.Id).ToList();
         var excecoes = repetem.Count == 0 ? [] : await itemListaRepository.ListarOcorrenciasAsync(repetem, userId);
 
         return Repeticao.NoPeriodo(itens, excecoes, de, ate).Select(o => new OcorrenciaDTO
         {
+            ListaId = nomes == null ? null : o.Item.ListaId,
+            ListaNome = nomes?.GetValueOrDefault(o.Item.ListaId),
             ItemId = o.Item.Id,
             DataOriginal = o.DataOriginal,
             Data = o.Data,

@@ -363,6 +363,8 @@ ocorrencia.feito
 ocorrencia.feitoEm
 ocorrencia.hora
 ocorrencia.itemId
+ocorrencia.listaId
+ocorrencia.listaNome
 ocorrencia.observacao
 ocorrencia.quantidade
 ocorrencia.repete

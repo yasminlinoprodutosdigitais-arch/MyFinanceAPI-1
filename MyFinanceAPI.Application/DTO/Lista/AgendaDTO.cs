@@ -9,6 +9,9 @@ namespace MyFinanceAPI.Application.DTO;
 public class OcorrenciaDTO
 {
     public int ItemId { get; set; }
+    /// <summary>Só na agenda de todas as listas (card #71); null na agenda de uma lista.</summary>
+    public int? ListaId { get; set; }
+    public string? ListaNome { get; set; }
     public DateOnly DataOriginal { get; set; }
     public DateOnly Data { get; set; }
     /// <summary>Null = dia todo.</summary>

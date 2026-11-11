@@ -33,6 +33,20 @@ namespace MyFinanceAPI.Api.Controllers
             return Lista(await itemListaService.ListarPeriodoAsync(id, de.Value, ate.Value, UsuarioId), paginacao).Result!;
         }
 
+        /// <summary>
+        /// Card #71: a agenda de todas as listas com campo Data no período (AAAA-MM-DD, até 366 dias), com o nome da
+        /// lista em cada ocorrência — o "Hoje na agenda" da Home.
+        /// </summary>
+        [HttpGet("/GetAgendaPeriodo")]
+        public async Task<ActionResult<IEnumerable<OcorrenciaDTO>>> GetAgendaPeriodo([FromQuery] DateOnly? de, [FromQuery] DateOnly? ate, [FromQuery] Paginacao paginacao)
+        {
+            if (de is null || ate is null)
+                return ErroRequisicao("Informe de e ate.");
+            if (ate < de || ate.Value.DayNumber - de.Value.DayNumber + 1 > 366)
+                return ErroRequisicao("O período vai de de até ate, com no máximo 366 dias.");
+            return Lista(await itemListaService.ListarAgendaAsync(de.Value, ate.Value, UsuarioId), paginacao);
+        }
+
         [HttpPost("/listas/{id}/itens")]
         public async Task<ActionResult<ItemListaDTO>> CreateItem(int id, [FromBody] ItemListaDTO dto)
         {

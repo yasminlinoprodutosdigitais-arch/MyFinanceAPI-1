@@ -22,6 +22,8 @@ public interface IItemListaService : IServicoCadastro<ItemListaDTO>
 
     /// <summary>Ocorrências do período (no máximo 366 dias), repetições expandidas e exceções aplicadas.</summary>
     Task<List<OcorrenciaDTO>> ListarPeriodoAsync(int listaId, DateOnly de, DateOnly ate, int userId);
+    /// <summary>Card #71: agenda de todas as listas com campo Data no período, com o nome da lista.</summary>
+    Task<List<OcorrenciaDTO>> ListarAgendaAsync(DateOnly de, DateOnly ate, int userId);
 
     /// <summary>"Só esta": feito, outro dia ou hora, ou pulada.</summary>
     Task AtualizarOcorrenciaAsync(int listaId, int itemId, DateOnly dataOriginal, AlterarOcorrenciaDTO dto, int userId);

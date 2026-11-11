@@ -239,6 +239,43 @@ public class ItemListaServiceTests
     }
 
     [Fact]
+    public async Task Agenda_de_todas_as_listas_so_das_que_usam_data_com_o_nome_da_lista()
+    {
+        // Card #71: "Hoje na agenda" da Home junta as listas com campo Data (não arquivadas) numa chamada.
+        _listas.Setup(r => r.ListarComResumoAsync(UserId, false, It.IsAny<DateOnly>())).ReturnsAsync(
+        [
+            new ListaComResumo { Lista = new Lista { Id = 12, Nome = "Agenda semanal", UsaData = true } },
+            new ListaComResumo { Lista = new Lista { Id = 13, Nome = "Compras", UsaData = false } },
+            new ListaComResumo { Lista = new Lista { Id = 14, Nome = "Médicos", UsaData = true } },
+        ]);
+        _itens.Setup(r => r.ListarDasListasAsync(It.Is<IReadOnlyCollection<int>>(ids => ids.Order().SequenceEqual(new[] { 12, 14 })), UserId))
+            .ReturnsAsync(
+            [
+                new ItemLista { Id = 5, ListaId = 12, Descricao = "Academia", Data = Seg, Hora = new TimeOnly(7, 0), Repeticao = RepeticaoItem.Semanal, DiasSemana = [1, 3, 5] },
+                new ItemLista { Id = 8, ListaId = 14, Descricao = "Dentista", Data = Seg, Hora = new TimeOnly(14, 30) },
+                new ItemLista { Id = 9, ListaId = 14, Descricao = "Sem data" },
+            ]);
+        _itens.Setup(r => r.ListarOcorrenciasAsync(It.IsAny<IReadOnlyCollection<int>>(), UserId)).ReturnsAsync([]);
+
+        var hoje = await CriarService().ListarAgendaAsync(Seg, Seg, UserId);
+
+        Assert.Equal(new[] { "Agenda semanal: Academia 07:00", "Médicos: Dentista 14:30" },
+            hoje.Select(o => $"{o.ListaNome}: {o.Descricao} {o.Hora:HH\\:mm}"));
+        Assert.Equal(new int?[] { 12, 14 }, hoje.Select(o => o.ListaId));
+    }
+
+    [Fact]
+    public async Task Agenda_sem_lista_com_data_nao_busca_itens()
+    {
+        _listas.Setup(r => r.ListarComResumoAsync(UserId, false, It.IsAny<DateOnly>())).ReturnsAsync(
+            [new ListaComResumo { Lista = new Lista { Id = 13, Nome = "Compras", UsaData = false } }]);
+
+        Assert.Empty(await CriarService().ListarAgendaAsync(Seg, Seg, UserId));
+        _itens.Verify(r => r.ListarDasListasAsync(It.IsAny<IReadOnlyCollection<int>>(), It.IsAny<int>()), Times.Never);
+        await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().ListarAgendaAsync(Seg, Seg.AddDays(-1), UserId));
+    }
+
+    [Fact]
     public async Task Periodo_de_mais_de_366_dias_ou_invertido_e_recusado()
     {
         await Assert.ThrowsAsync<RegraNegocioException>(() => CriarService().ListarPeriodoAsync(ListaId, Seg, Seg.AddDays(367), UserId));
