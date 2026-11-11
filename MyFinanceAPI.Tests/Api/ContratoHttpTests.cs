@@ -233,15 +233,19 @@ public class ContratoHttpTests
         Assert.StartsWith("Formato de mês inválido", Mensagem(resposta.Result!, 400));
     }
 
+    /// <summary>
+    /// Card #70: usuário inexistente e senha errada dão a mesma resposta (o service devolve null nos dois),
+    /// sem dizer qual dado está errado nem se a conta existe.
+    /// </summary>
     [Fact]
-    public async Task Login_nao_encontrado_responde_404_com_message()
+    public async Task Login_recusado_responde_401_com_message_neutra()
     {
         var usuarios = new Mock<IUsuarioService>();
         var controller = Com(new AuthenticationController(Mock.Of<ITokenService>(), usuarios.Object));
 
         var resposta = await controller.Autenticar(new UsuarioDto("ana", "errada"));
 
-        Assert.Equal("Usuário não encontrado. Verifique o login e senha.", Mensagem(resposta, 404));
+        Assert.Equal("Usuário/e-mail ou senha incorretos.", Mensagem(resposta, 401));
     }
 
     // ---------- Corpo inválido ([ApiController]) ----------

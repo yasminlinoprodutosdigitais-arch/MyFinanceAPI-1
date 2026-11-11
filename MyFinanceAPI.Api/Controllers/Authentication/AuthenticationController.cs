@@ -24,9 +24,10 @@ namespace MyFinanceAPI.Api.Controllers.Authentication
         public async Task<IActionResult> Autenticar([FromBody] UsuarioDto command)
         {
             // Login e senha conferidos aqui; o token é gerado para esse mesmo usuário (BE-P3-10).
+            // Recusa neutra (card #70): a mesma resposta para conta inexistente e senha errada.
             var usuario = await _usuarioService.BuscarUsuario(command.Login, command.Senha);
             if (usuario == null)
-                return NaoEncontrado("Usuário não encontrado. Verifique o login e senha.");
+                return NaoAutorizado("Usuário/e-mail ou senha incorretos.");
 
             var tokenDto = _tokenService.CreateToken(usuario);
 

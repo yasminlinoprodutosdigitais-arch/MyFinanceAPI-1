@@ -14,9 +14,19 @@ namespace MyFinanceAPI.Data.Repositories
             _context = context;
         }
 
-        /// <summary>Só pelo login; a senha é conferida no UsuarioService, contra o hash (BE-P3-10).</summary>
-        public Task<Usuario?> BuscarUsuario(string login) =>
-            _context.Usuarios.FirstOrDefaultAsync(u => u.UserName == login);
+        /// <summary>
+        /// Pelo usuário e, se não achar, pelo e-mail sem diferenciar maiúsculas (card #70; o NormalizedEmail
+        /// não é preenchido pelo cadastro). A senha é conferida no UsuarioService, contra o hash (BE-P3-10).
+        /// </summary>
+        public async Task<Usuario?> BuscarUsuario(string login)
+        {
+            var porUsuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.UserName == login);
+            if (porUsuario != null)
+                return porUsuario;
+
+            var email = login.ToUpper();
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToUpper() == email);
+        }
 
         public void Cadastrar(Usuario entidade)
         {

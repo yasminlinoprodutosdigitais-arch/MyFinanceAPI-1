@@ -32,6 +32,9 @@ namespace MyFinanceAPI.Api.Controllers
         /// <summary>400 com <c>{ message }</c>.</summary>
         protected BadRequestObjectResult ErroRequisicao(string mensagem) => BadRequest(new MensagemErro(mensagem));
 
+        /// <summary>401 com <c>{ message }</c>.</summary>
+        protected UnauthorizedObjectResult NaoAutorizado(string mensagem) => Unauthorized(new MensagemErro(mensagem));
+
         /// <summary>404 com <c>{ message }</c>.</summary>
         protected NotFoundObjectResult NaoEncontrado(string mensagem) => NotFound(new MensagemErro(mensagem));
 
