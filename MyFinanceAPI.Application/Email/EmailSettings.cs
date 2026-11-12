@@ -13,6 +13,6 @@ public class EmailSettings
     /// <summary>Pasta dos .html do envio em arquivo; vazia = "emails-dev" na pasta temporária.</summary>
     public string PastaArquivos { get; set; } = "";
     public string BrevoApiKey { get; set; } = "";
-    /// <summary>Endereço do front até o "#", para montar os links: "http://localhost:4200/#".</summary>
+    /// <summary>Endereço do front, sem barra no fim, para montar os links: "http://localhost:4200" (sem "#" desde o card #40).</summary>
     public string UrlFront { get; set; } = "";
 }
